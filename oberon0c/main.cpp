@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include "scanner/Scanner.h"
+#include "parser/Parser.h"
 
 int main(const int argc, const char *argv[]) {
     if (argc != 2) {
@@ -16,10 +17,8 @@ int main(const int argc, const char *argv[]) {
     auto logger = std::make_unique<Logger>();
     logger->setLevel(LogLevel::DEBUG);
     auto scanner = std::make_unique<Scanner>(filename, logger.get());
-    while (scanner->peekToken()->getType() != TokenType::eof) {
-        auto token = scanner->nextToken();
-        logger->info(filename, to_string(token->getType()));
-    }
-    logger->info(filename, "Scanning complete.");
+    auto parser = std::make_unique<Parser>(scanner.get(), logger.get());
+    parser->parse();
+    logger->info(filename, "Parsing complete.");
     exit(0);
 }

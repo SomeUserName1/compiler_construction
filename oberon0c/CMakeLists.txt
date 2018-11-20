@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.11)
+cmake_minimum_required(VERSION 3.12)
 project(oberon0c)
 
 set(CMAKE_CXX_STANDARD 14)
@@ -19,4 +19,4 @@ add_executable(oberon0c
         scanner/Token.h
         util/Logger.cpp
         util/Logger.h
-        main.cpp)
+        main.cpp parser/Parser.h parser/ast/Node.h parser/Parser.cpp)
