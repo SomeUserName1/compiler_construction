@@ -26,17 +26,19 @@ class Node {
 private:
     NodeType nodeType_;
     FilePos pos_;
+	std::list<Node> childs_;
 
 public:
     explicit Node(NodeType nodeType, FilePos pos);
-    virtual ~Node() = 0;
+	virtual ~Node();
 
     const NodeType getNodeType() const;
     const FilePos getFilePos() const;
 
-    virtual void print(std::ostream &stream) const = 0;
+    virtual void print(std::ostream &stream);
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
-
+	
+	void addChild(Node node);
 };
 
 #endif //OBERON0C_AST_H
