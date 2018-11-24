@@ -41,8 +41,6 @@ private:
     const Node* fp_section();
     const Node* statement_sequence();
     const Node* statement();
-    const Node* assignment();
-    const Node* procedure_call();
     const Node* if_statement();
     const Node* while_statement();
     const Node* actual_parameters();
@@ -56,6 +54,8 @@ private:
 	void equals_symbol();
 	void double_colon();
 	const Node* binary_op();
+	const Node* A();
+	const Node* B();
 
 	void decideToken(TokenType type, std::string &errormsg);
 

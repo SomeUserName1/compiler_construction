@@ -394,9 +394,7 @@ const Node * Parser::statement()
 
 	TokenType type = scanner_->peekToken;
 	if (type == TokenType::const_ident) {
-		word = scanner_->nextToken;
-		if (scanner_->peekToken == Toke)
-			node->addChild(*assignment());
+		node->addChild(*A());
 	}
 	else if (type == TokenType::kw_if) {
 		node->addChild(*if_statement());
@@ -410,14 +408,32 @@ const Node * Parser::statement()
 
 }
 
-const Node * Parser::assignment()
+// Implements Assignment & ProcedureCall
+const Node * Parser::A()
 {
-	return nullptr;
-}
+	Node * node;
 
-const Node * Parser::procedure_call()
-{
-	return nullptr;
+	const Node * identifier = ident();
+	const Node * select = selector();
+
+	if (scanner_->peekToken == TokenType::op_becomes) {
+		node = &Node(NodeType::assignment, word->getPosition());
+		node->addChild(*identifier);
+		node->addChild(*select);
+		decideToken(TokenType::op_becomes, std::string("Expected assignment operator \":=\""));
+		node->addChild(*expression());
+	}
+	else {
+		node = &Node(NodeType::procedure_call, word->getPosition());
+		node->addChild(*identifier);
+		node->addChild(*select);
+
+		if (scanner_->peekToken == TokenType::lparen) {
+			node->addChild(*actual_parameters());
+		}
+	}
+
+	return node;
 }
 
 const Node * Parser::if_statement()
