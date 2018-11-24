@@ -16,7 +16,9 @@ private:
     Scanner *scanner_;
     Logger *logger_;
 
-    const std::string ident();
+	std::unique_ptr<Token> word;
+
+    const Node* ident();
 
     const Node* module();
     const Node* declarations();
@@ -45,6 +47,18 @@ private:
     const Node* while_statement();
     const Node* actual_parameters();
     const Node* selector();
+
+	void fail(FilePos pos, std::string &msg);
+	void semicolon();
+	bool begin();
+	void end();
+	void point();
+	void equals_symbol();
+	void double_colon();
+	const Node* binary_op();
+
+	void decideToken(TokenType type, std::string &errormsg);
+
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);

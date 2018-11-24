@@ -4,6 +4,14 @@ Node::Node(NodeType nodeType, FilePos pos)
 {
 	nodeType_ = nodeType;
 	pos_ = pos;
+	value_ = nullptr;
+}
+
+Node::Node(NodeType nodeType, FilePos pos, std::string value)
+{
+	nodeType_ = nodeType;
+	pos_ = pos;
+	value_ = value;
 }
 
 const NodeType Node::getNodeType() const

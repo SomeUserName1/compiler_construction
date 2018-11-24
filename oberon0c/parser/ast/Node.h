@@ -14,11 +14,10 @@
 #include "../../util/Logger.h"
 
 enum class NodeType : char {
-    unary_expression, binary_expression,
-    constant_reference, boolean_constant, number_constant, string_constant,
-    type_reference, record_type, array_type, basic_type,
-    field, parameter, variable, variable_reference,
-    module, procedure
+	module, declarations, const_declarations,
+	type_declarations, var_declarations,
+	procedure_declaration, identifier, binary_op,
+	expression, simple_expression, term, factor
 };
 
 class Node {
@@ -27,9 +26,11 @@ private:
     NodeType nodeType_;
     FilePos pos_;
 	std::list<Node> childs_;
+	std::string value_;
 
 public:
-    explicit Node(NodeType nodeType, FilePos pos);
+	explicit Node(NodeType nodeType, FilePos pos);
+	explicit Node(NodeType nodeType, FilePos pos, std::string value);
 	virtual ~Node();
 
     const NodeType getNodeType() const;
@@ -39,6 +40,9 @@ public:
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 	
 	void addChild(Node node);
+	std::string getValue() {
+		return value_;
+	}
 };
 
 #endif //OBERON0C_AST_H
