@@ -357,7 +357,7 @@ const Node * Parser::formal_parameters()
 			node->addChild(*fp_section());
 		}
 	}
-	decideToken(TokenType::rparen);
+	decideToken(TokenType::rparen, std::string("Expected rparen"));
 
 	return node;
 }
