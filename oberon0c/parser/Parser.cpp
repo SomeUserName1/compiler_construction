@@ -469,12 +469,29 @@ const Node * Parser::actual_parameters()
 			node->addChild(*expression());
 		}
 	}
-	return nullptr;
+	decideToken(TokenType::rparen, std::string("Expected \"(\""));
+
+	return node;
 }
 
 const Node * Parser::selector()
 {
-	return nullptr;
+	Node * node = &Node(NodeType::selector, word->getPosition());
+
+	while (scanner_->peekToken == TokenType::period
+			|| scanner_->peekToken == TokenType::lbrack) {
+		if (scanner_->peekToken == TokenType::period) {
+			decideToken(TokenType::period, std::string("Expected period"));
+			node->addChild(*ident());
+		}
+		else {
+			decideToken(TokenType::lbrack, std::string("Expected \"[\""));
+			node->addChild(*expression());
+			decideToken(TokenType::rbrack, std::string("Expected \"]\""));
+		}
+	}
+
+	return node;
 }
 
 void Parser::fail(FilePos pos, std::string &msg)
