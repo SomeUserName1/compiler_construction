@@ -41,7 +41,10 @@ std::string Node::getValue() const
 
 std::ostream & operator<<(std::ostream & stream, const Node & node)
 {
-	stream << (char) node.getNodeType;
+	//TODO: Change to actual text
+	stream << "Something";
+
+	return stream;
 }
 
 Node::~Node() {
