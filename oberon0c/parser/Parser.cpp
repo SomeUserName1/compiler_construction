@@ -4,7 +4,6 @@
 
 #include <iostream>
 #include "Parser.h"
-#include "IdentToken.h"
 
 Parser::Parser(Scanner *scanner, Logger *logger) :
 	scanner_(scanner), logger_(logger) {
