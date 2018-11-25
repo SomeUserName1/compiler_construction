@@ -40,22 +40,23 @@ const Node * Parser::module()
 	Node * moduleNode = &Node(NodeType::module, word->getPosition());
 	const Node * identifier = ident();
 	moduleNode->addChild(*identifier);
-	semicolon();
+	semicolon_t();
 
 	// Declarations
 	moduleNode->addChild(*declarations());
 
 	// Optional: Begin (main method)
-	if (begin()) {
+	if (scanner_->peekToken == TokenType::kw_begin) {
+		begin_t();
 		moduleNode->addChild(*statement_sequence());
 	}
 
 	//End
-	end();
+	end_t();
 	if (identifier->getValue() != ident()->getValue()) {
 		fail(word->getPosition(), std::string("Expected module identifier"));
 	}
-	point();
+	point_t();
 
 	return moduleNode;
 }
@@ -103,9 +104,9 @@ const Node * Parser::const_declarations()
 
 	// TODO handle string
 	ident();
-	equals_symbol();
+	equals_symbol_t();
 	node->addChild(*expression());
-	semicolon();
+	semicolon_t();
 
 	return node;
 }
@@ -116,9 +117,9 @@ const Node * Parser::type_declarations()
 
 	// TODO handle string
 	ident();
-	equals_symbol();
+	equals_symbol_t();
 	node->addChild(*type());
-	semicolon();
+	semicolon_t();
 
 	return node;
 }
@@ -129,9 +130,9 @@ const Node * Parser::var_declarations()
 
 	// TODO handle string
 	ident_list();
-	double_colon();
+	double_colon_t();
 	node->addChild(*type());
-	semicolon();
+	semicolon_t();
 
 	return node;
 }
@@ -141,7 +142,7 @@ const Node * Parser::procedure_declaration()
 	Node * node = &Node(NodeType::procedure_declaration, word->getPosition());
 
 	node->addChild(*procedure_heading());
-	semicolon();
+	semicolon_t();
 	node->addChild(*procedure_body());
 
 	return node;
@@ -219,12 +220,12 @@ const Node * Parser::factor()
 		// TODO Number extracten
 	}
 	else if (type == TokenType::lparen) {
-		decideToken(TokenType::lparen, std::string("Expected \"(\""));
+		lparen_t();
 		node->addChild(*expression());
-		decideToken(TokenType::rparen, std::string("Expected \")\""));
+		rparen_t();
 	}
 	else if (type == TokenType::op_not) {
-		decideToken(TokenType::op_not, std::string("Expected \"~\""));
+		not();
 		node->addChild(*factor());
 	}
 	else {
@@ -277,12 +278,12 @@ const Node * Parser::record_type()
 
 	TokenType type = scanner_->peekToken()->getType();
 	while (type == TokenType::semicolon) {
-		semicolon();
+		semicolon_t();
 		node->addChild(*field_list());
 
 		type = scanner_->peekToken()->getType();
 	}
-	end();
+	end_t();
 
 	return node;
 }
@@ -294,7 +295,7 @@ const Node * Parser::field_list()
 	TokenType t_type = scanner_->peekToken()->getType();
 	if (t_type == TokenType::const_ident) {
 		node->addChild(*ident_list());
-		double_colon();
+		double_colon_t();
 		node->addChild(*type());
 	}
 	return node;
@@ -337,7 +338,7 @@ const Node * Parser::procedure_body()
 		decideToken(TokenType::kw_begin, std::string("expected keyword BEGIN"));
 		node->addChild(*statement_sequence());
 	}
-	end();
+	end_t();
 	node->addChild(*ident());
 	return node;
 }
@@ -352,7 +353,7 @@ const Node * Parser::formal_parameters()
 	if (type == TokenType::kw_var || type == TokenType::const_ident) {
 		node->addChild(*fp_section());
 		while (scanner_->peekToken()->getType() == TokenType::semicolon) {
-			semicolon();
+			semicolon_t();
 			node->addChild(*fp_section());
 		}
 	}
@@ -369,7 +370,7 @@ const Node * Parser::fp_section()
 		decideToken(TokenType::kw_var, std::string("expected VAR"));
 	}
 	node->addChild(*ident_list());
-	double_colon();
+	double_colon_t();
 	node->addChild(*type());
 
 	return node;
@@ -381,7 +382,7 @@ const Node * Parser::statement_sequence()
 
 	node->addChild(*statement());
 	while (scanner_->peekToken()->getType() == TokenType::semicolon) {
-		semicolon();
+		semicolon_t();
 		node->addChild(*statement());
 	}
 	return node;
@@ -515,31 +516,125 @@ void Parser::fail(FilePos pos, std::string &msg)
 	throw new std::exception("You failed!");
 }
 
-void Parser::semicolon() {
+void Parser::semicolon_t() {
 	decideToken(TokenType::semicolon, std::string("semicolon expected"));
 }
 
-bool Parser::begin() {
-	word = scanner_->nextToken();
-	return word->getType() != TokenType::kw_begin;
+bool Parser::begin_t() {
+	decideToken(TokenType::kw_begin, std::string("semicolon expected"));
 }
 
-void Parser::end() {
+void Parser::end_t() {
 	decideToken(TokenType::kw_end, std::string("End expected"));
 }
 
-void Parser::point() {
+void Parser::point_t() {
 	decideToken(TokenType::period, std::string("\".\" expected"));
 }
 
-void Parser::equals_symbol()
+void Parser::equals_symbol_t()
 {
 	decideToken(TokenType::op_eq, std::string("Expected assignment \"=\""));
 }
 
-void Parser::double_colon()
+void Parser::double_colon_t()
 {
 	decideToken(TokenType::colon, std::string("Expected \":\""));
+}
+
+void Parser::lparen_t()
+{
+	decideToken(TokenType::colon, std::string("Expected \"(\""));
+}
+
+void Parser::rparen_t()
+{
+	decideToken(TokenType::colon, std::string("Expected \")\""));
+}
+
+void Parser::lbrack_t()
+{
+	decideToken(TokenType::colon, std::string("Expected \"[\""));
+}
+
+void Parser::rbrack_t()
+{
+	decideToken(TokenType::colon, std::string("Expected \"]\""));
+}
+
+void Parser::not_t()
+{
+	decideToken(TokenType::op_not, std::string("Expected \"]\""));
+}
+
+void Parser::array_t()
+{
+	decideToken(TokenType::kw_array, std::string("Expected ARRAY keyword"));
+}
+
+void Parser::of_t()
+{
+	decideToken(TokenType::kw_of, std::string("Expected OF keyword"));
+}
+
+void Parser::record_t()
+{
+	decideToken(TokenType::op_not, std::string("Expected RECORD keyword"));
+}
+
+void Parser::procedure_t()
+{
+	decideToken(TokenType::kw_procedure, std::string("Expected PROCEDURE keyword"));
+}
+
+void Parser::const_t()
+{
+	decideToken(TokenType::kw_const, std::string("Expected CONST keyword"));
+}
+
+void Parser::type_t()
+{
+	decideToken(TokenType::kw_type, std::string("Expected TYPE keyword"));
+}
+
+void Parser::var_t()
+{
+	decideToken(TokenType::kw_var, std::string("Expected VAR keyword"));
+}
+
+void Parser::becomes_t()
+{
+	decideToken(TokenType::op_becomes, std::string("Expected \":=\" operator"));
+}
+
+void Parser::if_t()
+{
+	decideToken(TokenType::kw_if, std::string("Expected IF keyword"));
+}
+
+void Parser::then_t()
+{
+	decideToken(TokenType::kw_then, std::string("Expected THEN keyword"));
+}
+
+void Parser::else_t()
+{
+	decideToken(TokenType::kw_else, std::string("Expected ELSE keyword"));
+}
+
+void Parser::elseif_t()
+{
+	decideToken(TokenType::kw_elsif, std::string("Expected ELSEIF keyword"));
+}
+
+void Parser::while_t()
+{
+	decideToken(TokenType::kw_while, std::string("Expected WHILE keyword"));
+}
+
+void Parser::do_t()
+{
+	decideToken(TokenType::kw_do, std::string("Expected DO keyword"));
 }
 
 const Node* Parser::binary_op()

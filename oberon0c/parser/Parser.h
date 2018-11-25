@@ -20,6 +20,7 @@ private:
 
     const Node* ident();
 
+	// None-Terminals
     const Node* module();
     const Node* declarations();
     const Node* const_declarations();
@@ -45,19 +46,41 @@ private:
     const Node* while_statement();
     const Node* actual_parameters();
     const Node* selector();
-
-	void fail(FilePos pos, std::string &msg);
-	void semicolon();
-	bool begin();
-	void end();
-	void point();
-	void equals_symbol();
-	void double_colon();
+	// Added non-terminals
 	const Node* binary_op();
 	const Node* A();
 
+	//Terminals
+	void semicolon_t();
+	bool begin_t();
+	void end_t();
+	void point_t();
+	void equals_symbol_t();
+	void double_colon_t();
+	void lparen_t();
+	void rparen_t();
+	void lbrack_t();
+	void rbrack_t();
+	void not_t();
+	void array_t();
+	void of_t();
+	void record_t();
+	void procedure_t();
+	void const_t();
+	void type_t();
+	void var_t();
+	void becomes_t();
+	void if_t();
+	void then_t();
+	void else_t();
+	void elseif_t();
+	void while_t();
+	void do_t();
+	// Decides given terminals
 	void decideToken(TokenType type, std::string &errormsg);
 
+	// Generic error handler
+	void fail(FilePos pos, std::string &msg);
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
