@@ -589,6 +589,8 @@ const Node* Parser::binary_op()
 	}
 
 	fail(word->getPosition(), std::string("Expected binary operator"));
+
+	return nullptr;
 }
 
 void Parser::decideToken(TokenType type, std::string &errormsg)
