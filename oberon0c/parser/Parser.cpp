@@ -65,29 +65,30 @@ const Node * Parser::declarations()
 {
 	Node * node = &Node(NodeType::declarations, word->getPosition());
 
-	word = scanner_->nextToken();
-	if (word->getType() == TokenType::kw_const) {
-		while (scanner_->peekToken()->getType() != TokenType::kw_type) {
+	// CONSTs
+	if (scanner_->peekToken()->getType() == TokenType::kw_const) {
+		const_t();
+		while (scanner_->peekToken()->getType() != TokenType::const_ident) {
 			node->addChild(*const_declarations());
 		}
-
-		word = scanner_->nextToken();
 	}
 
-	if (word->getType() == TokenType::kw_type) {
-		while (scanner_->peekToken()->getType() != TokenType::kw_var) {
-			node->addChild(*type_declarations());
-		}
-		word = scanner_->nextToken();
-	}
-
-	if (word->getType() == TokenType::kw_var) {
-		const Token * peek = scanner_->peekToken();
-		while (peek->getType() != TokenType::kw_procedure && peek->getType() != TokenType::kw_end
-			&& peek->getType() != TokenType::kw_begin) {
+	// TYPEs
+	if (scanner_->peekToken()->getType() == TokenType::kw_type) {
+		type_t();
+		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
 			node->addChild(*type_declarations());
 		}
 	}
+
+	// VARs
+	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
+		var_t();
+		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
+			node->addChild(*type_declarations());
+		}
+	}
+
 
 	// Optional Procedures
 	const Token * peek = scanner_->peekToken();
