@@ -18,23 +18,23 @@ const std::unique_ptr<const Node> Parser::parse() {
 
 const Node * Parser::ident()
 {
-	word = scanner_->nextToken;
+	word = scanner_->nextToken();
 
-	if (word->getType != TokenType::const_ident) {
-		fail(word->getPosition, std::string("Expected identifier."));
+	if (word->getType() != TokenType::const_ident) {
+		fail(word->getPosition(), std::string("Expected identifier."));
 	}
 
 	//	 IdentToken ident = dynamic_cast<IdentToken*> (word);
 	//	 IdentToken * ident = dynamic_cast<IdentToken&>(word);
 
-	return &Node(NodeType::identifier, word->getPosition, std::string("I'm an identifier!"));
+	return &Node(NodeType::identifier, word->getPosition(), std::string("I'm an identifier!"));
 }
 
 const Node * Parser::module()
 {
-	word = scanner_->nextToken;
+	word = scanner_->nextToken();
 	if (word->getType() != TokenType::kw_module) {
-		fail(word->getPosition, std::string("Expected module declaration."));
+		fail(word->getPosition(), std::string("Expected module declaration."));
 	}
 
 	// Module declaration
@@ -53,8 +53,8 @@ const Node * Parser::module()
 
 	//End
 	end();
-	if (identifier->getValue != ident()->getValue) {
-		fail(word->getPosition, std::string("Expected module identifier"));
+	if (identifier->getValue() != ident()->getValue()) {
+		fail(word->getPosition(), std::string("Expected module identifier"));
 	}
 	point();
 
@@ -65,33 +65,33 @@ const Node * Parser::declarations()
 {
 	Node * node = &Node(NodeType::declarations, word->getPosition());
 
-	word = scanner_->nextToken;
-	if (word->getType == TokenType::kw_const) {
-		while (scanner_->peekToken != TokenType::kw_type) {
+	word = scanner_->nextToken();
+	if (word->getType() == TokenType::kw_const) {
+		while (scanner_->peekToken()->getType() != TokenType::kw_type) {
 			node->addChild(*const_declarations());
 		}
 
-		word = scanner_->nextToken;
+		word = scanner_->nextToken();
 	}
 
-	if (word->getType == TokenType::kw_type) {
-		while (scanner_->peekToken != TokenType::kw_var) {
+	if (word->getType() == TokenType::kw_type) {
+		while (scanner_->peekToken()->getType() != TokenType::kw_var) {
 			node->addChild(*type_declarations());
 		}
-		word = scanner_->nextToken;
+		word = scanner_->nextToken();
 	}
 
-	if (word->getType == TokenType::kw_var) {
-		Token * peek = scanner_->peekToken;
-		while (peek->getType != TokenType::kw_procedure && peek->getType != TokenType::kw_end
-			&& peek->getType != TokenType::kw_begin) {
+	if (word->getType() == TokenType::kw_var) {
+		const Token * peek = scanner_->peekToken();
+		while (peek->getType() != TokenType::kw_procedure && peek->getType() != TokenType::kw_end
+			&& peek->getType() != TokenType::kw_begin) {
 			node->addChild(*type_declarations());
 		}
 	}
 
 	// Optional Procedures
-	Token * peek = scanner_->peekToken;
-	while (peek->getType == TokenType::kw_procedure) {
+	const Token * peek = scanner_->peekToken();
+	while (peek->getType() == TokenType::kw_procedure) {
 		node->addChild(*procedure_declaration());
 	}
 
@@ -154,7 +154,7 @@ const Node * Parser::expression()
 
 	node->addChild(*simple_expression());
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::op_eq || type == TokenType::op_neq
 		|| type == TokenType::op_lt || type == TokenType::op_leq
 		|| type == TokenType::op_gt || type == TokenType::op_geq) {
@@ -169,19 +169,19 @@ const Node * Parser::simple_expression()
 {
 	Node * node = &Node(NodeType::simple_expression, word->getPosition());
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::op_plus || type == TokenType::op_minus) {
 		node->addChild(*binary_op());
 	}
 	node->addChild(*term());
 
-	TokenType type = scanner_->peekToken;
+	type = scanner_->peekToken()->getType();
 	while (type == TokenType::op_plus || type == TokenType::op_minus
 		|| type == TokenType::op_or) {
 		node->addChild(*binary_op());
 		node->addChild(*term());
 
-		type = scanner_->peekToken;
+		type = scanner_->peekToken()->getType();
 	}
 
 
@@ -194,13 +194,13 @@ const Node * Parser::term()
 
 	node->addChild(*factor());
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	while (type == TokenType::op_times || type == TokenType::op_div
 		|| type == TokenType::op_mod || type == TokenType::op_and) {
 		node->addChild(*binary_op());
 		node->addChild(*factor());
 
-		type = scanner_->peekToken;
+		type = scanner_->peekToken()->getType();
 	}
 
 	return node;
@@ -211,7 +211,7 @@ const Node * Parser::factor()
 	Node * node = &Node(NodeType::factor, word->getPosition());
 
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
 		node->addChild(*ident());
 		node->addChild(*selector());
@@ -229,8 +229,8 @@ const Node * Parser::factor()
 		node->addChild(*factor());
 	}
 	else {
-		word = scanner_->nextToken;
-		fail(word->getPosition, std::string("Expected a factor but was something else"));
+		word = scanner_->nextToken();
+		fail(word->getPosition(), std::string("Expected a factor but was something else"));
 	}
 
 	return node;
@@ -240,7 +240,7 @@ const Node * Parser::type()
 {
 	Node * node = &Node(NodeType::factor, word->getPosition());
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
 		node->addChild(*ident());
 	}
@@ -251,7 +251,7 @@ const Node * Parser::type()
 		node->addChild(*record_type());
 	}
 	else {
-		fail(word->getPosition, std::string("Unknown error (expected type)"));
+		fail(word->getPosition(), std::string("Unknown error (expected type)"));
 	}
 
 	return node;
@@ -276,12 +276,12 @@ const Node * Parser::record_type()
 	decideToken(TokenType::kw_record, std::string("expected keyword RECORD"));
 	node->addChild(*field_list());
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	while (type == TokenType::semicolon) {
 		semicolon();
 		node->addChild(*field_list());
 
-		type = scanner_->peekToken;
+		type = scanner_->peekToken()->getType();
 	}
 	end();
 
@@ -292,7 +292,7 @@ const Node * Parser::field_list()
 {
 	Node * node = &Node(NodeType::field_list, word->getPosition());
 
-	TokenType t_type = scanner_->peekToken;
+	TokenType t_type = scanner_->peekToken()->getType();
 	if (t_type == TokenType::const_ident) {
 		node->addChild(*ident_list());
 		double_colon();
@@ -307,7 +307,7 @@ const Node * Parser::ident_list()
 
 	node->addChild(*ident());
 
-	while (scanner_->peekToken != TokenType::comma) {
+	while (scanner_->peekToken()->getType() != TokenType::comma) {
 		decideToken(TokenType::comma, std::string("expected comma"));
 		node->addChild(*ident());
 	}
@@ -322,7 +322,7 @@ const Node * Parser::procedure_heading()
 	decideToken(TokenType::kw_procedure, std::string("expected keyword PROCEDURE"));
 	node->addChild(*ident());
 
-	if (scanner_->peekToken == TokenType::lparen) {
+	if (scanner_->peekToken()->getType() == TokenType::lparen) {
 		node->addChild(*formal_parameters());
 	}
 	return node;
@@ -334,7 +334,7 @@ const Node * Parser::procedure_body()
 
 	node->addChild(*declarations());
 
-	if (scanner_->peekToken != TokenType::kw_begin) {
+	if (scanner_->peekToken()->getType() != TokenType::kw_begin) {
 		decideToken(TokenType::kw_begin, std::string("expected keyword BEGIN"));
 		node->addChild(*statement_sequence());
 	}
@@ -349,10 +349,10 @@ const Node * Parser::formal_parameters()
 
 	decideToken(TokenType::lparen, std::string("expected lparen"));
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::kw_var || type == TokenType::const_ident) {
 		node->addChild(*fp_section());
-		while (scanner_->peekToken == TokenType::semicolon) {
+		while (scanner_->peekToken()->getType() == TokenType::semicolon) {
 			semicolon();
 			node->addChild(*fp_section());
 		}
@@ -366,7 +366,7 @@ const Node * Parser::fp_section()
 {
 	Node * node = &Node(NodeType::fp_section, word->getPosition());
 
-	if (scanner_->peekToken == TokenType::kw_var) {
+	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
 		decideToken(TokenType::kw_var, std::string("expected VAR"));
 	}
 	node->addChild(*ident_list());
@@ -381,7 +381,7 @@ const Node * Parser::statement_sequence()
 	Node * node = &Node(NodeType::statement_sequence, word->getPosition());
 
 	node->addChild(*statement());
-	while (scanner_->peekToken == TokenType::semicolon) {
+	while (scanner_->peekToken()->getType() == TokenType::semicolon) {
 		semicolon();
 		node->addChild(*statement());
 	}
@@ -392,7 +392,7 @@ const Node * Parser::statement()
 { //TODO
 	Node * node = &Node(NodeType::statement, word->getPosition());
 
-	TokenType type = scanner_->peekToken;
+	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
 		node->addChild(*A());
 	}
@@ -416,7 +416,7 @@ const Node * Parser::A()
 	const Node * identifier = ident();
 	const Node * select = selector();
 
-	if (scanner_->peekToken == TokenType::op_becomes) {
+	if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
 		node = &Node(NodeType::assignment, word->getPosition());
 		node->addChild(*identifier);
 		node->addChild(*select);
@@ -428,7 +428,7 @@ const Node * Parser::A()
 		node->addChild(*identifier);
 		node->addChild(*select);
 
-		if (scanner_->peekToken == TokenType::lparen) {
+		if (scanner_->peekToken()->getType() == TokenType::lparen) {
 			node->addChild(*actual_parameters());
 		}
 	}
@@ -445,13 +445,13 @@ const Node * Parser::if_statement()
 	decideToken(TokenType::kw_then, std::string("Expected keyword THEN"));
 	node->addChild(*statement_sequence());
 
-	while (scanner_->peekToken == TokenType::kw_elsif) {
+	while (scanner_->peekToken()->getType() == TokenType::kw_elsif) {
 		decideToken(TokenType::kw_elsif, std::string("expected keyword ELSIF"));
 		node->addChild(*expression());
 		decideToken(TokenType::kw_then, std::string("Expected keyword THEN"));
 		node->addChild(*statement_sequence());
 	}
-	if (scanner_->peekToken == TokenType::kw_else) {
+	if (scanner_->peekToken()->getType() == TokenType::kw_else) {
 		decideToken(TokenType::kw_else, std::string("Expected keyword ELSE"));
 		node->addChild(*statement_sequence());
 	}
@@ -478,9 +478,9 @@ const Node * Parser::actual_parameters()
 	Node * node = &Node(NodeType::acutal_parameters, word->getPosition());
 
 	decideToken(TokenType::lparen, std::string("Expected \"(\""));
-	if (scanner_->peekToken != TokenType::rparen) {
+	if (scanner_->peekToken()->getType() != TokenType::rparen) {
 		node->addChild(*expression());
-		while (scanner_->peekToken == TokenType::comma) {
+		while (scanner_->peekToken()->getType() == TokenType::comma) {
 			decideToken(TokenType::comma, std::string("expected comma"));
 			node->addChild(*expression());
 		}
@@ -494,9 +494,9 @@ const Node * Parser::selector()
 {
 	Node * node = &Node(NodeType::selector, word->getPosition());
 
-	while (scanner_->peekToken == TokenType::period
-			|| scanner_->peekToken == TokenType::lbrack) {
-		if (scanner_->peekToken == TokenType::period) {
+	while (scanner_->peekToken()->getType() == TokenType::period
+			|| scanner_->peekToken()->getType() == TokenType::lbrack) {
+		if (scanner_->peekToken()->getType() == TokenType::period) {
 			decideToken(TokenType::period, std::string("Expected period"));
 			node->addChild(*ident());
 		}
@@ -521,8 +521,8 @@ void Parser::semicolon() {
 }
 
 bool Parser::begin() {
-	word = scanner_->nextToken;
-	return word->getType != TokenType::kw_begin;
+	word = scanner_->nextToken();
+	return word->getType() != TokenType::kw_begin;
 }
 
 void Parser::end() {
@@ -545,56 +545,56 @@ void Parser::double_colon()
 
 const Node* Parser::binary_op()
 {
-	word = scanner_->nextToken;
+	word = scanner_->nextToken();
 
-	TokenType type = word->getType;
+	TokenType type = word->getType();
 	if (type == TokenType::op_eq) {
-		return &Node(NodeType::binary_op, word->getPosition, "=");
+		return &Node(NodeType::binary_op, word->getPosition(), "=");
 	}
 	else if (type == TokenType::op_neq) {
-		return &Node(NodeType::binary_op, word->getPosition, "#");
+		return &Node(NodeType::binary_op, word->getPosition(), "#");
 	}
 	else if (type == TokenType::op_lt) {
-		return &Node(NodeType::binary_op, word->getPosition, "<");
+		return &Node(NodeType::binary_op, word->getPosition(), "<");
 	}
 	else if (type == TokenType::op_leq) {
-		return &Node(NodeType::binary_op, word->getPosition, "<=");
+		return &Node(NodeType::binary_op, word->getPosition(), "<=");
 	}
 	else if (type == TokenType::op_gt) {
-		return &Node(NodeType::binary_op, word->getPosition, ">");
+		return &Node(NodeType::binary_op, word->getPosition(), ">");
 	}
 	else if (type == TokenType::op_geq) {
-		return &Node(NodeType::binary_op, word->getPosition, ">=");
+		return &Node(NodeType::binary_op, word->getPosition(), ">=");
 	}
 	else if (type == TokenType::op_plus) {
-		return &Node(NodeType::binary_op, word->getPosition, "+");
+		return &Node(NodeType::binary_op, word->getPosition(), "+");
 	}
 	else if (type == TokenType::op_minus) {
-		return &Node(NodeType::binary_op, word->getPosition, "-");
+		return &Node(NodeType::binary_op, word->getPosition(), "-");
 	}
 	else if (type == TokenType::op_or) {
-		return &Node(NodeType::binary_op, word->getPosition, "OR");
+		return &Node(NodeType::binary_op, word->getPosition(), "OR");
 	}
 	else if (type == TokenType::op_times) {
-		return &Node(NodeType::binary_op, word->getPosition, "*");
+		return &Node(NodeType::binary_op, word->getPosition(), "*");
 	}
 	else if (type == TokenType::op_div) {
-		return &Node(NodeType::binary_op, word->getPosition, "DIV");
+		return &Node(NodeType::binary_op, word->getPosition(), "DIV");
 	}
 	else if (type == TokenType::op_mod) {
-		return &Node(NodeType::binary_op, word->getPosition, "MOD");
+		return &Node(NodeType::binary_op, word->getPosition(), "MOD");
 	}
 	else if (type == TokenType::op_and) {
-		return &Node(NodeType::binary_op, word->getPosition, "&");
+		return &Node(NodeType::binary_op, word->getPosition(), "&");
 	}
 
-	fail(word->getPosition, std::string("Expected binary operator"));
+	fail(word->getPosition(), std::string("Expected binary operator"));
 }
 
 void Parser::decideToken(TokenType type, std::string &errormsg)
 {
-	word = scanner_->nextToken;
-	if (word->getType != type) {
-		fail(word->getPosition, errormsg);
+	word = scanner_->nextToken();
+	if (word->getType() != type) {
+		fail(word->getPosition(), errormsg);
 	}
 }

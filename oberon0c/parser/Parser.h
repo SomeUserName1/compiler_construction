@@ -16,7 +16,7 @@ private:
     Scanner *scanner_;
     Logger *logger_;
 
-	std::unique_ptr<Token> word;
+	std::unique_ptr<const Token> word;
 
     const Node* ident();
 

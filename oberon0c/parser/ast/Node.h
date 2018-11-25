@@ -44,9 +44,7 @@ public:
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 	
 	void addChild(Node node);
-	std::string getValue() {
-		return value_;
-	}
+	std::string getValue() const;
 };
 
 #endif //OBERON0C_AST_H

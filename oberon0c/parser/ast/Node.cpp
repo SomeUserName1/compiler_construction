@@ -34,6 +34,11 @@ void Node::addChild(Node node)
 	childs_.push_back(node);
 }
 
+std::string Node::getValue() const
+{
+	return value_;
+}
+
 std::ostream & operator<<(std::ostream & stream, const Node & node)
 {
 	stream << (char) node.getNodeType;
