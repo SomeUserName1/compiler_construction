@@ -46,7 +46,7 @@ const Node * Parser::module()
 	moduleNode->addChild(*declarations());
 
 	// Optional: Begin (main method)
-	if (scanner_->peekToken == TokenType::kw_begin) {
+	if (scanner_->peekToken()->getType() == TokenType::kw_begin) {
 		begin_t();
 		moduleNode->addChild(*statement_sequence());
 	}
@@ -226,7 +226,7 @@ const Node * Parser::factor()
 		rparen_t();
 	}
 	else if (type == TokenType::op_not) {
-		not();
+		not_t();
 		node->addChild(*factor());
 	}
 	else {
