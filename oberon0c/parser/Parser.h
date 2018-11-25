@@ -52,7 +52,8 @@ private:
 
 	//Terminals
 	void semicolon_t();
-	bool begin_t();
+	void comma_t();
+	void begin_t();
 	void end_t();
 	void point_t();
 	void equals_symbol_t();

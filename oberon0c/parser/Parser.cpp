@@ -262,9 +262,9 @@ const Node * Parser::array_type()
 {
 	Node * node = &Node(NodeType::array_type, word->getPosition());
 
-	decideToken(TokenType::kw_array, std::string("expected keyword ARRAY"));
+	array_t();
 	node->addChild(*expression());
-	decideToken(TokenType::kw_of, std::string("Expected keyword OF"));
+	of_t();
 	node->addChild(*type());
 
 	return node;
@@ -274,7 +274,7 @@ const Node * Parser::record_type()
 {
 	Node * node = &Node(NodeType::record_type, word->getPosition());
 
-	decideToken(TokenType::kw_record, std::string("expected keyword RECORD"));
+	record_t();
 	node->addChild(*field_list());
 
 	TokenType type = scanner_->peekToken()->getType();
@@ -309,7 +309,7 @@ const Node * Parser::ident_list()
 	node->addChild(*ident());
 
 	while (scanner_->peekToken()->getType() != TokenType::comma) {
-		decideToken(TokenType::comma, std::string("expected comma"));
+		comma_t();
 		node->addChild(*ident());
 	}
 
@@ -320,7 +320,7 @@ const Node * Parser::procedure_heading()
 {
 	Node * node = &Node(NodeType::procedure_heading, word->getPosition());
 
-	decideToken(TokenType::kw_procedure, std::string("expected keyword PROCEDURE"));
+	procedure_t();
 	node->addChild(*ident());
 
 	if (scanner_->peekToken()->getType() == TokenType::lparen) {
@@ -336,7 +336,7 @@ const Node * Parser::procedure_body()
 	node->addChild(*declarations());
 
 	if (scanner_->peekToken()->getType() != TokenType::kw_begin) {
-		decideToken(TokenType::kw_begin, std::string("expected keyword BEGIN"));
+		begin_t();
 		node->addChild(*statement_sequence());
 	}
 	end_t();
@@ -348,7 +348,7 @@ const Node * Parser::formal_parameters()
 {
 	Node * node = &Node(NodeType::formal_parameters, word->getPosition());
 
-	decideToken(TokenType::lparen, std::string("expected lparen"));
+	lparen_t();
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::kw_var || type == TokenType::const_ident) {
@@ -358,7 +358,7 @@ const Node * Parser::formal_parameters()
 			node->addChild(*fp_section());
 		}
 	}
-	decideToken(TokenType::rparen, std::string("Expected rparen"));
+	rparen_t();
 
 	return node;
 }
@@ -368,7 +368,7 @@ const Node * Parser::fp_section()
 	Node * node = &Node(NodeType::fp_section, word->getPosition());
 
 	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
-		decideToken(TokenType::kw_var, std::string("expected VAR"));
+		var_t();
 	}
 	node->addChild(*ident_list());
 	double_colon_t();
@@ -421,7 +421,7 @@ const Node * Parser::A()
 		node = &Node(NodeType::assignment, word->getPosition());
 		node->addChild(*identifier);
 		node->addChild(*select);
-		decideToken(TokenType::op_becomes, std::string("Expected assignment operator \":=\""));
+		becomes_t();
 		node->addChild(*expression());
 	}
 	else {
@@ -441,22 +441,22 @@ const Node * Parser::if_statement()
 {
 	Node * node = &Node(NodeType::if_statement, word->getPosition());
 
-	decideToken(TokenType::kw_if, std::string("Expected keyword IF"));
+	if_t();
 	node->addChild(*expression());
-	decideToken(TokenType::kw_then, std::string("Expected keyword THEN"));
+	then_t();
 	node->addChild(*statement_sequence());
 
 	while (scanner_->peekToken()->getType() == TokenType::kw_elsif) {
-		decideToken(TokenType::kw_elsif, std::string("expected keyword ELSIF"));
+		elseif_t();
 		node->addChild(*expression());
-		decideToken(TokenType::kw_then, std::string("Expected keyword THEN"));
+		then_t();
 		node->addChild(*statement_sequence());
 	}
 	if (scanner_->peekToken()->getType() == TokenType::kw_else) {
-		decideToken(TokenType::kw_else, std::string("Expected keyword ELSE"));
+		else_t();
 		node->addChild(*statement_sequence());
 	}
-	decideToken(TokenType::kw_end, std::string("Expected keyword END"));
+	end_t();
 
 	return node;
 }
@@ -465,12 +465,12 @@ const Node * Parser::while_statement()
 {
 	Node * node = &Node(NodeType::while_statement, word->getPosition());
 
-	decideToken(TokenType::kw_while, std::string("Expected keyword WHILE"));
+	while_t();
 	node->addChild(*expression());
-	decideToken(TokenType::kw_do, std::string("IEEExpected keyword DO (GROßES E"));
+	do_t();
 	node->addChild(*statement_sequence());
-	decideToken(TokenType::kw_end, std::string("Expected keyword END"));
-	
+	end_t();
+
 	return node;
 }
 
@@ -478,15 +478,15 @@ const Node * Parser::actual_parameters()
 {
 	Node * node = &Node(NodeType::acutal_parameters, word->getPosition());
 
-	decideToken(TokenType::lparen, std::string("Expected \"(\""));
+	lparen_t();
 	if (scanner_->peekToken()->getType() != TokenType::rparen) {
 		node->addChild(*expression());
 		while (scanner_->peekToken()->getType() == TokenType::comma) {
-			decideToken(TokenType::comma, std::string("expected comma"));
+			comma_t();
 			node->addChild(*expression());
 		}
 	}
-	decideToken(TokenType::rparen, std::string("Expected \"(\""));
+	rparen_t();
 
 	return node;
 }
@@ -498,13 +498,13 @@ const Node * Parser::selector()
 	while (scanner_->peekToken()->getType() == TokenType::period
 			|| scanner_->peekToken()->getType() == TokenType::lbrack) {
 		if (scanner_->peekToken()->getType() == TokenType::period) {
-			decideToken(TokenType::period, std::string("Expected period"));
+			point_t();
 			node->addChild(*ident());
 		}
 		else {
-			decideToken(TokenType::lbrack, std::string("Expected \"[\""));
+			lbrack_t();
 			node->addChild(*expression());
-			decideToken(TokenType::rbrack, std::string("Expected \"]\""));
+			rbrack_t();
 		}
 	}
 
@@ -521,7 +521,12 @@ void Parser::semicolon_t() {
 	decideToken(TokenType::semicolon, std::string("semicolon expected"));
 }
 
-bool Parser::begin_t() {
+void Parser::comma_t()
+{
+	decideToken(TokenType::comma, std::string("comma expected"));
+}
+
+void Parser::begin_t() {
 	decideToken(TokenType::kw_begin, std::string("semicolon expected"));
 }
 
