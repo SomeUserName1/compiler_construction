@@ -55,7 +55,6 @@ private:
 	void double_colon();
 	const Node* binary_op();
 	const Node* A();
-	const Node* B();
 
 	void decideToken(TokenType type, std::string &errormsg);
 
