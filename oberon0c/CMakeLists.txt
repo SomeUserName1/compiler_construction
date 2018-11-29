@@ -1,26 +1,31 @@
 cmake_minimum_required(VERSION 3.12)
 project(oberon0c)
 
-set(CMAKE_CXX_STANDARD 14)
+SET(CMAKE_CXX_COMPILER clang++)
+SET(CMAKE_CXX_FLAGS " -c -Wall  -std=c++17")
+
+set(CMAKE_CXX_STANDARD 17)
 
 include_directories(scanner)
+include_directories(parser)
 include_directories(util)
 
-add_executable(oberon0c
-        scanner/IdentToken.cpp
-        scanner/IdentToken.h
-        scanner/NumberToken.cpp
-        scanner/NumberToken.h
-        scanner/Scanner.cpp
-        scanner/Scanner.h
-        scanner/StringToken.cpp
-        scanner/StringToken.h
-        scanner/Token.cpp
-        scanner/Token.h
-        util/Logger.cpp
-        util/Logger.h
-        main.cpp
-		parser/Parser.h
+set(logger util/Logger.cpp)
+set(scanner
+		scanner/Token.cpp
+		scanner/NumberToken.cpp
+		scanner/StringToken.cpp
+		scanner/IdentToken.cpp
+		scanner/Scanner.cpp
+		)
+set(parser
 		parser/Parser.cpp
-		parser/ast/Node.h
-		parser/ast/Node.cpp)
+		parser/ast/Node.cpp
+		)
+
+add_executable(oberon0c
+		${logger}
+		${scanner}
+		${parser}
+        main.cpp
+		)

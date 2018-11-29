@@ -23,9 +23,9 @@ Scanner::Scanner(const std::string &filename, const Logger *logger) :
 }
 
 Scanner::~Scanner() {
-    if (token_) {
-        delete token_;
-    }
+
+    delete token_;
+
     if (file_.is_open()) {
         file_.close();
     }

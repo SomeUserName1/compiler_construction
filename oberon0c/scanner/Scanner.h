@@ -12,6 +12,7 @@
 #include <fstream>
 #include <sstream>
 #include <unordered_map>
+#include <limits.h>
 #include "Token.h"
 #include "../util/Logger.h"
 
