@@ -61,9 +61,9 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 
 void Node::print(std::ostream & stream) const {
 	if (!this->value_.empty()) {
-		stream << "Type: " << this->getNodeType() << this->getValue()<< "   |    ";
+		stream << this->getNodeType() << ": " << this->getValue();
 	} else {
-		stream << "Type: " << this->getNodeType() << "   |    ";
+		stream << this->getNodeType();
 	}
 }
 
@@ -75,7 +75,7 @@ void Node::printTree(std::ostream & stream) const
 void Node::printTreeRec(std::ostream & stream, int depth) const
 {
 	for (int i = 0; i < depth; i++) {
-		stream << "+";
+		stream << "|-";
 	}
 
 	this->print(stream);
