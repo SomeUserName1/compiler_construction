@@ -45,7 +45,6 @@ public:
     const FilePos getFilePos() const;
 
     virtual void print(std::ostream &stream) const;
-    virtual void printChildren(std::ostream &stream, Node node) const;
 	virtual void printTree(std::ostream &stream) const;
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 	

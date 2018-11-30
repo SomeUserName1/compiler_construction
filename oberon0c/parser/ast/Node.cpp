@@ -67,17 +67,6 @@ void Node::print(std::ostream & stream) const {
 	}
 }
 
-void Node::printChildren(std::ostream& stream, Node node) const {
-	node.print(stream);
-	stream << std::endl;
-	if( node.children_.empty()) return;
-	for (int i=0; i < node.children_.size() ;i++) {
-		node.children_[i].print(stream);
-		if(!node.children_[i].children_.empty() && i ==1)
-			printChildren(stream, node.children_[i]);
-	}
-}
-
 void Node::printTree(std::ostream & stream) const
 {
 	printTreeRec(stream, 0);
