@@ -45,7 +45,15 @@ BEGIN
     WHILE i > 1 DO
         j := i-1; 
         WHILE j > 0 DO
-            IF (a[i] > a[j]) & (2 > 1) THEN Swap(a[i], a[j]) END;
+            IF (a[i] > a[j]) & (2 > 1)
+            THEN
+                Swap(a[i], a[j])
+            ELSIF 1 > 2
+            THEN
+                WHILE 1 > 2 DO END;
+            ELSE
+                WHILE 1 > 2 DO END;
+            END;
             j := j + 1
         END;
         i := i + 1
