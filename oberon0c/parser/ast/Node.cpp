@@ -61,20 +61,28 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 
 void Node::print(std::ostream & stream) const {
 	if (!this->value_.empty()) {
-		stream << "Type: " << this->getNodeType() << this->getValue()<< "   |    ";
+		stream << this->getNodeType() << ": " << this->getValue();
 	} else {
-		stream << "Type: " << this->getNodeType() << "   |    ";
+		stream << this->getNodeType();
 	}
 }
 
-void Node::printChildren(std::ostream& stream, Node node) const {
-	node.print(stream);
+void Node::printTree(std::ostream & stream) const
+{
+	printTreeRec(stream, 0);
+}
+
+void Node::printTreeRec(std::ostream & stream, int depth) const
+{
+	for (int i = 0; i < depth; i++) {
+		stream << "|-";
+	}
+
+	this->print(stream);
 	stream << std::endl;
-	if( node.children_.empty()) return;
-	for (int i=0; i < node.children_.size() ;i++) {
-		node.children_[i].print(stream);
-		if(!node.children_[i].children_.empty() && i ==1)
-			printChildren(stream, node.children_[i]);
+
+	for (Node child : children_) {
+		child.printTreeRec(stream, depth + 1);
 	}
 }
 
@@ -90,7 +98,7 @@ std::string Node::getValue() const
 
 std::ostream & operator<<(std::ostream & stream, const Node & node)
 {
-	node.printChildren(stream, node);
+	node.printTree(stream);
 
 	return stream;
 }
