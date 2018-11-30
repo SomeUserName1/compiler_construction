@@ -34,6 +34,8 @@ private:
 	std::vector<Node> children_;
 	std::string value_;
 
+	void printTreeRec(std::ostream &stream, int depth) const;
+
 public:
 	explicit Node(NodeType nodeType, FilePos pos);
 	explicit Node(NodeType nodeType, FilePos pos, std::string value);
@@ -44,6 +46,7 @@ public:
 
     virtual void print(std::ostream &stream) const;
     virtual void printChildren(std::ostream &stream, Node node) const;
+	virtual void printTree(std::ostream &stream) const;
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 	
 	void addChild(Node node);

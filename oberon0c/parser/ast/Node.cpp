@@ -78,6 +78,25 @@ void Node::printChildren(std::ostream& stream, Node node) const {
 	}
 }
 
+void Node::printTree(std::ostream & stream) const
+{
+	printTreeRec(stream, 0);
+}
+
+void Node::printTreeRec(std::ostream & stream, int depth) const
+{
+	for (int i = 0; i < depth; i++) {
+		stream << "+";
+	}
+
+	this->print(stream);
+	stream << std::endl;
+
+	for (Node child : children_) {
+		child.printTreeRec(stream, depth + 1);
+	}
+}
+
 void Node::addChild(Node node)
 {
 	children_.push_back(node);
@@ -90,7 +109,7 @@ std::string Node::getValue() const
 
 std::ostream & operator<<(std::ostream & stream, const Node & node)
 {
-	node.printChildren(stream, node);
+	node.printTree(stream);
 
 	return stream;
 }
