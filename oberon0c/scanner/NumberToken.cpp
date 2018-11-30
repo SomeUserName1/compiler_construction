@@ -1,3 +1,5 @@
+#include <utility>
+
 /*
  * Implementation of the number tokens used by parser of the Oberon-0 compiler.
  *
@@ -6,7 +8,7 @@
 
 #include "NumberToken.h"
 
-NumberToken::NumberToken(FilePos pos, int value) : Token(TokenType::const_number, pos), value_(value) {
+NumberToken::NumberToken(FilePos pos, int value) : Token(TokenType::const_number, std::move(pos)), value_(value) {
 }
 
 NumberToken::~NumberToken() = default;

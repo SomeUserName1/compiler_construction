@@ -18,7 +18,7 @@ private:
 
 	std::unique_ptr<const Token> word;
 
-    const Node* ident();
+
 
 	// None-Terminals
     const Node* module();
@@ -46,6 +46,9 @@ private:
     const Node* while_statement();
     const Node* actual_parameters();
     const Node* selector();
+    const Node* ident();
+	const Node* number();
+
 	// Added non-terminals
 	const Node* binary_op();
 	const Node* A();
@@ -81,7 +84,7 @@ private:
 	void decideToken(TokenType type, std::string &errormsg);
 
 	// Generic error handler
-	void fail(FilePos pos, std::string &msg);
+	void fail(std::string &msg);
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);

@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(oberon0c)
 
 SET(CMAKE_CXX_COMPILER clang++)
-SET(CMAKE_CXX_FLAGS " -c -Wall  -std=c++17")
+SET(CMAKE_CXX_FLAGS "-Wall -Wpedantic") #-fsanitize=address -fsanitize=memory
 
 set(CMAKE_CXX_STANDARD 17)
 

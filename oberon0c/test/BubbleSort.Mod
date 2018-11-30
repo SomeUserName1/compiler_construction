@@ -3,13 +3,19 @@ MODULE BubbleSort;
 
 (* Length of the array to be sorted. *)
 CONST Dim = 2 * 10;
+      Dim1 = 3 * 10;
+      Dim2 = 4 * 10;
 
 (* Record definition for a two-dimensional point. *)
 TYPE Point2D = RECORD x, y: INTEGER END;
+     Point3D = RECORD x, y, z: INTEGER END;
+     Point4D = RECORD w, x, y, z: INTEGER END;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;
     p: Point2D;
+    c: ARRAY Dim1 OF INTEGER;
+    d: Point3D;
 
 (* Initializes the array. *)
 PROCEDURE Init();

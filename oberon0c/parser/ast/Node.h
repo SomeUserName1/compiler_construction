@@ -8,7 +8,7 @@
 #define OBERON0C_AST_H
 
 
-#include <list>
+#include <vector>
 #include <string>
 #include <ostream>
 #include "../../util/Logger.h"
@@ -16,7 +16,7 @@
 enum class NodeType : char {
 	module, declarations, const_declarations,
 	type_declarations, var_declarations,
-	procedure_declaration, identifier, binary_op,
+	procedure_declaration, identifier, number, binary_op,
 	expression, simple_expression, term, factor, record_type,
 	array_type, field_list, ident_list, procedure_heading,
 	procedure_body, formal_parameters, fp_section, statement_sequence,
@@ -24,12 +24,14 @@ enum class NodeType : char {
 	selector, assignment, procedure_call
 };
 
+std::ostream& operator<<(std::ostream &stream, const NodeType &type);
+
 class Node {
 
 private:
     NodeType nodeType_;
     FilePos pos_;
-	std::list<Node> childs_;
+	std::vector<Node> children_;
 	std::string value_;
 
 public:
@@ -40,7 +42,8 @@ public:
     const NodeType getNodeType() const;
     const FilePos getFilePos() const;
 
-    virtual void print(std::ostream &stream);
+    virtual void print(std::ostream &stream) const;
+    virtual void printChildren(std::ostream &stream, Node node) const;
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 	
 	void addChild(Node node);
