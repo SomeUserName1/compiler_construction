@@ -1,5 +1,5 @@
 (* Implementation of the Bubble Sort algorithm. *)
-MODULE BubbleSort;
+MOULE BubbleSort;
 
 (* Length of the array to be sorted. *)
 CONST Dim = 2 * 10;

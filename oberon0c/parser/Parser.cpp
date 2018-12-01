@@ -520,7 +520,7 @@ const Node* Parser::selector()
 void Parser::fail(std::string &msg) {
     std::stringstream ss;
     ss << " got " << *word << std::endl;
-    msg = msg + ss.str();
+    msg = msg + "," + ss.str();
 
 	logger_->error(word->getPosition(), msg);
 	throw  std::invalid_argument("You failed!" + msg);
