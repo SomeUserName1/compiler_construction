@@ -54,6 +54,7 @@ private:
 	const Node* A();
 
 	//Terminals
+	void module_t();
 	void semicolon_t();
 	void comma_t();
 	void begin_t();

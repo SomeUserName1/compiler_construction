@@ -40,14 +40,8 @@ const Node* Parser::ident() {
 }
 
 const Node* Parser::module() {
-
-	word = scanner_->nextToken();
-	if (word->getType() != TokenType::kw_module) {
-	    std::string s = std::string("Expected module declaration. module()");
-		fail(s);
-	}
-
 	// Module declaration
+	module_t();
 	Node* moduleNode = new Node(NodeType::module, word->getPosition());
 	const Node* identifier = ident();
 	moduleNode->addChild(*identifier);
@@ -530,6 +524,12 @@ void Parser::fail(std::string &msg) {
 
 	logger_->error(word->getPosition(), msg);
 	throw  std::invalid_argument("You failed!" + msg);
+}
+
+void Parser::module_t()
+{
+	std::string s = std::string("\"MODULE\" expected");
+	decideToken(TokenType::kw_module, s);
 }
 
 void Parser::semicolon_t() {
