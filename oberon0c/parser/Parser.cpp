@@ -517,151 +517,6 @@ const Node* Parser::selector()
 	return node;
 }
 
-void Parser::fail(std::string &msg) {
-    std::stringstream ss;
-    ss << " got " << *word << std::endl;
-    msg = msg + "," + ss.str();
-
-	logger_->error(word->getPosition(), msg);
-	throw  std::invalid_argument("You failed!" + msg);
-}
-
-void Parser::module_t()
-{
-	std::string s = std::string("\"MODULE\" expected");
-	decideToken(TokenType::kw_module, s);
-}
-
-void Parser::semicolon_t() {
-    std:: string s = std::string("semicolon expected");
-	decideToken(TokenType::semicolon, s);
-}
-
-void Parser::comma_t() {
-    std::string s = std::string("comma expected");
-	decideToken(TokenType::comma, s);
-}
-
-void Parser::begin_t() {
-    std::string s = std::string("semicolon expected");
-	decideToken(TokenType::kw_begin, s);
-}
-
-void Parser::end_t() {
-    std::string s =  std::string("End expected end_t()");
-	decideToken(TokenType::kw_end, s);
-}
-
-void Parser::point_t() {
-    std::string s = std::string("\".\" expected");
-	decideToken(TokenType::period, s);
-}
-
-void Parser::equals_symbol_t() {
-    std::string s = std::string("Expected assignment \"=\"");
-	decideToken(TokenType::op_eq, s);
-}
-
-void Parser::double_colon_t() {
-    std::string s = std::string("Expected \":\"");
-	decideToken(TokenType::colon, s);
-}
-
-void Parser::lparen_t() {
-    std::string s = std::string("Expected \"(\"");
-	decideToken(TokenType::lparen, s);
-}
-
-void Parser::rparen_t() {
-    std::string s = std::string("Expected \")\"");
-	decideToken(TokenType::rparen, s);
-}
-
-void Parser::lbrack_t() {
-    std::string s = std::string("Expected \"[\"");
-	decideToken(TokenType::lbrack, s);
-}
-
-void Parser::rbrack_t() {
-    std::string s = std::string("Expected \"]\"");
-	decideToken(TokenType::rbrack, s);
-}
-
-void Parser::not_t() {
-    std::string s = std::string("Expected \"]\"");
-	decideToken(TokenType::op_not, s);
-}
-
-void Parser::array_t() {
-    std::string s = std::string("Expected ARRAY keyword");
-	decideToken(TokenType::kw_array, s);
-}
-
-void Parser::of_t() {
-    std::string s = std::string("Expected OF keyword");
-	decideToken(TokenType::kw_of, s);
-}
-
-void Parser::record_t() {
-    std::string s = std::string("Expected RECORD keyword");
-	decideToken(TokenType::kw_record, s);
-}
-
-void Parser::procedure_t() {
-    std::string s = std::string("Expected PROCEDURE keyword");
-	decideToken(TokenType::kw_procedure, s);
-}
-
-void Parser::const_t() {
-    std::string s = std::string("Expected CONST keyword");
-	decideToken(TokenType::kw_const, s);
-}
-
-void Parser::type_t() {
-    std::string s = std::string("Expected TYPE keyword");
-	decideToken(TokenType::kw_type, s);
-}
-
-void Parser::var_t() {
-    std::string s = std::string("Expected VAR keyword");
-	decideToken(TokenType::kw_var, s);
-}
-
-void Parser::becomes_t() {
-    std::string s = std::string("Expected \":=\" operator");
-	decideToken(TokenType::op_becomes, s);
-}
-
-void Parser::if_t() {
-    std::string s = std::string("Expected IF keyword");
-	decideToken(TokenType::kw_if, s);
-}
-
-void Parser::then_t() {
-    std::string s = std::string("Expected THEN keyword");
-	decideToken(TokenType::kw_then, s);
-}
-
-void Parser::else_t() {
-    std::string s = std::string("Expected ELSE keyword");
-	decideToken(TokenType::kw_else, s);
-}
-
-void Parser::elseif_t() {
-    std::string s = std::string("Expected ELSEIF keyword");
-	decideToken(TokenType::kw_elsif, s);
-}
-
-void Parser::while_t() {
-    std::string s = std::string("Expected WHILE keyword");
-	decideToken(TokenType::kw_while, s);
-}
-
-void Parser::do_t() {
-    std::string s =  std::string("Expected DO keyword");
-	decideToken(TokenType::kw_do, s);
-}
-
 const Node* Parser::binary_op() {
 	word = scanner_->nextToken();
 
@@ -710,6 +565,151 @@ const Node* Parser::binary_op() {
 	fail(s);
 
 	return nullptr;
+}
+
+void Parser::fail(std::string &msg) {
+    std::stringstream ss;
+    ss << "\"" << *word << "\"" << std::endl;
+    msg = msg + " expected but got " + ss.str();
+
+	logger_->error(word->getPosition(), msg);
+	throw  std::invalid_argument("You failed!" + msg);
+}
+
+void Parser::module_t()
+{
+	std::string s = std::string("\"MODULE\"");
+	decideToken(TokenType::kw_module, s);
+}
+
+void Parser::semicolon_t() {
+    std:: string s = std::string("semicolon");
+	decideToken(TokenType::semicolon, s);
+}
+
+void Parser::comma_t() {
+    std::string s = std::string("comma");
+	decideToken(TokenType::comma, s);
+}
+
+void Parser::begin_t() {
+    std::string s = std::string("\"BEGIN\"");
+	decideToken(TokenType::kw_begin, s);
+}
+
+void Parser::end_t() {
+    std::string s =  std::string("\"END\"");
+	decideToken(TokenType::kw_end, s);
+}
+
+void Parser::point_t() {
+    std::string s = std::string("\".\"");
+	decideToken(TokenType::period, s);
+}
+
+void Parser::equals_symbol_t() {
+    std::string s = std::string("\"=\"");
+	decideToken(TokenType::op_eq, s);
+}
+
+void Parser::double_colon_t() {
+    std::string s = std::string("\":\"");
+	decideToken(TokenType::colon, s);
+}
+
+void Parser::lparen_t() {
+    std::string s = std::string("\"(\"");
+	decideToken(TokenType::lparen, s);
+}
+
+void Parser::rparen_t() {
+    std::string s = std::string("\")\"");
+	decideToken(TokenType::rparen, s);
+}
+
+void Parser::lbrack_t() {
+    std::string s = std::string("\"[\"");
+	decideToken(TokenType::lbrack, s);
+}
+
+void Parser::rbrack_t() {
+    std::string s = std::string("\"]\"");
+	decideToken(TokenType::rbrack, s);
+}
+
+void Parser::not_t() {
+    std::string s = std::string("\"]\"");
+	decideToken(TokenType::op_not, s);
+}
+
+void Parser::array_t() {
+    std::string s = std::string("\"ARRAY\"");
+	decideToken(TokenType::kw_array, s);
+}
+
+void Parser::of_t() {
+    std::string s = std::string("\"OF\"");
+	decideToken(TokenType::kw_of, s);
+}
+
+void Parser::record_t() {
+    std::string s = std::string("\"RECORD\"");
+	decideToken(TokenType::kw_record, s);
+}
+
+void Parser::procedure_t() {
+    std::string s = std::string("\"PROCEDURE\"");
+	decideToken(TokenType::kw_procedure, s);
+}
+
+void Parser::const_t() {
+    std::string s = std::string("\"CONST\"");
+	decideToken(TokenType::kw_const, s);
+}
+
+void Parser::type_t() {
+    std::string s = std::string("\"TYPE\"");
+	decideToken(TokenType::kw_type, s);
+}
+
+void Parser::var_t() {
+    std::string s = std::string("\"VAR\"");
+	decideToken(TokenType::kw_var, s);
+}
+
+void Parser::becomes_t() {
+    std::string s = std::string("\":=\"");
+	decideToken(TokenType::op_becomes, s);
+}
+
+void Parser::if_t() {
+    std::string s = std::string("\"IF\"");
+	decideToken(TokenType::kw_if, s);
+}
+
+void Parser::then_t() {
+    std::string s = std::string("\"THEN\"");
+	decideToken(TokenType::kw_then, s);
+}
+
+void Parser::else_t() {
+    std::string s = std::string("\"ELSE\"");
+	decideToken(TokenType::kw_else, s);
+}
+
+void Parser::elseif_t() {
+    std::string s = std::string("\"ELSEIF\"");
+	decideToken(TokenType::kw_elsif, s);
+}
+
+void Parser::while_t() {
+    std::string s = std::string("\"WHILE\"");
+	decideToken(TokenType::kw_while, s);
+}
+
+void Parser::do_t() {
+    std::string s =  std::string("\"DO\"");
+	decideToken(TokenType::kw_do, s);
 }
 
 void Parser::decideToken(TokenType type, std::string &errormsg) {
