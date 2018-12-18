@@ -23,6 +23,8 @@ set(scanner
 set(parser
 		parser/Parser.cpp
 		parser/ast/Node.cpp
+		parser/st/SymbolTable.cpp
+		parser/st/Symbol.cpp
 		)
 
 add_executable(oberon0c
