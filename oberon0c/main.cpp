@@ -31,7 +31,8 @@ int main(const int argc, const char *argv[]) {
 
 	// Testsection
 	auto test = std::make_unique<SymbolTable>();
-	Symbol * symbol = test->getSymbol("lala");
+	std::string identifier = std::string("lala");
+	Symbol * symbol = test->getSymbol(&identifier);
 	std::string * name = symbol->getName();
 	logger->info(filename, *name);
 
