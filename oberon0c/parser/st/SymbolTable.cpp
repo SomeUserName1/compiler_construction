@@ -8,7 +8,7 @@ SymbolTable::SymbolTable() {
 	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::variable));
 	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::variable));
 	//this->insert(Symbol("ARRAY", std::vector<Symbol *>(), SymbolType::variable));
-	this->insert(Symbol("CONSTANT", std::vector<Symbol *>(), SymbolType::variable)); // Kann vielleicht auch eher raus
+	this->insert(Symbol("CONSTANT", std::vector<Symbol *>(), SymbolType::variable)); // Kann vielleicht auch raus
 }
 
 // Creates a SymbolTable for a child scope of another lexical scope.
@@ -50,12 +50,13 @@ int SymbolTable::insert(Symbol symbol) {
 	auto name = symbol.getName();
 	auto elem = symbolTable_.find(*name);
 
-	if (elem == symbolTable_.end()) {
+	if (elem != symbolTable_.end()) {
 		// Symbol does already exist.
 		return 1;
 	}
 
-	symbolTable_[*name] = symbol;
+	//symbolTable_[*name] = symbol;
+	symbolTable_.insert(std::unordered_map< std::string, Symbol>::value_type(*name, symbol));
 	return 0;
 }
 

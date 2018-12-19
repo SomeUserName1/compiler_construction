@@ -52,7 +52,7 @@ const Node* Parser::module() {
 	const Node* identifier = ident();
 	moduleNode->addChild(*identifier);
 	semicolon_t();
-	if (symbolTables_.back().insert(Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module))) {
+	if (currentTable_->insert(Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module))) {
 		failSymbol(std::string("Identifier does already exist in this scope"));
 	}
 
@@ -127,7 +127,7 @@ const Node* Parser::const_declarations() {
 	// Add processed constant to the symbol table
 	Symbol * symbol = currentTable_->getSymbol(&std::string("INTEGER"));
 	std::vector<Symbol*> types;
-	types[0] = symbol;
+	types.push_back(symbol);
 	currentTable_->insert(Symbol(identifier->getValue(), types, SymbolType::constant));
 
 	return node;
