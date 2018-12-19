@@ -152,7 +152,7 @@ const Node* Parser::const_declarations() {
 	Symbol * symbol = currentTable_->getSymbol(&std::string("INTEGER"));
 	std::vector<Symbol*> types;
 	types[0] = symbol;
-	currentTable_->insert(Symbol(identifier->getValue, types, SymbolType::constant));
+	currentTable_->insert(Symbol(identifier->getValue(), types, SymbolType::constant));
 
 	return node;
 }
@@ -212,7 +212,7 @@ const Node* Parser::expression() {
 }
 
 const Node* Parser::simple_expression() {
-	Node* node = new Node(NodeType::simple_expression, word->getPosition());
+	Node* node = new Node(NodeType::simple_expression, word->getPosition(), currentTable_);
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::op_plus || type == TokenType::op_minus) {
@@ -234,7 +234,7 @@ const Node* Parser::simple_expression() {
 }
 
 const Node* Parser::term() {
-	Node* node = new Node(NodeType::term, word->getPosition());
+	Node* node = new Node(NodeType::term, word->getPosition(), currentTable_);
 
 	node->addChild(*factor());
 
@@ -258,14 +258,14 @@ const Node* Parser::number() {
         fail(s);
     }
     auto* number = (NumberToken*) &*word;
-    Node* node = new Node(NodeType::number, word->getPosition(), std::to_string(number->getValue()));
+    Node* node = new Node(NodeType::number, word->getPosition(), std::to_string(number->getValue()), currentTable_);
 
     return node;
 }
 
 
 const Node* Parser::factor() {
-	Node* node = new Node(NodeType::factor, word->getPosition());
+	Node* node = new Node(NodeType::factor, word->getPosition(), currentTable_);
 
 
 	TokenType type = scanner_->peekToken()->getType();
@@ -295,7 +295,7 @@ const Node* Parser::factor() {
 }
 
 const Node* Parser::type() {
-	Node* node = new Node(NodeType::type, word->getPosition());
+	Node* node = new Node(NodeType::type, word->getPosition(), currentTable_);
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
@@ -316,7 +316,7 @@ const Node* Parser::type() {
 }
 
 const Node* Parser::array_type() {
-	Node* node = new Node(NodeType::array_type, word->getPosition());
+	Node* node = new Node(NodeType::array_type, word->getPosition(), currentTable_);
 
 	array_t();
 	node->addChild(*expression());
@@ -327,7 +327,7 @@ const Node* Parser::array_type() {
 }
 
 const Node* Parser::record_type() {
-	Node* node = new Node(NodeType::record_type, word->getPosition());
+	Node* node = new Node(NodeType::record_type, word->getPosition(), currentTable_);
 
 	record_t();
 	node->addChild(*field_list());
@@ -345,7 +345,7 @@ const Node* Parser::record_type() {
 }
 
 const Node* Parser::field_list() {
-	Node* node = new Node(NodeType::field_list, word->getPosition());
+	Node* node = new Node(NodeType::field_list, word->getPosition(), currentTable_);
 
 	TokenType t_type = scanner_->peekToken()->getType();
 	if (t_type == TokenType::const_ident) {
@@ -357,7 +357,7 @@ const Node* Parser::field_list() {
 }
 
 const Node* Parser::ident_list() {
-	Node* node = new Node(NodeType::ident_list, word->getPosition());
+	Node* node = new Node(NodeType::ident_list, word->getPosition(), currentTable_);
 
 	node->addChild(*ident());
 
@@ -370,7 +370,7 @@ const Node* Parser::ident_list() {
 }
 
 const Node* Parser::procedure_heading() {
-	Node* node = new Node(NodeType::procedure_heading, word->getPosition());
+	Node* node = new Node(NodeType::procedure_heading, word->getPosition(), currentTable_);
 
 	procedure_t();
 	node->addChild(*ident());
@@ -383,7 +383,7 @@ const Node* Parser::procedure_heading() {
 
 const Node* Parser::procedure_body()
 {
-	Node* node = new Node(NodeType::procedure_body, word->getPosition());
+	Node* node = new Node(NodeType::procedure_body, word->getPosition(), currentTable_);
 
 	node->addChild(*declarations());
 
@@ -400,7 +400,7 @@ const Node* Parser::procedure_body()
 
 const Node* Parser::formal_parameters()
 {
-	Node* node = new Node(NodeType::formal_parameters, word->getPosition());
+	Node* node = new Node(NodeType::formal_parameters, word->getPosition(), currentTable_);
 
 	lparen_t();
 
@@ -419,7 +419,7 @@ const Node* Parser::formal_parameters()
 
 const Node* Parser::fp_section()
 {
-	Node* node = new Node(NodeType::fp_section, word->getPosition());
+	Node* node = new Node(NodeType::fp_section, word->getPosition(), currentTable_);
 
 	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
 		var_t();
@@ -433,7 +433,7 @@ const Node* Parser::fp_section()
 
 const Node* Parser::statement_sequence()
 {
-	Node* node = new Node(NodeType::statement_sequence, word->getPosition());
+	Node* node = new Node(NodeType::statement_sequence, word->getPosition(), currentTable_);
 
 	node->addChild(*statement());
 	while (scanner_->peekToken()->getType() == TokenType::semicolon) {
@@ -445,7 +445,7 @@ const Node* Parser::statement_sequence()
 
 const Node* Parser::statement()
 { //TODO
-	Node* node = new Node(NodeType::statement, word->getPosition());
+	Node* node = new Node(NodeType::statement, word->getPosition(), currentTable_);
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
@@ -472,14 +472,14 @@ const Node* Parser::A()
 	const Node* select = selector();
 
 	if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
-		node = new Node(NodeType::assignment, word->getPosition());
+		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
 		node->addChild(*identifier);
 		node->addChild(*select);
 		becomes_t();
 		node->addChild(*expression());
 	}
 	else {
-		node = new Node(NodeType::procedure_call, word->getPosition());
+		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
 		node->addChild(*identifier);
 		node->addChild(*select);
 
@@ -493,7 +493,7 @@ const Node* Parser::A()
 
 const Node* Parser::if_statement()
 {
-	Node* node = new Node(NodeType::if_statement, word->getPosition());
+	Node* node = new Node(NodeType::if_statement, word->getPosition(), currentTable_);
 
 	if_t();
 	node->addChild(*expression());
@@ -517,7 +517,7 @@ const Node* Parser::if_statement()
 
 const Node* Parser::while_statement()
 {
-	Node* node = new Node(NodeType::while_statement, word->getPosition());
+	Node* node = new Node(NodeType::while_statement, word->getPosition(), currentTable_);
 
 	while_t();
 	node->addChild(*expression());
@@ -530,7 +530,7 @@ const Node* Parser::while_statement()
 
 const Node* Parser::actual_parameters()
 {
-	Node* node = new Node(NodeType::acutal_parameters, word->getPosition());
+	Node* node = new Node(NodeType::acutal_parameters, word->getPosition(), currentTable_);
 
 	lparen_t();
 	if (scanner_->peekToken()->getType() != TokenType::rparen) {
@@ -547,7 +547,7 @@ const Node* Parser::actual_parameters()
 
 const Node* Parser::selector()
 {
-	Node* node = new Node(NodeType::selector, word->getPosition());
+	Node* node = new Node(NodeType::selector, word->getPosition(), currentTable_);
 
 	while (scanner_->peekToken()->getType() == TokenType::period
 			|| scanner_->peekToken()->getType() == TokenType::lbrack) {
@@ -570,43 +570,43 @@ const Node* Parser::binary_op() {
 
 	TokenType type = word->getType();
 	if (type == TokenType::op_eq) {
-		return new Node(NodeType::binary_op, word->getPosition(), "=");
+		return new Node(NodeType::binary_op, word->getPosition(), "=", currentTable_);
 	}
 	else if (type == TokenType::op_neq) {
-		return new Node(NodeType::binary_op, word->getPosition(), "#");
+		return new Node(NodeType::binary_op, word->getPosition(), "#", currentTable_);
 	}
 	else if (type == TokenType::op_lt) {
-		return new Node(NodeType::binary_op, word->getPosition(), "<");
+		return new Node(NodeType::binary_op, word->getPosition(), "<", currentTable_);
 	}
 	else if (type == TokenType::op_leq) {
-		return new Node(NodeType::binary_op, word->getPosition(), "<=");
+		return new Node(NodeType::binary_op, word->getPosition(), "<=", currentTable_);
 	}
 	else if (type == TokenType::op_gt) {
-		return new Node(NodeType::binary_op, word->getPosition(), ">");
+		return new Node(NodeType::binary_op, word->getPosition(), ">", currentTable_);
 	}
 	else if (type == TokenType::op_geq) {
-		return new Node(NodeType::binary_op, word->getPosition(), ">=");
+		return new Node(NodeType::binary_op, word->getPosition(), ">=", currentTable_);
 	}
 	else if (type == TokenType::op_plus) {
-		return new Node(NodeType::binary_op, word->getPosition(), "+");
+		return new Node(NodeType::binary_op, word->getPosition(), "+", currentTable_);
 	}
 	else if (type == TokenType::op_minus) {
-		return new Node(NodeType::binary_op, word->getPosition(), "-");
+		return new Node(NodeType::binary_op, word->getPosition(), "-", currentTable_);
 	}
 	else if (type == TokenType::op_or) {
-		return new Node(NodeType::binary_op, word->getPosition(), "OR");
+		return new Node(NodeType::binary_op, word->getPosition(), "OR", currentTable_);
 	}
 	else if (type == TokenType::op_times) {
-		return new Node(NodeType::binary_op, word->getPosition(), "*");
+		return new Node(NodeType::binary_op, word->getPosition(), "*", currentTable_);
 	}
 	else if (type == TokenType::op_div) {
-		return new Node(NodeType::binary_op, word->getPosition(), "DIV");
+		return new Node(NodeType::binary_op, word->getPosition(), "DIV", currentTable_);
 	}
 	else if (type == TokenType::op_mod) {
-		return new Node(NodeType::binary_op, word->getPosition(), "MOD");
+		return new Node(NodeType::binary_op, word->getPosition(), "MOD", currentTable_);
 	}
 	else if (type == TokenType::op_and) {
-		return new Node(NodeType::binary_op, word->getPosition(), "&");
+		return new Node(NodeType::binary_op, word->getPosition(), "&", currentTable_);
 	}
 
 	std::string s = std::string("Expected binary operator in method binary op");
