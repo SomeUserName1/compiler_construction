@@ -20,6 +20,7 @@ private:
 	std::unique_ptr<const Token> word;
 
 	std::vector<SymbolTable> symbolTables_;
+	SymbolTable * currentTable_;
 
 
 

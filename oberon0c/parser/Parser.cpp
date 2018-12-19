@@ -34,7 +34,7 @@ const Node* Parser::ident() {
 		fail(s);
 	}
     auto* identifier = (IdentToken*) &*word;
-    Node* node = new Node(NodeType::identifier, word->getPosition(), identifier->getValue());
+    Node* node = new Node(NodeType::identifier, word->getPosition(), identifier->getValue(), currentTable_);
 	
 	return node;
 }
@@ -42,14 +42,17 @@ const Node* Parser::ident() {
 const Node* Parser::module() {
 	//Adding the first scope SymbolTable
 	symbolTables_.push_back(SymbolTable());
+	currentTable_ = &symbolTables_.back();
 
 	// Module declaration
 	module_t();
-	Node* moduleNode = new Node(NodeType::module, word->getPosition(), &symbolTables_.back);
+	Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
 	const Node* identifier = ident();
 	moduleNode->addChild(*identifier);
 	semicolon_t();
-	symbolTables_.back->insert(Symbol(identifier->getValue()));
+	if (symbolTables_.back().insert(Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module))) {
+		fail(std::string("Identifier does already exist in this scope"));
+	}
 
 	// Declarations
 	moduleNode->addChild(*declarations());
@@ -68,11 +71,12 @@ const Node* Parser::module() {
 	}
 	point_t();
 
+	currentTable_ = nullptr;
 	return moduleNode;
 }
 
 const Node* Parser::declarations() {
-	Node* node = new Node(NodeType::declarations, word->getPosition());
+	Node* node = new Node(NodeType::declarations, word->getPosition(), currentTable_);
 
 	// CONSTs
 	if (scanner_->peekToken()->getType() == TokenType::kw_const) {
@@ -109,18 +113,26 @@ const Node* Parser::declarations() {
 }
 
 const Node* Parser::const_declarations() {
-	Node* node = new Node(NodeType::const_declarations, word->getPosition());
+	Node* node = new Node(NodeType::const_declarations, word->getPosition(), currentTable_);
 
-    node->addChild(*ident());
+	// Processing one constant
+	const Node * identifier = ident();
+    node->addChild(*identifier);
 	equals_symbol_t();
 	node->addChild(*expression());
 	semicolon_t();
+
+	// Add processed constant to the symbol table
+	Symbol * symbol = currentTable_->getSymbol(&std::string("INTEGER"));
+	std::vector<Symbol*> types;
+	types[0] = symbol;
+	currentTable_->insert(Symbol(identifier->getValue, types, SymbolType::constant));
 
 	return node;
 }
 
 const Node* Parser::type_declarations() {
-	Node* node = new Node(NodeType::type_declarations, word->getPosition());
+	Node* node = new Node(NodeType::type_declarations, word->getPosition(), currentTable_);
 
     node->addChild(*ident());
 	equals_symbol_t();
@@ -131,7 +143,7 @@ const Node* Parser::type_declarations() {
 }
 
 const Node* Parser::var_declarations() {
-	Node* node = new Node(NodeType::var_declarations, word->getPosition());
+	Node* node = new Node(NodeType::var_declarations, word->getPosition(), currentTable_);
 
 	ident_list();
 	double_colon_t();
@@ -142,7 +154,7 @@ const Node* Parser::var_declarations() {
 }
 
 const Node* Parser::procedure_declaration() {
-	Node* node = new Node(NodeType::procedure_declaration, word->getPosition());
+	Node* node = new Node(NodeType::procedure_declaration, word->getPosition(), currentTable_);
 
 	node->addChild(*procedure_heading());
 	semicolon_t();
@@ -152,7 +164,7 @@ const Node* Parser::procedure_declaration() {
 }
 
 const Node* Parser::expression() {
-	Node* node = new Node(NodeType::expression, word->getPosition());
+	Node* node = new Node(NodeType::expression, word->getPosition(), currentTable_);
 
 	node->addChild(*simple_expression());
 

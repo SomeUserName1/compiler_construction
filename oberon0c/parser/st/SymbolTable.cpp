@@ -1,10 +1,17 @@
 #include "SymbolTable.h"
 
+// Creates a SymbolTable for the outermost lexical scope
 SymbolTable::SymbolTable() {
 	level_ = 0;
 	parent_ = nullptr;
+
+	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::variable));
+	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::variable));
+	//this->insert(Symbol("ARRAY", std::vector<Symbol *>(), SymbolType::variable));
+	this->insert(Symbol("CONSTANT", std::vector<Symbol *>(), SymbolType::variable)); // Kann vielleicht auch eher raus
 }
 
+// Creates a SymbolTable for a child scope of another lexical scope.
 SymbolTable::SymbolTable(SymbolTable * parent) {
 	level_ = parent->getLevel() + 1;
 	parent_ = parent;
@@ -41,7 +48,9 @@ Symbol * SymbolTable::getSymbol(std::string * ident) {
 
 int SymbolTable::insert(Symbol symbol) {
 	auto name = symbol.getName();
-	if (getSymbol(name) != nullptr) {
+	auto elem = symbolTable_.find(*name);
+
+	if (elem == symbolTable_.end()) {
 		// Symbol does already exist.
 		return 1;
 	}

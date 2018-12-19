@@ -8,7 +8,7 @@ CONST Dim = 2 * 10;
 
 (* Record definition for a two-dimensional point. *)
 TYPE Point2D = RECORD x, y: INTEGER END;
-     Point3D = RECORD x, y, z: INTEGER END;
+     Point3D = RECORD x, y, z: INTEGER; w: Point2D END;
      Point4D = RECORD w, x, y, z: INTEGER END;
 
 (* Array to be sorted. *)
