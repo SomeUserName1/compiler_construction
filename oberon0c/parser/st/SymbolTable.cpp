@@ -5,7 +5,7 @@ SymbolTable::SymbolTable()
 }
 
 Symbol * SymbolTable::getSymbol(std::string * ident) {
-	auto elem = symbolTable_.find(ident);
+	auto elem = symbolTable_.find(*ident);
 
 	if (elem == symbolTable_.end()) {
 		return nullptr;
@@ -19,6 +19,7 @@ int SymbolTable::insert(Symbol symbol)
 {
 	auto name = symbol.getName();
 	if (getSymbol(name) != nullptr) {
+		// Symbol does already exist.
 		return 1;
 	}
 
