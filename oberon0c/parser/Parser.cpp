@@ -40,12 +40,16 @@ const Node* Parser::ident() {
 }
 
 const Node* Parser::module() {
+	//Adding the first scope SymbolTable
+	symbolTables_.push_back(SymbolTable());
+
 	// Module declaration
 	module_t();
-	Node* moduleNode = new Node(NodeType::module, word->getPosition());
+	Node* moduleNode = new Node(NodeType::module, word->getPosition(), &symbolTables_.back);
 	const Node* identifier = ident();
 	moduleNode->addChild(*identifier);
 	semicolon_t();
+	symbolTables_.back->insert(Symbol(identifier->getValue()));
 
 	// Declarations
 	moduleNode->addChild(*declarations());

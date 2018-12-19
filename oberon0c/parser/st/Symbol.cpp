@@ -3,11 +3,12 @@
 
 Symbol::Symbol()
 {
-	name_ = "default";
+	throw  std::runtime_error("This constructor is only for the compiler not to whine.");
 }
 
-Symbol::Symbol(std::string name) {
+Symbol::Symbol(std::string name, std::vector<Type> types) {
 	name_ = name;
+	types_ = types;
 }
 
 std::string * Symbol::getName() {
