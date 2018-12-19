@@ -3,9 +3,11 @@
 class Symbol {
 
 private:
-	std::string *name_;
+	std::string name_;
 
 public:
-	explicit Symbol(std::string *name);
-	virtual ~Symbol();
+	explicit Symbol();
+	explicit Symbol(std::string name);
+
+	std::string * getName();
 };
