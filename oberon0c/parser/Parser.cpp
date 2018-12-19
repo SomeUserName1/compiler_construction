@@ -295,7 +295,7 @@ const Node* Parser::factor() {
 }
 
 const Node* Parser::type() {
-	Node* node = new Node(NodeType::factor, word->getPosition());
+	Node* node = new Node(NodeType::type, word->getPosition());
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
