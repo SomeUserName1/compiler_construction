@@ -89,7 +89,8 @@ private:
 	void decideToken(TokenType type, std::string &errormsg);
 
 	// Generic error handler
-	void fail(std::string &msg);
+	void failToken(std::string &msg);
+	void failSymbol(std::string &msg);
 
 	void fillSymbolTable(const Node * tree);
 

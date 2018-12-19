@@ -19,7 +19,6 @@ Parser::~Parser() = default;
 
 const std::unique_ptr<const Node> Parser::parse() {
 	const Node* tree = module();
-//	fillSymbolTable(tree);
 
     std::unique_ptr<const Node> parse_tree(tree);
 	tree = nullptr;
@@ -29,35 +28,12 @@ const std::unique_ptr<const Node> Parser::parse() {
     return parse_tree;
 }
 
-/*void Parser::fillSymbolTable(const Node * tree) {
-	switch (tree->getNodeType()) {
-		case NodeType::const_declarations:
-			
-			break;
-		case NodeType::type_declarations:
-
-			break;
-		case NodeType::var_declarations:
-
-			break;
-		case NodeType::procedure_declaration:
-
-			break;
-		case NodeType::array_type:
-
-			break;
-		case NodeType::field_list:
-
-			break;
-	}
-}*/
-
 const Node* Parser::ident() {
 	word = scanner_->nextToken();
 
 	if (word->getType() != TokenType::const_ident) {
         std::string s = std::string("Expected identifier. ident()");
-		fail(s);
+		failToken(s);
 	}
     auto* identifier = (IdentToken*) &*word;
     Node* node = new Node(NodeType::identifier, word->getPosition(), identifier->getValue(), currentTable_);
@@ -77,7 +53,7 @@ const Node* Parser::module() {
 	moduleNode->addChild(*identifier);
 	semicolon_t();
 	if (symbolTables_.back().insert(Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module))) {
-		fail(std::string("Identifier does already exist in this scope"));
+		failSymbol(std::string("Identifier does already exist in this scope"));
 	}
 
 	// Declarations
@@ -93,7 +69,7 @@ const Node* Parser::module() {
 	end_t();
 	if (identifier->getValue() != ident()->getValue()) {
 	    std::string s = std::string("Expected module identifier module()");
-		fail(s);
+		failToken(s);
 	}
 	point_t();
 
@@ -255,7 +231,7 @@ const Node* Parser::number() {
 
     if (word->getType() != TokenType::const_number) {
         std::string s = std::string("Expected number.");
-        fail(s);
+        failToken(s);
     }
     auto* number = (NumberToken*) &*word;
     Node* node = new Node(NodeType::number, word->getPosition(), std::to_string(number->getValue()), currentTable_);
@@ -288,7 +264,7 @@ const Node* Parser::factor() {
 	else {
 		word = scanner_->nextToken();
 		std::string s = std::string("Expected a factor but was something else factor()");
-		fail(s);
+		failToken(s);
 	}
 
 	return node;
@@ -309,7 +285,7 @@ const Node* Parser::type() {
 	}
 	else {
 	    std::string s = std::string("Unknown error (expected type) type()");
-		fail(s);
+		failToken(s);
 	}
 
 	return node;
@@ -610,18 +586,23 @@ const Node* Parser::binary_op() {
 	}
 
 	std::string s = std::string("Expected binary operator in method binary op");
-	fail(s);
+	failToken(s);
 
 	return nullptr;
 }
 
-void Parser::fail(std::string &msg) {
+void Parser::failToken(std::string &msg) {
     std::stringstream ss;
     ss << "\"" << *word << "\"" << std::endl;
     msg = msg + " expected but got " + ss.str();
 
 	logger_->error(word->getPosition(), msg);
 	throw  std::invalid_argument("You failed!" + msg);
+}
+
+void Parser::failSymbol(std::string &msg) {
+	logger_->error(word->getPosition(), msg);
+	throw std::invalid_argument("You failed!" + msg);
 }
 
 void Parser::module_t()
@@ -763,6 +744,6 @@ void Parser::do_t() {
 void Parser::decideToken(TokenType type, std::string &errormsg) {
 	word = scanner_->nextToken();
 	if (word->getType() != type) {
-		fail(errormsg);
+		failToken(errormsg);
 	}
 }
