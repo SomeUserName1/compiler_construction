@@ -3,13 +3,14 @@
 
 #include "Node.h"
 
-Node::Node(NodeType nodeType, FilePos pos) : nodeType_(nodeType), pos_(std::move(pos)) {}
+Node::Node(NodeType nodeType, FilePos pos, SymbolTable * symbolTable) : nodeType_(nodeType), pos_(std::move(pos)), symbolTable_(symbolTable) {}
 
-Node::Node(NodeType nodeType, FilePos pos, std::string value)
+Node::Node(NodeType nodeType, FilePos pos, std::string value, SymbolTable * symbolTable)
 {
 	nodeType_ = nodeType;
 	pos_ = std::move(pos);
 	value_ = std::move(value);
+	symbolTable_ = symbolTable;
 }
 
 const NodeType Node::getNodeType() const

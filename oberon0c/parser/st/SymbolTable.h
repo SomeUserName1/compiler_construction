@@ -1,3 +1,5 @@
+#ifndef OBERON0C_ST_H
+#define OBERON0C_ST_H
 
 #include <unordered_map>
 #include "Symbol.h"
@@ -20,3 +22,4 @@ public:
 	Symbol * getSymbol(std::string * ident);
 	int insert(Symbol symbol);
 };
+#endif

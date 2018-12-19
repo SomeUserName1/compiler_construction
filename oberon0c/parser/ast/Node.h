@@ -12,6 +12,7 @@
 #include <string>
 #include <ostream>
 #include "../../util/Logger.h"
+#include "../st/SymbolTable.h"
 
 enum class NodeType : char {
 	module, declarations, const_declarations,
@@ -33,12 +34,13 @@ private:
     FilePos pos_;
 	std::vector<Node> children_;
 	std::string value_;
+	SymbolTable * symbolTable_;
 
 	void printTreeRec(std::ostream &stream, int depth) const;
 
 public:
-	explicit Node(NodeType nodeType, FilePos pos);
-	explicit Node(NodeType nodeType, FilePos pos, std::string value);
+	explicit Node(NodeType nodeType, FilePos pos, SymbolTable * symbolTable);
+	explicit Node(NodeType nodeType, FilePos pos, std::string value, SymbolTable * symbolTable);
 	virtual ~Node();
 
     const NodeType getNodeType() const;

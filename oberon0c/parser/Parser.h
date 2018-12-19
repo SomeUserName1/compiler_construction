@@ -5,9 +5,10 @@
 #ifndef OBERON0C_PARSER_H
 #define OBERON0C_PARSER_H
 
-
+#include <vector>
 #include "../scanner/Scanner.h"
 #include "ast/Node.h"
+#include "st/SymbolTable.h"
 
 class Parser
 {
@@ -17,6 +18,8 @@ private:
     Logger *logger_;
 
 	std::unique_ptr<const Token> word;
+
+	std::vector<SymbolTable> symbolTables_;
 
 
 
