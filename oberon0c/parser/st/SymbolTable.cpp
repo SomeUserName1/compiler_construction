@@ -10,6 +10,11 @@ SymbolTable::SymbolTable(SymbolTable * parent) {
 	parent_ = parent;
 }
 
+// Creates a new SymbolTable as a child of the current one.
+SymbolTable SymbolTable::nestedTable() {
+	return SymbolTable(this);
+}
+
 size_t SymbolTable::getLevel() {
 	return level_;
 }

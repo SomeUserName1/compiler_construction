@@ -13,6 +13,8 @@ public:
 	explicit SymbolTable();
 	explicit SymbolTable(SymbolTable * parent);
 
+	SymbolTable nestedTable();
+
 	size_t getLevel();
 
 	Symbol * getSymbol(std::string * ident);
