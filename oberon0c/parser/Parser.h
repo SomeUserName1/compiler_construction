@@ -91,6 +91,8 @@ private:
 	// Generic error handler
 	void fail(std::string &msg);
 
+	void fillSymbolTable(const Node * tree);
+
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
     ~Parser();

@@ -18,13 +18,39 @@ Parser::Parser(Scanner *scanner, Logger *logger) :
 Parser::~Parser() = default;
 
 const std::unique_ptr<const Node> Parser::parse() {
-    std::unique_ptr<const Node>
-    parse_tree(module());
+	const Node* tree = module();
+//	fillSymbolTable(tree);
 
+    std::unique_ptr<const Node> parse_tree(tree);
+	tree = nullptr;
+	   
     std::cout << *parse_tree << std::endl;
 
     return parse_tree;
 }
+
+/*void Parser::fillSymbolTable(const Node * tree) {
+	switch (tree->getNodeType()) {
+		case NodeType::const_declarations:
+			
+			break;
+		case NodeType::type_declarations:
+
+			break;
+		case NodeType::var_declarations:
+
+			break;
+		case NodeType::procedure_declaration:
+
+			break;
+		case NodeType::array_type:
+
+			break;
+		case NodeType::field_list:
+
+			break;
+	}
+}*/
 
 const Node* Parser::ident() {
 	word = scanner_->nextToken();
@@ -134,10 +160,16 @@ const Node* Parser::const_declarations() {
 const Node* Parser::type_declarations() {
 	Node* node = new Node(NodeType::type_declarations, word->getPosition(), currentTable_);
 
-    node->addChild(*ident());
+	// Processing one type
+	const Node * identifier = ident();
+    node->addChild(*identifier);
 	equals_symbol_t();
-	node->addChild(*type());
+	const Node * types = type();
+	node->addChild(*types);
 	semicolon_t();
+
+	// Add processed type to the symbol table
+	
 
 	return node;
 }
