@@ -1,10 +1,11 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.0)
 project(oberon0c)
 
 
-SET(CMAKE_CXX_FLAGS " -c -Wall  -std=c++17")
-#SET(CMAKE_CXX_COMPILER clang++)
-#SET(CMAKE_CXX_FLAGS "-Wall -Wpedantic") #-fsanitize=address -fsanitize=memory
+#SET(CMAKE_CXX_FLAGS " -c -Wall  -std=c++17")
+SET(CMAKE_CXX_COMPILER clang++)
+SET(CMAKE_CXX_FLAGS "-Wall -Wpedantic -std=c++17")
+#-fsanitize=address -fsanitize=memory
 
 set(CMAKE_CXX_STANDARD 17)
 
@@ -22,12 +23,18 @@ set(scanner
 		)
 set(parser
 		parser/Parser.cpp
-		parser/ast/Node.cpp
+        parser/parse_tree/Node.cpp
 		)
+set(ir
+        ir/ast.cpp
+        ir/symbol_table.cpp
+        # op node var node const node
+        # type checker decl checker usage checker statement checker
+        )
 
 add_executable(oberon0c
 		${logger}
 		${scanner}
 		${parser}
         main.cpp
-		)
+        ir/ast.cpp ir/ast.h)

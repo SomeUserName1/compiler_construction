@@ -1,0 +1,10 @@
+Milestone M3: Intermediate Representation
+The third milestone of the compiler construction project comprises three major tasks.
+
+    Implement a symbol table that can handled name scopes as discussed in the course.
+    Design an abstract syntax tree as an intermediate representation to be used by your Oberon-0 compiler.
+    Use the symbol table and AST to check the semantic rules stated in the provided document.
+
+Note: You should annotate your intermediate representation with all information (types of variables, constants, and expressions, static coordinates, etc.) that you discover and derive during the syntactical and semantical checking of the program.
+
+The deliverable of this milestone is a zip-file with your source code, which you submit to me via e-mail no later than January 8, 2019. After submitting the code, I will arrange a meeting with each group, where they will present their implementation and discuss their design choices.
