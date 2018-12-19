@@ -10,5 +10,6 @@ private:
 public:
 	explicit SymbolTable();
 
-	Symbol * getSymbol(std::string ident);
+	Symbol * getSymbol(std::string * ident);
+	int insert(Symbol symbol);
 };

@@ -2,11 +2,9 @@
 
 SymbolTable::SymbolTable()
 {
-	Symbol s = Symbol("lala");
-	symbolTable_["lala"] = s;
 }
 
-Symbol * SymbolTable::getSymbol(std::string ident) {
+Symbol * SymbolTable::getSymbol(std::string * ident) {
 	auto elem = symbolTable_.find(ident);
 
 	if (elem == symbolTable_.end()) {
@@ -15,5 +13,16 @@ Symbol * SymbolTable::getSymbol(std::string ident) {
 	else {
 		return &elem->second;
 	}
+}
+
+int SymbolTable::insert(Symbol symbol)
+{
+	auto name = symbol.getName();
+	if (getSymbol(name) != nullptr) {
+		return 1;
+	}
+
+	symbolTable_[*name] = symbol;
+	return 0;
 }
 
