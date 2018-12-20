@@ -18,6 +18,7 @@ VAR a: ARRAY Dim OF INTEGER;
     p: Point2D;
     c: ARRAY Dim1 OF INTEGER;
     d: Point3D;
+    x,y,z : INTEGER;
 
 (* Initializes the array. *)
 PROCEDURE Init();

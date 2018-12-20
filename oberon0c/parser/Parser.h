@@ -95,6 +95,11 @@ private:
 	void failIfNotAType(Symbol *identifier);
 	void failSymbolExists(Symbol * symbol);
 
+	// Helper methods for building the SymbolTables
+	void addType(const Node* identifier, Node* typeDef);
+	void addArray(const Node* identifier, Node* typeDef);
+	void addRecord(Node* node, const Node* identifier, Node* typeDef);
+
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
     ~Parser();

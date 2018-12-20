@@ -153,70 +153,15 @@ const Node* Parser::type_declarations() {
 	Node typeDef = typeNode->getChildren().at(0);
 	switch (typeDef.getNodeType()) {
 		case (NodeType::identifier): {
-			// New type is an "alias" of an existing type. Check if that existing type exists
-			Symbol* type = currentTable_->getSymbol(&typeDef.getValue());
-			failUndeclaredSymbol(type, &typeDef);
-			// The type exists. Add the alias of that type to the symbol table.
-			std::vector<Symbol*> types;
-			types.push_back(type);
-			Symbol newAlias = Symbol(identifier->getValue(), types, SymbolType::type);
-			if (currentTable_->insert(newAlias)) {
-				failSymbolExists(&newAlias);
-			}
+			addType(identifier, &typeDef);
 		}
 			break;
 		case (NodeType::array_type): {
-			// New type is an array. Check if the specified array type exists.
-			Node typeDef2 = typeDef.getChildren().at(1).getChildren().at(0);
-			Symbol* type = currentTable_->getSymbol(&typeDef2.getValue());
-			failUndeclaredSymbol(type, &typeDef2);
-			failIfNotAType(type);
-
-			// The type exists. Add the array of that type to the symbol table.
-			std::vector<Symbol*> types;
-			types.push_back(type);
-			Symbol newArray = Symbol(identifier->getValue(), types, SymbolType::array);
-			if (currentTable_->insert(newArray)) {
-				failSymbolExists(&newArray);
-			}
+			addArray(identifier, &typeDef);
 		}
 			break;
 		case (NodeType::record_type): {
-			// New lexical scope
-			std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_);
-			symbolTables_.push_back(newTable);
-			currentTable_ = newTable;
-
-			// New Type is a record. Check if all specified types exist.
-			std::vector<Symbol*> recordTypes;
-			const std::vector<Node> fieldLists = typeDef.getChildren();
-			for (Node fieldList : fieldLists) {
-				Node identifierList = fieldList.getChildren().at(0);
-				Node typeNode2 = fieldList.getChildren().at(1);
-				Node typeIdentifier = typeNode2.getChildren().at(0);
-				Symbol* type = currentTable_->getSymbol(&typeIdentifier.getValue());
-				std::vector<Symbol*> types;
-				types.push_back(type);
-				failUndeclaredSymbol(type, &typeIdentifier);
-				failIfNotAType(type);
-
-				// Type exists. Add the identifiers.
-				std::vector<Node> identifiers = fieldList.getChildren().at(0).getChildren();
-				for (Node ident : identifiers) {
-					Symbol newIdent(ident.getValue(), types, SymbolType::variable);
-					if (currentTable_->insert(newIdent)) {
-						failSymbolExists(&newIdent);
-					}
-					recordTypes.push_back(type);
-				}
-			}
-
-			// Finished adding symbols to lexical subscope. Adding RecordType to current scope.
-			currentTable_ = node->getSymbolTable();
-			Symbol newRecord = Symbol(identifier->getValue(), recordTypes, SymbolType::record);
-			if (currentTable_->insert(newRecord)) {
-				failSymbolExists(&newRecord);
-			}
+			addRecord(node, identifier, &typeDef);
 		}
 			break;
 	}
@@ -227,12 +172,30 @@ const Node* Parser::type_declarations() {
 const Node* Parser::var_declarations() {
 	Node* node = new Node(NodeType::var_declarations, word->getPosition(), currentTable_);
 
-	const Node* identifiers = ident_list();
-	node->addChild(*identifiers);
+	const Node* identifiersNode = ident_list();
+	node->addChild(*identifiersNode);
 	double_colon_t();
 	const Node* typeDef = type();
 	node->addChild(*typeDef);
 	semicolon_t();
+
+	// Extract subnodes for all identifiers and their type
+	/*std::vector<Node> identifiers = identifiersNode->getChildren();
+	Node typeIdentifier = typeDef->getChildren().at(0);
+
+	// Create specified type and check validity.
+	Symbol* type = currentTable_->getSymbol(&typeIdentifier.getValue());
+	std::vector<Symbol*> types;
+	types.push_back(type);
+	failUndeclaredSymbol(type, &typeIdentifier);
+	failIfNotAType(type);
+
+	for (Node identifier : identifiers) {
+		Symbol newIdent(identifier.getValue(), types, SymbolType::variable);
+		if (currentTable_->insert(newIdent)) {
+			failSymbolExists(&newIdent);
+		}
+	}*/
 
 	return node;
 }
@@ -711,6 +674,76 @@ void Parser::failSymbolExists(Symbol * symbol)
 	ss << symbol->getName() << " already exists";
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!" + ss.str());
+}
+
+void Parser::addType(const Node * identifier, Node * typeDef)
+{		
+	// New type is an "alias" of an existing type. Check if that existing type exists
+	Symbol* type = currentTable_->getSymbol(&typeDef->getValue());
+	failUndeclaredSymbol(type, typeDef);
+	// The type exists. Add the alias of that type to the symbol table.
+	std::vector<Symbol*> types;
+	types.push_back(type);
+	Symbol newAlias = Symbol(identifier->getValue(), types, SymbolType::type);
+	if (currentTable_->insert(newAlias)) {
+		failSymbolExists(&newAlias);
+	}
+}
+
+void Parser::addArray(const Node * identifier, Node * typeDef)
+{
+	// New type is an array. Check if the specified array type exists.
+	Node typeDef2 = typeDef->getChildren().at(1).getChildren().at(0);
+	Symbol* type = currentTable_->getSymbol(&typeDef2.getValue());
+	failUndeclaredSymbol(type, &typeDef2);
+	failIfNotAType(type);
+
+	// The type exists. Add the array of that type to the symbol table.
+	std::vector<Symbol*> types;
+	types.push_back(type);
+	Symbol newArray = Symbol(identifier->getValue(), types, SymbolType::array);
+	if (currentTable_->insert(newArray)) {
+		failSymbolExists(&newArray);
+	}
+}
+
+void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef)
+{
+	// New lexical scope
+	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_);
+	symbolTables_.push_back(newTable);
+	currentTable_ = newTable;
+
+	// New Type is a record. Check if all specified types exist.
+	std::vector<Symbol*> recordTypes;
+	const std::vector<Node> fieldLists = typeDef->getChildren();
+	for (Node fieldList : fieldLists) {
+		Node identifierList = fieldList.getChildren().at(0);
+		Node typeNode2 = fieldList.getChildren().at(1);
+		Node typeIdentifier = typeNode2.getChildren().at(0);
+		Symbol* type = currentTable_->getSymbol(&typeIdentifier.getValue());
+		std::vector<Symbol*> types;
+		types.push_back(type);
+		failUndeclaredSymbol(type, &typeIdentifier);
+		failIfNotAType(type);
+
+		// Type exists. Add the identifiers.
+		std::vector<Node> identifiers = fieldList.getChildren().at(0).getChildren();
+		for (Node ident : identifiers) {
+			Symbol newIdent(ident.getValue(), types, SymbolType::variable);
+			if (currentTable_->insert(newIdent)) {
+				failSymbolExists(&newIdent);
+			}
+			recordTypes.push_back(type);
+		}
+	}
+
+	// Finished adding symbols to lexical subscope. Adding RecordType to current scope.
+	currentTable_ = node->getSymbolTable();
+	Symbol newRecord = Symbol(identifier->getValue(), recordTypes, SymbolType::record);
+	if (currentTable_->insert(newRecord)) {
+		failSymbolExists(&newRecord);
+	}
 }
 
 void Parser::module_t()
