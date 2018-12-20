@@ -23,6 +23,10 @@ const FilePos Node::getFilePos() const
 	return pos_;
 }
 
+const std::vector<Node> Node::getChildren() const {
+	return children_;
+}
+
 std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 	std::string result;
 	switch(type) {
