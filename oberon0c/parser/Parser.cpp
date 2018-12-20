@@ -693,7 +693,7 @@ void Parser::failIfNotAType(Symbol *identifier) {
 void Parser::failSymbolExists(Symbol * symbol)
 {
 	std::stringstream ss;
-	ss << symbol->getName() << " already exists";
+	ss << *symbol->getName() << " already exists";
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!" + ss.str());
 }
