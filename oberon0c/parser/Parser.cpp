@@ -52,8 +52,9 @@ const Node* Parser::module() {
 	const Node* identifier = ident();
 	moduleNode->addChild(*identifier);
 	semicolon_t();
-	if (currentTable_->insert(Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module))) {
-		failSymbol(std::string("Identifier does already exist in this scope"));
+	Symbol newDeclaration = Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module);
+	if (currentTable_->insert(newDeclaration)) {
+		failSymbolExists(&newDeclaration);
 	}
 
 	// Declarations
@@ -128,7 +129,10 @@ const Node* Parser::const_declarations() {
 	Symbol * symbol = currentTable_->getSymbol(&std::string("INTEGER"));
 	std::vector<Symbol*> types;
 	types.push_back(symbol);
-	currentTable_->insert(Symbol(identifier->getValue(), types, SymbolType::constant));
+	Symbol newConst = Symbol(identifier->getValue(), types, SymbolType::constant);
+	if (currentTable_->insert(newConst)) {
+		failSymbolExists(&newConst);
+	}
 
 	return node;
 }
@@ -145,19 +149,66 @@ const Node* Parser::type_declarations() {
 	semicolon_t();
 
 	// Add processed type to the symbol table
-	const Node typeDef = typeNode->getChildren().at(0);
+	Node typeDef = typeNode->getChildren().at(0);
 	switch (typeDef.getNodeType()) {
 		case (NodeType::identifier): {
-			if (currentTable_->getSymbol(&typeDef.getValue()) == nullptr) {
-				failUndeclaredSymbol(typeDef);
+			// New type is an "alias" of an existing type. Check if that existing type exists
+			Symbol* type = currentTable_->getSymbol(&typeDef.getValue());
+			failUndeclaredSymbol(type, &typeDef);
+			// The type exists. Add the alias of that type to the symbol table.
+			std::vector<Symbol*> types;
+			types.push_back(type);
+			Symbol newAlias = Symbol(identifier->getValue(), types, SymbolType::type);
+			if (currentTable_->insert(newAlias)) {
+				failSymbolExists(&newAlias);
 			}
-
-
 		}
 			break;
-		case (NodeType::array_type):
+		case (NodeType::array_type): {
+			// New type is an array. Check if the specified array type exists.
+			Node typeDef2 = typeDef.getChildren().at(1).getChildren().at(0);
+			Symbol* type = currentTable_->getSymbol(&typeDef2.getValue());
+			failUndeclaredSymbol(type, &typeDef2);
+			failIfNotAType(type);
+
+			// The type exists. Add the array of that type to the symbol table.
+			std::vector<Symbol*> types;
+			types.push_back(type);
+			Symbol newArray = Symbol(identifier->getValue(), types, SymbolType::array);
+			if (currentTable_->insert(newArray)) {
+				failSymbolExists(&newArray);
+			}
+		}
 			break;
-		case (NodeType::record_type):
+		case (NodeType::record_type): {
+			// New lexical scope
+			symbolTables_.push_back(currentTable_->nestedTable(currentTable_));
+			currentTable_ = &symbolTables_.back();
+
+			// New Type is a record. Check if all specified types exist.
+			const std::vector<Node> fieldLists = typeDef.getChildren();
+			for (Node fieldList : fieldLists) {
+				Node identifierList = fieldList.getChildren().at(0);
+				Node typeNode2 = fieldList.getChildren().at(1);
+				Node typeIdentifier = typeNode2.getChildren().at(0);
+				Symbol* type = currentTable_->getSymbol(&typeIdentifier.getValue());
+				std::vector<Symbol*> types;
+				types.push_back(type);
+				failUndeclaredSymbol(type, &typeIdentifier);
+				failIfNotAType(type);
+
+				// Type exists. Add the identifiers.
+				std::vector<Node> identifiers = fieldList.getChildren().at(0).getChildren();
+				for (Node ident : identifiers) {
+					Symbol newIdent(ident.getValue(), types, SymbolType::variable);
+					if (currentTable_->insert(newIdent)) {
+						failSymbolExists(&newIdent);
+					}
+				}
+			}
+
+			currentTable_ = node->getSymbolTable();
+		}
 			break;
 	}
 
@@ -619,10 +670,34 @@ void Parser::failSymbol(std::string &msg) {
 	throw std::invalid_argument("You failed!" + msg);
 }
 
-void Parser::failUndeclaredSymbol(const Node & identifier)
+void Parser::failUndeclaredSymbol(Symbol * undeclaredSymbol, Node * identifier)
+{
+	if (undeclaredSymbol != nullptr) {
+		return;
+	}
+	std::stringstream ss;
+	ss << identifier->getValue() << " was not declared.";
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed!" + ss.str());
+}
+
+void Parser::failIfNotAType(Symbol *identifier) {
+	const SymbolType sType = identifier->getSymbolType();
+	if (sType == SymbolType::module
+		|| sType == SymbolType::procedure
+		|| sType == SymbolType::constant
+		|| sType == SymbolType::variable) {
+		std::stringstream ss;
+		ss << identifier->getName() << " is not a type.";
+		logger_->error(word->getPosition(), ss.str());
+		throw std::invalid_argument("You failed!" + ss.str());
+	}
+}
+
+void Parser::failSymbolExists(Symbol * symbol)
 {
 	std::stringstream ss;
-	ss << identifier.getValue() << " was not declared.";
+	ss << symbol->getName() << " already exists";
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!" + ss.str());
 }

@@ -15,3 +15,8 @@ Symbol::Symbol(std::string name, std::vector<Symbol *> types, SymbolType symbolT
 std::string * Symbol::getName() {
 	return &name_;
 }
+
+SymbolType Symbol::getSymbolType() const
+{
+	return symbolType_;
+}

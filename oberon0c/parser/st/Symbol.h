@@ -5,7 +5,7 @@
 //;
 
 enum class SymbolType : char {
-	module, procedure, constant, variable, record, array
+	module, procedure, constant, variable, record, array, type
 };
 
 class Symbol {
@@ -20,4 +20,5 @@ public:
 	explicit Symbol(std::string name, std::vector<Symbol *> types, SymbolType symbolType);
 
 	std::string * getName();
+	SymbolType getSymbolType() const;
 };

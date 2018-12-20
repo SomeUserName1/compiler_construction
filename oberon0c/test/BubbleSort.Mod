@@ -10,7 +10,8 @@ CONST Dim = 2 * 10;
 TYPE Point2D = RECORD x, y: INTEGER END;
      Point3D = RECORD x, y, z: INTEGER; w: Point2D END;
      Point4D = RECORD w, x, y, z: INTEGER END;
-     Point5D = abc;
+     Point5D = Point4D;
+     Point6D = ARRAY 6 OF INTEGER;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;

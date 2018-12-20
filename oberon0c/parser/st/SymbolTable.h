@@ -15,7 +15,7 @@ public:
 	explicit SymbolTable();
 	explicit SymbolTable(SymbolTable * parent);
 
-	SymbolTable nestedTable();
+	SymbolTable nestedTable(SymbolTable* parent);
 
 	size_t getLevel();
 

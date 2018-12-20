@@ -27,6 +27,11 @@ const std::vector<Node> Node::getChildren() const {
 	return children_;
 }
 
+SymbolTable * Node::getSymbolTable()
+{
+	return symbolTable_;
+}
+
 std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 	std::string result;
 	switch(type) {

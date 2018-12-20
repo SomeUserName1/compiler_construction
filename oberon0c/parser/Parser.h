@@ -91,9 +91,9 @@ private:
 	// Generic error handler
 	void failToken(std::string &msg);
 	void failSymbol(std::string &msg);
-	void failUndeclaredSymbol(const Node &identifier);
-
-	void fillSymbolTable(const Node * tree);
+	void failUndeclaredSymbol(Symbol * undeclaredSymbol, Node *identifier);
+	void failIfNotAType(Symbol *identifier);
+	void failSymbolExists(Symbol * symbol);
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
