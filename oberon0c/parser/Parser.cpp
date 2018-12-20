@@ -227,7 +227,7 @@ const Node* Parser::type_declarations() {
 const Node* Parser::var_declarations() {
 	Node* node = new Node(NodeType::var_declarations, word->getPosition(), currentTable_);
 
-	ident_list();
+	node->addChild(*ident_list());
 	double_colon_t();
 	node->addChild(*type());
 	semicolon_t();
