@@ -175,10 +175,32 @@ const Node* Parser::var_declarations() {
 	const Node* identifiersNode = ident_list();
 	node->addChild(*identifiersNode);
 	double_colon_t();
-	const Node* typeDef = type();
-	node->addChild(*typeDef);
+	const Node* typeNode = type();
+	node->addChild(*typeNode);
 	semicolon_t();
 
+	std::vector<Node> identifiers = identifiersNode->getChildren();
+	Node typeDef = typeNode->getChildren().at(0);
+	switch (typeDef.getNodeType()) {
+		case (NodeType::identifier): {
+			for (Node identifier : identifiers) {
+				addType(&identifier, &typeDef);
+			}
+		}
+			break;
+		case (NodeType::array_type): {
+			for (Node identifier : identifiers) {
+				addArray(&identifier, &typeDef);
+			}
+		}
+			break;
+		case (NodeType::record_type): {
+			for (Node identifier : identifiers) {
+				addRecord(node, &identifier, &typeDef);
+			}
+		}
+			break;
+	}
 	// Extract subnodes for all identifiers and their type
 	/*std::vector<Node> identifiers = identifiersNode->getChildren();
 	Node typeIdentifier = typeDef->getChildren().at(0);
