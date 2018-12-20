@@ -188,6 +188,7 @@ const Node* Parser::type_declarations() {
 			currentTable_ = newTable;
 
 			// New Type is a record. Check if all specified types exist.
+			std::vector<Symbol*> recordTypes;
 			const std::vector<Node> fieldLists = typeDef.getChildren();
 			for (Node fieldList : fieldLists) {
 				Node identifierList = fieldList.getChildren().at(0);
@@ -206,10 +207,16 @@ const Node* Parser::type_declarations() {
 					if (currentTable_->insert(newIdent)) {
 						failSymbolExists(&newIdent);
 					}
+					recordTypes.push_back(type);
 				}
 			}
 
+			// Finished adding symbols to lexical subscope. Adding RecordType to current scope.
 			currentTable_ = node->getSymbolTable();
+			Symbol newRecord = Symbol(identifier->getValue(), recordTypes, SymbolType::record);
+			if (currentTable_->insert(newRecord)) {
+				failSymbolExists(&newRecord);
+			}
 		}
 			break;
 	}
