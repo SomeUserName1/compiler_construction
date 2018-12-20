@@ -68,7 +68,7 @@ const Node* Parser::module() {
 	//End
 	end_t();
 	if (identifier->getValue() != ident()->getValue()) {
-	    std::string s = std::string("Expected module identifier module()");
+		std::string s = std::string("Expected module identifier module()");
 		failToken(s);
 	}
 	point_t();
@@ -119,7 +119,7 @@ const Node* Parser::const_declarations() {
 
 	// Processing one constant
 	const Node * identifier = ident();
-    node->addChild(*identifier);
+	node->addChild(*identifier);
 	equals_symbol_t();
 	node->addChild(*expression());
 	semicolon_t();
@@ -138,14 +138,28 @@ const Node* Parser::type_declarations() {
 
 	// Processing one type
 	const Node * identifier = ident();
-    node->addChild(*identifier);
+	node->addChild(*identifier);
 	equals_symbol_t();
-	const Node * types = type();
-	node->addChild(*types);
+	const Node * typeNode = type();
+	node->addChild(*typeNode);
 	semicolon_t();
 
 	// Add processed type to the symbol table
-	
+	const Node typeDef = typeNode->getChildren().at(0);
+	switch (typeDef.getNodeType()) {
+		case (NodeType::identifier): {
+			if (currentTable_->getSymbol(&typeDef.getValue()) == nullptr) {
+				failUndeclaredSymbol(typeDef);
+			}
+
+
+		}
+			break;
+		case (NodeType::array_type):
+			break;
+		case (NodeType::record_type):
+			break;
+	}
 
 	return node;
 }
@@ -603,6 +617,14 @@ void Parser::failToken(std::string &msg) {
 void Parser::failSymbol(std::string &msg) {
 	logger_->error(word->getPosition(), msg);
 	throw std::invalid_argument("You failed!" + msg);
+}
+
+void Parser::failUndeclaredSymbol(const Node & identifier)
+{
+	std::stringstream ss;
+	ss << identifier.getValue() << " was not declared.";
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed!" + ss.str());
 }
 
 void Parser::module_t()

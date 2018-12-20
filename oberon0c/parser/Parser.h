@@ -91,6 +91,7 @@ private:
 	// Generic error handler
 	void failToken(std::string &msg);
 	void failSymbol(std::string &msg);
+	void failUndeclaredSymbol(const Node &identifier);
 
 	void fillSymbolTable(const Node * tree);
 
