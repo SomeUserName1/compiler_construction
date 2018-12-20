@@ -39,6 +39,7 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 		case NodeType::simple_expression: result = "simple_expression"; break;
 		case NodeType::term: result = "term"; break;
 		case NodeType::factor: result = "factor"; break;
+		case NodeType::type: result = "type"; break;
 		case NodeType::record_type: result = "record_type"; break;
 		case NodeType::array_type: result = "array_type"; break;
 		case NodeType::field_list: result = "field_list"; break;
