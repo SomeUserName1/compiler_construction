@@ -43,8 +43,9 @@ const Node* Parser::ident() {
 
 const Node* Parser::module() {
 	//Adding the first scope SymbolTable
-	symbolTables_.push_back(SymbolTable());
-	currentTable_ = &symbolTables_.back();
+	std::shared_ptr<SymbolTable> newTable = std::make_shared<SymbolTable>();
+	symbolTables_.push_back(newTable);
+	currentTable_ = newTable;
 
 	// Module declaration
 	module_t();
@@ -182,8 +183,9 @@ const Node* Parser::type_declarations() {
 			break;
 		case (NodeType::record_type): {
 			// New lexical scope
-			symbolTables_.push_back(currentTable_->nestedTable(currentTable_));
-			currentTable_ = &symbolTables_.back();
+			std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_);
+			symbolTables_.push_back(newTable);
+			currentTable_ = newTable;
 
 			// New Type is a record. Check if all specified types exist.
 			const std::vector<Node> fieldLists = typeDef.getChildren();

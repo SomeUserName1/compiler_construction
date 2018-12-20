@@ -19,8 +19,8 @@ private:
 
 	std::unique_ptr<const Token> word;
 
-	std::vector<SymbolTable> symbolTables_;
-	SymbolTable * currentTable_;
+	std::vector<std::shared_ptr<SymbolTable>> symbolTables_;
+	std::shared_ptr<SymbolTable> currentTable_;
 
 
 

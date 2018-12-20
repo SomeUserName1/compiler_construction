@@ -5,21 +5,21 @@ SymbolTable::SymbolTable() {
 	level_ = 0;
 	parent_ = nullptr;
 
-	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::variable));
-	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::variable));
-	//this->insert(Symbol("ARRAY", std::vector<Symbol *>(), SymbolType::variable));
-	this->insert(Symbol("CONSTANT", std::vector<Symbol *>(), SymbolType::variable)); // Kann vielleicht auch raus
+	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::type));
+	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::type));
+	//this->insert(Symbol("ARRAY", std::vector<Symbol *>(), SymbolType::type));
+	this->insert(Symbol("CONSTANT", std::vector<Symbol *>(), SymbolType::type)); // Kann vielleicht auch raus
 }
 
 // Creates a SymbolTable for a child scope of another lexical scope.
-SymbolTable::SymbolTable(SymbolTable * parent) {
+SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent) {
 	level_ = parent->getLevel() + 1;
 	parent_ = parent;
 }
 
 // Creates a new SymbolTable as a child of the current one.
-SymbolTable SymbolTable::nestedTable(SymbolTable* parent) {
-	return SymbolTable(parent);
+std::shared_ptr<SymbolTable> SymbolTable::nestedTable(std::shared_ptr<SymbolTable> parent) {
+	return std::make_shared<SymbolTable>(parent);
 }
 
 size_t SymbolTable::getLevel() {

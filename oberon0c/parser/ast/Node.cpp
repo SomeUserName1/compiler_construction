@@ -3,9 +3,9 @@
 
 #include "Node.h"
 
-Node::Node(NodeType nodeType, FilePos pos, SymbolTable * symbolTable) : nodeType_(nodeType), pos_(std::move(pos)), symbolTable_(symbolTable) {}
+Node::Node(NodeType nodeType, FilePos pos, std::shared_ptr<SymbolTable> symbolTable) : nodeType_(nodeType), pos_(std::move(pos)), symbolTable_(symbolTable) {}
 
-Node::Node(NodeType nodeType, FilePos pos, std::string value, SymbolTable * symbolTable)
+Node::Node(NodeType nodeType, FilePos pos, std::string value, std::shared_ptr<SymbolTable> symbolTable)
 {
 	nodeType_ = nodeType;
 	pos_ = std::move(pos);
@@ -27,7 +27,7 @@ const std::vector<Node> Node::getChildren() const {
 	return children_;
 }
 
-SymbolTable * Node::getSymbolTable()
+std::shared_ptr<SymbolTable> Node::getSymbolTable()
 {
 	return symbolTable_;
 }

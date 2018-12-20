@@ -34,19 +34,19 @@ private:
     FilePos pos_;
 	std::vector<Node> children_;
 	std::string value_;
-	SymbolTable * symbolTable_;
+	std::shared_ptr<SymbolTable> symbolTable_;
 
 	void printTreeRec(std::ostream &stream, int depth) const;
 
 public:
-	explicit Node(NodeType nodeType, FilePos pos, SymbolTable * symbolTable);
-	explicit Node(NodeType nodeType, FilePos pos, std::string value, SymbolTable * symbolTable);
+	explicit Node(NodeType nodeType, FilePos pos, std::shared_ptr<SymbolTable> symbolTable);
+	explicit Node(NodeType nodeType, FilePos pos, std::string value, std::shared_ptr<SymbolTable> symbolTable);
 	virtual ~Node();
 
     const NodeType getNodeType() const;
     const FilePos getFilePos() const;
 	const std::vector<Node> getChildren() const;
-	SymbolTable* getSymbolTable();
+	std::shared_ptr<SymbolTable> getSymbolTable();
 
     virtual void print(std::ostream &stream) const;
 	virtual void printTree(std::ostream &stream) const;
