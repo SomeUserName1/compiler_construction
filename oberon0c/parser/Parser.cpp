@@ -595,27 +595,31 @@ const Node* Parser::A()
 	const Node* identifier = ident();
 	failUndeclaredSymbol(identifier);
 	// Peek ahead the right next token before processing the selector.
-	const Token* followIdentifier = scanner_->peekToken();
+	const Token followIdentifier = *scanner_->peekToken();
+	
 	const Node* select = selector(identifier);
 
-	if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
+	const Token* peeked = scanner_->peekToken();
+	if (peeked->getType() == TokenType::op_becomes) {
 		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
 		node->addChild(*identifier);
 		// Check the previously peeked token to decide if the identifier is used as record or array
 		// and check if the identifier correspondingly is a record or a array.
-		switch (followIdentifier->getType()) {
+		switch (followIdentifier.getType()) {
 		case TokenType::period:
 			failIfNotARecord(identifier);
 			node->addChild(*select);
+			break;
 		case TokenType::lbrack:
 			failIfNotAArray(identifier);
 			node->addChild(*select);
+			break;
 		case TokenType::op_becomes: {
 			Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
 			if (symbol->getSymbolType() != SymbolType::constant
 				&& symbol->getSymbolType() != SymbolType::type
 				&& symbol->getSymbolType() != SymbolType::variable) {
-				std::string msg = std::string(identifier->getValue() + "is not an appropriate type");
+				std::string msg = std::string(identifier->getValue() + " is not a appropriate type");
 				failSymbol(msg);
 			}
 		}
