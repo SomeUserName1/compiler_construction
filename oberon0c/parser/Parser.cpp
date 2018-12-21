@@ -568,6 +568,7 @@ const Node* Parser::A()
 
 	// Get the identifier of this assignment or procedure call
 	const Node* identifier = ident();
+	failUndeclaredSymbol(identifier);
 	// Peek ahead the right next token before processing the selector.
 	const Token* followIdentifier = scanner_->peekToken();
 	const Node* select = selector(identifier);
