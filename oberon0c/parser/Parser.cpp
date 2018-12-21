@@ -324,7 +324,8 @@ const Node* Parser::factor() {
 				break;
 			case TokenType::const_number:
 			case TokenType::lparen:
-			case TokenType::op_not: {
+			case TokenType::op_not:
+			case TokenType::kw_of: {
 				Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
 				if (symbol->getSymbolType() != SymbolType::constant
 					&& symbol->getSymbolType() != SymbolType::type
