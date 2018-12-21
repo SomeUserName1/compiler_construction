@@ -335,7 +335,8 @@ const Node* Parser::factor() {
 			case TokenType::kw_do:
 			case TokenType::op_minus:
 			case TokenType::op_plus:
-			case TokenType::rbrack: {
+			case TokenType::rbrack:
+			case TokenType::semicolon: {
 				Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
 				SymbolType symType = symbol->getSymbolType();
 				if (symType != SymbolType::constant
