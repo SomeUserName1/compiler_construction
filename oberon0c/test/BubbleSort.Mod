@@ -32,7 +32,7 @@ BEGIN
 END Init;
 
 (* Swaps the two values passed as var-parameters. *)
-PROCEDURE Swap(VAR a, b: INTEGER; VAR c : INTEGER);
+PROCEDURE Swap(VAR a, b: INTEGER);
 VAR t: INTEGER;
 BEGIN
     t := a;

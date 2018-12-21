@@ -432,8 +432,9 @@ const Node* Parser::procedure_heading() {
 		node->addChild(*fParams);
 
 		// Adding identifiers of procedure parameters
-
 	}
+
+	currentTable_ = node->getSymbolTable();
 	return node;
 }
 
