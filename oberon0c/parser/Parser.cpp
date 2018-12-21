@@ -599,6 +599,16 @@ const Node* Parser::A()
 		case TokenType::lbrack:
 			failIfNotAArray(identifier);
 			node->addChild(*select);
+		case TokenType::op_becomes: {
+			Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
+			if (symbol->getSymbolType() != SymbolType::constant
+				&& symbol->getSymbolType() != SymbolType::type
+				&& symbol->getSymbolType() != SymbolType::variable) {
+				std::string msg = std::string(identifier->getValue() + "is not an appropriate type");
+				failSymbol(msg);
+			}
+		}
+							   break;
 		default:
 			failNetiherRecordNorArray(identifier);
 		}
