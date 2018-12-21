@@ -310,7 +310,9 @@ const Node* Parser::factor() {
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
+		// Check if the identifier is declared and appropriate (a record or an array).
 		const Node* identifier = ident();
+		failUndeclaredSymbol(identifier);
 		node->addChild(*identifier);
 		switch (scanner_->peekToken()->getType()) {
 			case TokenType::period:
