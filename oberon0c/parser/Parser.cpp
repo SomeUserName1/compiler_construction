@@ -342,7 +342,7 @@ const Node* Parser::factor() {
 				if (symType != SymbolType::constant
 					&& symType != SymbolType::type
 					&& symType != SymbolType::variable) {
-					std::string msg = std::string(identifier->getValue() + "is not an appropriate type");
+					std::string msg = std::string(identifier->getValue() + " is not an appropriate type");
 					failSymbol(msg);
 				}
 			}
