@@ -586,6 +586,13 @@ const Node* Parser::A()
 		}
 
 		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
+		node->addChild(*identifier);
+		node->addChild(*select);
+		becomes_t();
+		node->addChild(*expression());
+	}
+	else {
+		failIfNotProcedure(identifier);
 		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
 		node->addChild(*identifier);
 		node->addChild(*select);
