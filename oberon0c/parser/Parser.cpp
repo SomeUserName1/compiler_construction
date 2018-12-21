@@ -325,11 +325,22 @@ const Node* Parser::factor() {
 			case TokenType::const_number:
 			case TokenType::lparen:
 			case TokenType::op_not:
-			case TokenType::kw_of: {
+			case TokenType::kw_of: 
+			case TokenType::op_eq:
+			case TokenType::op_neq:
+			case TokenType::op_lt:
+			case TokenType::op_leq:
+			case TokenType::op_gt:
+			case TokenType::op_geq:
+			case TokenType::kw_do:
+			case TokenType::op_minus:
+			case TokenType::op_plus:
+			case TokenType::rbrack: {
 				Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
-				if (symbol->getSymbolType() != SymbolType::constant
-					&& symbol->getSymbolType() != SymbolType::type
-					&& symbol->getSymbolType() != SymbolType::variable) {
+				SymbolType symType = symbol->getSymbolType();
+				if (symType != SymbolType::constant
+					&& symType != SymbolType::type
+					&& symType != SymbolType::variable) {
 					std::string msg = std::string(identifier->getValue() + "is not an appropriate type");
 					failSymbol(msg);
 				}
@@ -608,7 +619,7 @@ const Node* Parser::A()
 				failSymbol(msg);
 			}
 		}
-							   break;
+			break;
 		default:
 			failNetiherRecordNorArray(identifier);
 		}
