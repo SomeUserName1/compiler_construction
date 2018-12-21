@@ -588,20 +588,20 @@ const Node* Parser::A()
 	const Node* select = selector(identifier);
 
 	if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
+		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
+		node->addChild(*identifier);
 		// Check the previously peeked token to decide if the identifier is used as record or array
 		// and check if the identifier correspondingly is a record or a array.
 		switch (followIdentifier->getType()) {
 		case TokenType::period:
 			failIfNotARecord(identifier);
+			node->addChild(*select);
 		case TokenType::lbrack:
 			failIfNotAArray(identifier);
+			node->addChild(*select);
 		default:
 			failNetiherRecordNorArray(identifier);
 		}
-
-		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
-		node->addChild(*identifier);
-		node->addChild(*select);
 		becomes_t();
 		node->addChild(*expression());
 	}
