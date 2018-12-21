@@ -42,7 +42,7 @@ const Node* Parser::ident() {
 }
 
 const Node* Parser::module() {
-	//Adding the first scope SymbolTable
+	//Adding the first scope SymbolTable 
 	std::shared_ptr<SymbolTable> newTable = std::make_shared<SymbolTable>();
 	symbolTables_.push_back(newTable);
 	currentTable_ = newTable;
@@ -229,6 +229,8 @@ const Node* Parser::procedure_declaration() {
 	semicolon_t();
 	node->addChild(*procedure_body());
 
+	// TODO currentTable_ to parent
+
 	return node;
 }
 
@@ -409,11 +411,28 @@ const Node* Parser::ident_list() {
 const Node* Parser::procedure_heading() {
 	Node* node = new Node(NodeType::procedure_heading, word->getPosition(), currentTable_);
 
+	// Parse procedure identifier
 	procedure_t();
-	node->addChild(*ident());
+	const Node* procIdent = ident();
+	node->addChild(*procIdent);
 
+	// Add symbol for procedure.
+	Symbol procSymbol = Symbol(procIdent->getValue(), std::vector<Symbol*>(), SymbolType::procedure);
+	if (currentTable_->insert(procSymbol)) {
+		failSymbolExists(&procSymbol);
+	}
+
+	// Creating symbolTable for the new lexicalScope in the new procedure.
+	newSymbolTable();
+
+	// Parse formal parameters
 	if (scanner_->peekToken()->getType() == TokenType::lparen) {
-		node->addChild(*formal_parameters());
+		// Parsing
+		const Node* fParams = formal_parameters();
+		node->addChild(*fParams);
+
+		// Adding identifiers of procedure parameters
+
 	}
 	return node;
 }
@@ -698,6 +717,13 @@ void Parser::failSymbolExists(Symbol * symbol)
 	throw std::invalid_argument("You failed!" + ss.str());
 }
 
+void Parser::newSymbolTable()
+{
+	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_);
+	symbolTables_.push_back(newTable);
+	currentTable_ = newTable;
+}
+
 void Parser::addType(const Node * identifier, Node * typeDef)
 {		
 	// New type is an "alias" of an existing type. Check if that existing type exists
@@ -732,9 +758,7 @@ void Parser::addArray(const Node * identifier, Node * typeDef)
 void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef)
 {
 	// New lexical scope
-	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_);
-	symbolTables_.push_back(newTable);
-	currentTable_ = newTable;
+	newSymbolTable();
 
 	// New Type is a record. Check if all specified types exist.
 	std::vector<Symbol*> recordTypes;
