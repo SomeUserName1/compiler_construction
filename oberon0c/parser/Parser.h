@@ -49,7 +49,7 @@ private:
     const Node* if_statement();
     const Node* while_statement();
     const Node* actual_parameters();
-    const Node* selector();
+    const Node* selector(const Node * preceedingIdentifier);
     const Node* ident();
 	const Node* number();
 
@@ -91,9 +91,15 @@ private:
 	// Generic error handler
 	void failToken(std::string &msg);
 	void failSymbol(std::string &msg);
-	void failUndeclaredSymbol(Symbol * undeclaredSymbol, Node *identifier);
+	void failUndeclaredSymbol(Symbol * undeclaredSymbol, const Node *identifier);
+	void failUndeclaredSymbol(const Node *identifier);
 	void failIfNotAType(Symbol *identifier);
 	void failSymbolExists(Symbol * symbol);
+	void failIfNotASomething(const Node * identifier, SymbolType symbolType);
+	void failIfNotARecord(const Node * identifier);
+	void failIfNotAArray(const Node * identifier);
+	void failNetiherRecordNorArray(const Node * identifier);
+	void failIfNotProcedure(const Node * identifier);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable();

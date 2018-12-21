@@ -310,8 +310,20 @@ const Node* Parser::factor() {
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
-		node->addChild(*ident());
-		node->addChild(*selector());
+		const Node* identifier = ident();
+		node->addChild(*identifier);
+		switch (scanner_->peekToken()->getType()) {
+			case TokenType::period:
+				failIfNotARecord(identifier);
+				break;
+			case TokenType::lbrack:
+				failIfNotAArray(identifier);
+				break;
+			default:
+				failNetiherRecordNorArray(identifier); //TODO: Check if this makes sense since this could also be a procedure?!
+		}
+
+		node->addChild(*selector(identifier));
 	}
 	else if (type == TokenType::const_number) {
         node->addChild(*number());
@@ -552,17 +564,25 @@ const Node* Parser::A()
 {
 	Node* node;
 
+	// Get the identifier of this assignment or procedure call
 	const Node* identifier = ident();
-	const Node* select = selector();
+	// Peek ahead the right next token before processing the selector.
+	const Token* followIdentifier = scanner_->peekToken();
+	const Node* select = selector(identifier);
 
 	if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
+		// Check the previously peeked token to decide if the identifier is used as record or array
+		// and check if the identifier correspondingly is a record or a array.
+		switch (followIdentifier->getType()) {
+		case TokenType::period:
+			failIfNotARecord(identifier);
+		case TokenType::lbrack:
+			failIfNotAArray(identifier);
+		default:
+			failNetiherRecordNorArray(identifier);
+		}
+
 		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
-		node->addChild(*identifier);
-		node->addChild(*select);
-		becomes_t();
-		node->addChild(*expression());
-	}
-	else {
 		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
 		node->addChild(*identifier);
 		node->addChild(*select);
@@ -629,7 +649,7 @@ const Node* Parser::actual_parameters()
 	return node;
 }
 
-const Node* Parser::selector()
+const Node* Parser::selector(const Node * preceedingIdentifier)
 {
 	Node* node = new Node(NodeType::selector, word->getPosition(), currentTable_);
 
@@ -637,7 +657,15 @@ const Node* Parser::selector()
 			|| scanner_->peekToken()->getType() == TokenType::lbrack) {
 		if (scanner_->peekToken()->getType() == TokenType::period) {
 			point_t();
-			node->addChild(*ident());
+
+			// Find the receferenced identifier in the records inner symbol table
+			const Node* identifier = ident();
+			Node child = preceedingIdentifier->getChildren().at(0);
+			std::shared_ptr<SymbolTable> recordsIdentifiers = child.getSymbolTable();
+			recordsIdentifiers->getSymbol(&identifier->getValue());
+			failUndeclaredSymbol(identifier);
+
+			node->addChild(*identifier);
 		}
 		else {
 			lbrack_t();
@@ -713,7 +741,7 @@ void Parser::failSymbol(std::string &msg) {
 	throw std::invalid_argument("You failed!" + msg);
 }
 
-void Parser::failUndeclaredSymbol(Symbol * undeclaredSymbol, Node * identifier)
+void Parser::failUndeclaredSymbol(Symbol * undeclaredSymbol, const Node * identifier)
 {
 	if (undeclaredSymbol != nullptr) {
 		return;
@@ -722,6 +750,12 @@ void Parser::failUndeclaredSymbol(Symbol * undeclaredSymbol, Node * identifier)
 	ss << identifier->getValue() << " was not declared.";
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!" + ss.str());
+}
+
+void Parser::failUndeclaredSymbol(const Node * identifier)
+{
+	Symbol* undeclaredSymbol = currentTable_->getSymbol(&identifier->getValue());
+	failUndeclaredSymbol(undeclaredSymbol, identifier);
 }
 
 void Parser::failIfNotAType(Symbol *identifier) {
@@ -741,6 +775,49 @@ void Parser::failSymbolExists(Symbol * symbol)
 {
 	std::stringstream ss;
 	ss << *symbol->getName() << " already exists";
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed!" + ss.str());
+}
+
+void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType)
+{
+	Symbol* possibleRecord = currentTable_->getSymbol(&identifier->getValue());
+	if (possibleRecord->getSymbolType() == symbolType) {
+		return;
+	}
+
+	std::stringstream ss;
+	ss << *possibleRecord->getName() << " is not a Record-Type";
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed!" + ss.str());
+}
+
+void Parser::failIfNotARecord(const Node * identifier)
+{
+	failIfNotASomething(identifier, SymbolType::record);
+}
+
+void Parser::failIfNotAArray(const Node * identifier)
+{
+	failIfNotASomething(identifier, SymbolType::array);
+}
+
+void Parser::failNetiherRecordNorArray(const Node * identifier)
+{
+	std::stringstream ss;
+	ss << identifier->getValue() << " is neither an Array nor a Record";
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed!" + ss.str());
+}
+
+void Parser::failIfNotProcedure(const Node * identifier)
+{
+	if (currentTable_->getSymbol(&identifier->getValue())->getSymbolType() == SymbolType::procedure) {
+		return;
+	}
+
+	std::stringstream ss;
+	ss << identifier->getValue() << " is not a procedure";
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!" + ss.str());
 }
