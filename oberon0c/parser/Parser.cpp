@@ -314,12 +314,25 @@ const Node* Parser::factor() {
 		const Node* identifier = ident();
 		failUndeclaredSymbol(identifier);
 		node->addChild(*identifier);
+
 		switch (scanner_->peekToken()->getType()) {
 			case TokenType::period:
 				failIfNotARecord(identifier);
 				break;
 			case TokenType::lbrack:
 				failIfNotAArray(identifier);
+				break;
+			case TokenType::const_number:
+			case TokenType::lparen:
+			case TokenType::op_not: {
+				Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
+				if (symbol->getSymbolType() != SymbolType::constant
+					&& symbol->getSymbolType() != SymbolType::type
+					&& symbol->getSymbolType() != SymbolType::variable) {
+					std::string msg = std::string(identifier->getValue() + "is not an appropriate type");
+					failSymbol(msg);
+				}
+			}
 				break;
 			default:
 				failNetiherRecordNorArray(identifier); //TODO: Check if this makes sense since this could also be a procedure?!
@@ -797,7 +810,7 @@ void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType)
 	}
 
 	std::stringstream ss;
-	ss << *possibleRecord->getName() << " is not a Record-Type";
+	ss << *possibleRecord->getName() << " is not a appropriate type"; //TODO change to type
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!" + ss.str());
 }
