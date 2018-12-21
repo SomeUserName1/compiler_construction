@@ -17,11 +17,6 @@ const NodeType Node::getNodeType() const
 	return nodeType_;
 }
 
-const FilePos Node::getFilePos() const
-{
-	return pos_;
-}
-
 std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 	std::string result;
 	switch(type) {
@@ -81,7 +76,7 @@ void Node::printTreeRec(std::ostream & stream, int depth) const
 	this->print(stream);
 	stream << std::endl;
 
-	for (Node child : children_) {
+	for (const Node &child : children_) {
 		child.printTreeRec(stream, depth + 1);
 	}
 }

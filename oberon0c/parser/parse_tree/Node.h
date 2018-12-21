@@ -1,12 +1,8 @@
-/*
- * Header file of the base class of all AST nodes used by the Oberon-0 compiler.
- *
- * Created by Michael Grossniklaus on 2/2/18.
+/**
+ * @author fabian.klopfer@uni-konstanz.de
  */
-
 #ifndef OBERON0C_AST_H
 #define OBERON0C_AST_H
-
 
 #include <vector>
 #include <string>
@@ -26,6 +22,9 @@ enum class NodeType : char {
 
 std::ostream& operator<<(std::ostream &stream, const NodeType &type);
 
+/**
+ * Generic Parse Tree class. Used for a minimal Oberon-0 compiler for now, easily extendable to other grammars
+ */
 class Node {
 
 private:
@@ -42,7 +41,6 @@ public:
 	virtual ~Node();
 
     const NodeType getNodeType() const;
-    const FilePos getFilePos() const;
 
     virtual void print(std::ostream &stream) const;
 	virtual void printTree(std::ostream &stream) const;
