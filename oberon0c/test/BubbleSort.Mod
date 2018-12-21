@@ -32,7 +32,7 @@ BEGIN
 END Init;
 
 (* Swaps the two values passed as var-parameters. *)
-PROCEDURE Swap(VAR a, b: INTEGER);
+PROCEDURE Swap(VAR a, b: INTEGER; VAR c : INTEGER);
 VAR t: INTEGER;
 BEGIN
     t := a;
@@ -68,4 +68,4 @@ END Bubble;
 BEGIN
     Init;
     Bubble()
-git com
+END BubbleSort.

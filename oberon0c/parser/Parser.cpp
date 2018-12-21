@@ -230,6 +230,7 @@ const Node* Parser::procedure_declaration() {
 	node->addChild(*procedure_body());
 
 	// TODO currentTable_ to parent
+	currentTable_ = node->getSymbolTable();
 
 	return node;
 }
@@ -432,9 +433,35 @@ const Node* Parser::procedure_heading() {
 		node->addChild(*fParams);
 
 		// Adding identifiers of procedure parameters
+		for (Node fpSection : fParams->getChildren()) {
+			std::vector<Node> children = fpSection.getChildren();
+			size_t identPosition = 0;// children.at(0).getNodeType() != NodeType::var_declarations;
+			Node varIdentifiers = children.at(identPosition);
+			Node typeDef = children.at(++identPosition);
+
+			switch (typeDef.getNodeType()) {
+			case (NodeType::identifier): {
+				for (Node identifier : varIdentifiers.getChildren()) {
+					addType(&identifier, &typeDef);
+				}
+			}
+					break;
+			case (NodeType::array_type): {
+				for (Node identifier : varIdentifiers.getChildren()) {
+					addArray(&identifier, &typeDef);
+				}
+			}
+				break;
+			case (NodeType::record_type): {
+				for (Node identifier : varIdentifiers.getChildren()) {
+					addRecord(node, &identifier, &typeDef);
+				}
+			}
+				break;
+			}
+		}
 	}
 
-	currentTable_ = node->getSymbolTable();
 	return node;
 }
 
