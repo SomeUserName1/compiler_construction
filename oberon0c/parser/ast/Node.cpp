@@ -27,7 +27,7 @@ const std::vector<Node> Node::getChildren() const {
 	return children_;
 }
 
-std::shared_ptr<SymbolTable> Node::getSymbolTable()
+std::shared_ptr<SymbolTable> Node::getSymbolTable() const
 {
 	return symbolTable_;
 }

@@ -46,7 +46,7 @@ public:
     const NodeType getNodeType() const;
     const FilePos getFilePos() const;
 	const std::vector<Node> getChildren() const;
-	std::shared_ptr<SymbolTable> getSymbolTable();
+	std::shared_ptr<SymbolTable> getSymbolTable() const;
 
     virtual void print(std::ostream &stream) const;
 	virtual void printTree(std::ostream &stream) const;
