@@ -142,7 +142,6 @@ MODULE
 |-|-|-|-|-statement
 |-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-term
@@ -187,7 +186,6 @@ MODULE
 |-|-|-|-|-|-|-|-statement
 |-|-|-|-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-term
@@ -225,7 +223,6 @@ MODULE
 |-|-|-|-|-statement
 |-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-identifier: t
-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-term
@@ -235,7 +232,6 @@ MODULE
 |-|-|-|-|-statement
 |-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-identifier: a
-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-term
@@ -245,7 +241,6 @@ MODULE
 |-|-|-|-|-statement
 |-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-identifier: b
-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-term
@@ -268,7 +263,6 @@ MODULE
 |-|-|-|-|-statement
 |-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-term
@@ -292,7 +286,6 @@ MODULE
 |-|-|-|-|-|-|-|-statement
 |-|-|-|-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-|-|-|-identifier: j
-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-term
@@ -434,7 +427,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-statement
 |-|-|-|-|-|-|-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-|-|-|-|-|-|-identifier: j
-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
@@ -448,7 +440,6 @@ MODULE
 |-|-|-|-|-|-|-|-statement
 |-|-|-|-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-term
