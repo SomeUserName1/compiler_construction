@@ -477,9 +477,9 @@ const Node* Parser::procedure_heading() {
 			std::vector<Node> children = fpSection.getChildren();
 			size_t identPosition = 0;// children.at(0).getNodeType() != NodeType::var_declarations;
 			Node varIdentifiers = children.at(identPosition);
-			Node typeDef = children.at(++identPosition);
+			Node typeDef = children.at(++identPosition).getChildren().at(0);
 
-			switch (typeDef.getChildren().at(0).getNodeType()) {
+			switch (typeDef.getNodeType()) {
 			case (NodeType::identifier): {
 				for (Node identifier : varIdentifiers.getChildren()) {
 					addType(&identifier, &typeDef);
