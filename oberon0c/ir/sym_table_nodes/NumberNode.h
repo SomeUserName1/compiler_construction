@@ -10,14 +10,14 @@
 
 class NumberNode : public DeclarationNode{
   private:
-    std::string _type;
+    type _type;
     int _value;
     bool _isConst;
 
   public:
     NumberNode(std::shared_ptr<ASTNode> parent, std::vector<std::shared_ptr<ASTNode>> children,
               std::shared_ptr<SymbolTable> &sym_table, std::string &name, int value, bool isConst);
-    const std::string getType() const;
+    const type getType() const;
     const int getValue() const;
     void setValue(int new_val);
 };

@@ -9,6 +9,8 @@
 #include <ASTNode.h>
 #include <SymbolTable.h>
 
+enum type {INTEGER};
+
 class DeclarationNode : public ASTNode {
   private:
     std::shared_ptr<SymbolTable> _sym_table;

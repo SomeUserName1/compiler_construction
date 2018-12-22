@@ -1,7 +1,3 @@
-#include <utility>
-
-#include <utility>
-
 #include "NumberNode.h"
 
 NumberNode::NumberNode(std::shared_ptr<ASTNode> parent,
@@ -11,9 +7,10 @@ NumberNode::NumberNode(std::shared_ptr<ASTNode> parent,
                        int value,
                        bool isConst)
                        : DeclarationNode(std::move(parent), std::move(children), sym_table, name),
-                          _type("int"), _value(value), _isConst(isConst){}
+                          _type(INTEGER), _value(value), _isConst
+                                 (isConst){}
 
-const std::string NumberNode::getType() const {
+const type NumberNode::getType() const {
   return this->_type;
 }
 const int NumberNode::getValue() const {

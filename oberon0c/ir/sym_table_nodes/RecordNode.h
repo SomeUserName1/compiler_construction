@@ -8,15 +8,16 @@
 #include "DeclarationNode.h"
 class RecordNode : DeclarationNode {
   private:
-    int no_fields;
+    int _no_fields;
 
   public:
-    ArrayNode(std::shared_ptr<ASTNode> parent, std::vector<std::shared_ptr<ASTNode>> children,
-        std::shared_ptr<SymbolTable> sym_table, std::string name, int size, std::string type);
+    RecordNode(std::shared_ptr<ASTNode> parent,
+    std::vector<std::shared_ptr<ASTNode>> children,
+        std::shared_ptr<SymbolTable> sym_table, std::string name, int
+               no_fields);
     const int getNoFields();
-    // Deal with all kinds of types (overloading or switch case?)
-    const std::vector<std::shared_ptr<ASTNode>> getValues();
-    const std::shared_ptr<ASTNode> getValue(int position);
+    const std::shared_ptr<DeclarationNode> getField(const std::string &name);
+	const std::vector<std::shared_ptr<DeclarationNode>> getFields();
 };
 
 #endif //OBERON0C_RECORDNODE_H

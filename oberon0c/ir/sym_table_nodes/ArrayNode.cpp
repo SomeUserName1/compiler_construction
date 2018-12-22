@@ -19,7 +19,8 @@ const std::string ArrayNode::getType() {
 
 const std::vector<std::shared_ptr<NumberNode>> ArrayNode::getValues() {
   std::vector<std::shared_ptr<ASTNode>> values = this->getChildren();
-  if (reinterpret_cast<NumberNode &>(*values[0]).getType() == "int") {
+  switch(reinterpret_cast<NumberNode &>(*values[0]).getType()) {
+  case "int":
     std::vector<std::shared_ptr<NumberNode>> number_values(values.begin(), values.end());
     return number_values;
   } else {
