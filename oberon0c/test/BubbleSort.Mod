@@ -19,6 +19,7 @@ VAR a: ARRAY Dim OF INTEGER;
     p: Point2D;
     c: ARRAY Dim1 OF INTEGER;
     d: Point3D;
+    o,r,q : INTEGER;
     e: Point7D;
 
 (* Initializes the array. *)

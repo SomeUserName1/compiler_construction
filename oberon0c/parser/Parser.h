@@ -21,6 +21,7 @@ private:
 
 	std::vector<std::shared_ptr<SymbolTable>> symbolTables_;
 	std::shared_ptr<SymbolTable> currentTable_;
+	std::unordered_map<Symbol*, std::shared_ptr<SymbolTable>> recordsSymbolTables_;
 
 
 

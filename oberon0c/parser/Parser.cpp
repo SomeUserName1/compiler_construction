@@ -184,7 +184,21 @@ const Node* Parser::var_declarations() {
 	switch (typeDef.getNodeType()) {
 		case (NodeType::identifier): {
 			for (Node identifier : identifiers) {
-				addType(&identifier, &typeDef, true);
+				switch (currentTable_->getSymbol(&typeDef.getValue())->getSymbolType()) {
+				case SymbolType::array:
+					addArray(&identifier, &typeDef, true);
+					break;
+				case SymbolType::record: {
+					addRecord(node, &identifier, &typeDef, true);
+					Symbol* identifierSymbol = currentTable_->getSymbol(&identifier.getValue());
+					Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef.getValue());
+					recordsSymbolTables_[identifierSymbol] = recordsSymbolTables_[typeDefSymbol];
+					break;
+				}
+				case SymbolType::type:
+					addType(&identifier, &typeDef, true);
+					break;
+				}
 			}
 		}
 			break;
@@ -694,7 +708,10 @@ const Node* Parser::selector(const Node * preceedingIdentifier)
 
 			// Find the receferenced identifier in the records inner symbol table
 			const Node* identifier = ident();
-			std::shared_ptr<SymbolTable> recordsIdentifiers = preceedingIdentifier->getSymbolTable();
+			Symbol* preceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
+			//Symbol* preceedingSymbolType = preceedingSymbol->getTypes()->at(0);
+
+			std::shared_ptr<SymbolTable> recordsIdentifiers = recordsSymbolTables_[preceedingSymbol];
 			Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
 			failUndeclaredSymbol(identifiersSymbol, identifier);
 			failIfNotAVariable(identifiersSymbol);
@@ -941,11 +958,16 @@ void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef, bool
 	}
 
 	// Finished adding symbols to lexical subscope. Adding RecordType to current scope.
+	std::shared_ptr<SymbolTable> recordsSymbolTable = currentTable_;
 	currentTable_ = node->getSymbolTable();
 	Symbol newRecord = Symbol(identifier->getValue(), recordTypes, SymbolType::record, asVariable);
 	if (currentTable_->insert(newRecord)) {
 		failSymbolExists(&newRecord);
 	}
+
+	// Add the records symbol table to the map.
+	Symbol* recordsSymbol = currentTable_->getSymbol(newRecord.getName());
+	recordsSymbolTables_.insert(std::unordered_map<Symbol*, std::shared_ptr<SymbolTable>>::value_type(recordsSymbol, recordsSymbolTable));
 }
 
 void Parser::postParserTypeCheck(const Node * module)
