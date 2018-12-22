@@ -107,6 +107,14 @@ private:
 	void addArray(const Node* identifier, Node* typeDef);
 	void addRecord(Node* node, const Node* identifier, Node* typeDef);
 
+	void postParserTypeCheck(const Node* module);
+	Symbol* typeOfSimpleExpression(const Node* simpleExpression);
+	Symbol* typeOfExpression(const Node* expression);
+	Symbol* typeOfTerm(const Node* term);
+	Symbol* typeOfFactor(const Node* factor);
+	Symbol* typeOfSelector(const Node* selector);
+	Symbol* typeOfIdentifier(const Node* identifier);
+
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
     ~Parser();

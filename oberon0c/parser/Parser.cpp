@@ -931,6 +931,112 @@ void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef)
 	}
 }
 
+void Parser::postParserTypeCheck(const Node * module)
+{
+	switch (module->getNodeType()) {
+	case (NodeType::module):
+		break;
+	case (NodeType::declarations):
+		break;
+	case (NodeType::const_declarations):
+		// Check that all referenced identifiers evaluate to integers or constants.
+		break;
+	case (NodeType::type_declarations):
+		break;
+	case (NodeType::var_declarations):
+		break;
+	case (NodeType::procedure_declaration):
+		break;
+	case (NodeType::identifier):
+		break;
+	case (NodeType::number):
+		break;
+	case (NodeType::binary_op):
+		break;
+	case (NodeType::expression):
+		break;
+	case (NodeType::simple_expression):
+		break;
+	case (NodeType::term):
+		break;
+	case (NodeType::factor):
+		break;
+	case (NodeType::type):
+		break;
+	case (NodeType::record_type):
+		break;
+	case (NodeType::array_type):
+		break;
+	case (NodeType::field_list):
+		break;
+	case (NodeType::ident_list):
+		break;
+	case (NodeType::procedure_heading):
+		break;
+	case (NodeType::procedure_body):
+		break;
+	case (NodeType::formal_parameters):
+		break;
+	case (NodeType::fp_section):
+		break;
+	case (NodeType::statement_sequence):
+		break;
+	case (NodeType::statement):
+		break;
+	case (NodeType::if_statement):
+		break;
+	case (NodeType::while_statement):
+		break;
+	case (NodeType::acutal_parameters):
+		break;
+	case (NodeType::selector):
+		break;
+	case (NodeType::assignment):
+		break;
+	case (NodeType::procedure_call):
+		break;
+	}
+}
+
+Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
+{
+	return nullptr;
+}
+
+Symbol * Parser::typeOfExpression(const Node * expression)
+{
+	return nullptr;
+}
+
+Symbol * Parser::typeOfTerm(const Node * term)
+{
+	return nullptr;
+}
+
+Symbol * Parser::typeOfFactor(const Node * factor)
+{
+	return nullptr;
+}
+
+Symbol * Parser::typeOfSelector(const Node * selector)
+{
+	return nullptr;
+}
+
+Symbol * Parser::typeOfIdentifier(const Node * identifier)
+{
+	std::shared_ptr<SymbolTable> st = identifier->getSymbolTable();
+	Symbol* symbol = st->getSymbol(&identifier->getValue());
+	std::vector<Symbol*>* types = symbol->getTypes();
+	if (types->size() > 0) {
+		// It's a record. Irrelevant to return a type.
+		return nullptr;
+	}
+	else {
+		return types->at(0);
+	}
+}
+
 void Parser::module_t()
 {
 	std::string s = std::string("\"MODULE\"");
