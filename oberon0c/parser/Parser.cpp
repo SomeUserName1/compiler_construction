@@ -201,23 +201,6 @@ const Node* Parser::var_declarations() {
 		}
 			break;
 	}
-	// Extract subnodes for all identifiers and their type
-	/*std::vector<Node> identifiers = identifiersNode->getChildren();
-	Node typeIdentifier = typeDef->getChildren().at(0);
-
-	// Create specified type and check validity.
-	Symbol* type = currentTable_->getSymbol(&typeIdentifier.getValue());
-	std::vector<Symbol*> types;
-	types.push_back(type);
-	failUndeclaredSymbol(type, &typeIdentifier);
-	failIfNotAType(type);
-
-	for (Node identifier : identifiers) {
-		Symbol newIdent(identifier.getValue(), types, SymbolType::variable);
-		if (currentTable_->insert(newIdent)) {
-			failSymbolExists(&newIdent);
-		}
-	}*/
 
 	return node;
 }
