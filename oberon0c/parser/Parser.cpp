@@ -479,7 +479,7 @@ const Node* Parser::procedure_heading() {
 			Node varIdentifiers = children.at(identPosition);
 			Node typeDef = children.at(++identPosition);
 
-			switch (typeDef.getNodeType()) {
+			switch (typeDef.getChildren().at(0).getNodeType()) {
 			case (NodeType::identifier): {
 				for (Node identifier : varIdentifiers.getChildren()) {
 					addType(&identifier, &typeDef);
