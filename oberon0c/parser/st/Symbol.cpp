@@ -20,3 +20,8 @@ SymbolType Symbol::getSymbolType() const
 {
 	return symbolType_;
 }
+
+std::vector<Symbol*>* Symbol::getTypes()
+{
+	return &types_;
+}

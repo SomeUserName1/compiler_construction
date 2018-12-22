@@ -21,4 +21,5 @@ public:
 
 	std::string * getName();
 	SymbolType getSymbolType() const;
+	std::vector<Symbol *>* getTypes();
 };
