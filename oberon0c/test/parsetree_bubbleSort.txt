@@ -84,6 +84,17 @@ MODULE
 |-|-|-|-|-|-|-|-|-number: 6
 |-|-|-|-|-type
 |-|-|-|-|-|-identifier: INTEGER
+|-|-TYPE declarations
+|-|-|-identifier: Point7D
+|-|-|-type
+|-|-|-|-array_type
+|-|-|-|-|-expression
+|-|-|-|-|-|-simple_expression
+|-|-|-|-|-|-|-term
+|-|-|-|-|-|-|-|-factor
+|-|-|-|-|-|-|-|-|-number: 7
+|-|-|-|-|-type
+|-|-|-|-|-|-identifier: Point6D
 |-|-var_declarations
 |-|-|-ident_list
 |-|-|-|-identifier: a

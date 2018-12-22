@@ -5,10 +5,10 @@ SymbolTable::SymbolTable() {
 	level_ = 0;
 	parent_ = nullptr;
 
-	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::type));
-	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::type));
-	//this->insert(Symbol("ARRAY", std::vector<Symbol *>(), SymbolType::type));
-	this->insert(Symbol("CONSTANT", std::vector<Symbol *>(), SymbolType::type)); // Kann vielleicht auch raus
+	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::type, false));
+	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::type, false));
+	//this->insert(Symbol("ARRAY", std::vector<Symbol *>(), SymbolType::type, false));
+	this->insert(Symbol("CONSTANT", std::vector<Symbol *>(), SymbolType::type, false)); // Kann vielleicht auch raus
 }
 
 // Creates a SymbolTable for a child scope of another lexical scope.

@@ -12,13 +12,14 @@ TYPE Point2D = RECORD x, y: INTEGER END;
      Point4D = RECORD w, x, y, z: INTEGER END;
      Point5D = Point4D;
      Point6D = ARRAY 6 OF INTEGER;
+     Point7D = RECORD x,y,z: Point6D END;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;
     p: Point2D;
     c: ARRAY Dim1 OF INTEGER;
     d: Point3D;
-    x,y,z : INTEGER;
+    e: Point7D;
 
 (* Initializes the array. *)
 PROCEDURE Init();
@@ -67,5 +68,7 @@ END Bubble;
 (* Main program. *)
 BEGIN
     Init;
-    Bubble()
+    Bubble();
+    (* Testing sophisticated selectors *)
+    e.x[2] := 1;
 END BubbleSort.

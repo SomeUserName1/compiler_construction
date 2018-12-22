@@ -53,7 +53,7 @@ const Node* Parser::module() {
 	const Node* identifier = ident();
 	moduleNode->addChild(*identifier);
 	semicolon_t();
-	Symbol newDeclaration = Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module);
+	Symbol newDeclaration = Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module, false);
 	if (currentTable_->insert(newDeclaration)) {
 		failSymbolExists(&newDeclaration);
 	}
@@ -130,7 +130,7 @@ const Node* Parser::const_declarations() {
 	Symbol * symbol = currentTable_->getSymbol(&std::string("INTEGER"));
 	std::vector<Symbol*> types;
 	types.push_back(symbol);
-	Symbol newConst = Symbol(identifier->getValue(), types, SymbolType::constant);
+	Symbol newConst = Symbol(identifier->getValue(), types, SymbolType::constant, true);
 	if (currentTable_->insert(newConst)) {
 		failSymbolExists(&newConst);
 	}
@@ -153,15 +153,15 @@ const Node* Parser::type_declarations() {
 	Node typeDef = typeNode->getChildren().at(0);
 	switch (typeDef.getNodeType()) {
 		case (NodeType::identifier): {
-			addType(identifier, &typeDef);
+			addType(identifier, &typeDef, false);
 		}
 			break;
 		case (NodeType::array_type): {
-			addArray(identifier, &typeDef);
+			addArray(identifier, &typeDef, false);
 		}
 			break;
 		case (NodeType::record_type): {
-			addRecord(node, identifier, &typeDef);
+			addRecord(node, identifier, &typeDef, false);
 		}
 			break;
 	}
@@ -184,19 +184,19 @@ const Node* Parser::var_declarations() {
 	switch (typeDef.getNodeType()) {
 		case (NodeType::identifier): {
 			for (Node identifier : identifiers) {
-				addType(&identifier, &typeDef);
+				addType(&identifier, &typeDef, true);
 			}
 		}
 			break;
 		case (NodeType::array_type): {
 			for (Node identifier : identifiers) {
-				addArray(&identifier, &typeDef);
+				addArray(&identifier, &typeDef, true);
 			}
 		}
 			break;
 		case (NodeType::record_type): {
 			for (Node identifier : identifiers) {
-				addRecord(node, &identifier, &typeDef);
+				addRecord(node, &identifier, &typeDef, true);
 			}
 		}
 			break;
@@ -296,6 +296,7 @@ const Node* Parser::factor() {
 		// Check if the identifier is declared and appropriate (a record or an array).
 		const Node* identifier = ident();
 		failUndeclaredSymbol(identifier);
+		failIfNotAVariable(identifier);
 		node->addChild(*identifier);
 
 		switch (scanner_->peekToken()->getType()) {
@@ -324,8 +325,7 @@ const Node* Parser::factor() {
 				Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
 				SymbolType symType = symbol->getSymbolType();
 				if (symType != SymbolType::constant
-					&& symType != SymbolType::type
-					&& symType != SymbolType::variable) {
+					&& symType != SymbolType::type) {
 					std::string msg = std::string(identifier->getValue() + " is not an appropriate type");
 					failSymbol(msg);
 				}
@@ -442,7 +442,7 @@ const Node* Parser::procedure_heading() {
 	node->addChild(*procIdent);
 
 	// Add symbol for procedure.
-	Symbol procSymbol = Symbol(procIdent->getValue(), std::vector<Symbol*>(), SymbolType::procedure);
+	Symbol procSymbol = Symbol(procIdent->getValue(), std::vector<Symbol*>(), SymbolType::procedure, true);
 	if (currentTable_->insert(procSymbol)) {
 		failSymbolExists(&procSymbol);
 	}
@@ -466,19 +466,19 @@ const Node* Parser::procedure_heading() {
 			switch (typeDef.getNodeType()) {
 			case (NodeType::identifier): {
 				for (Node identifier : varIdentifiers.getChildren()) {
-					addType(&identifier, &typeDef);
+					addType(&identifier, &typeDef, true);
 				}
 			}
 					break;
 			case (NodeType::array_type): {
 				for (Node identifier : varIdentifiers.getChildren()) {
-					addArray(&identifier, &typeDef);
+					addArray(&identifier, &typeDef, true);
 				}
 			}
 				break;
 			case (NodeType::record_type): {
 				for (Node identifier : varIdentifiers.getChildren()) {
-					addRecord(node, &identifier, &typeDef);
+					addRecord(node, &identifier, &typeDef, true);
 				}
 			}
 				break;
@@ -586,6 +586,7 @@ const Node* Parser::A()
 
 	const Token* peeked = scanner_->peekToken();
 	if (peeked->getType() == TokenType::op_becomes) {
+		failIfNotAVariable(identifier);
 		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
 		node->addChild(*identifier);
 		// Check the previously peeked token to decide if the identifier is used as record or array
@@ -602,8 +603,7 @@ const Node* Parser::A()
 		case TokenType::op_becomes: {
 			Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
 			if (symbol->getSymbolType() != SymbolType::constant
-				&& symbol->getSymbolType() != SymbolType::type
-				&& symbol->getSymbolType() != SymbolType::variable) {
+				&& symbol->getSymbolType() != SymbolType::type) {
 				std::string msg = std::string(identifier->getValue() + " is not a appropriate type");
 				failSymbol(msg);
 			}
@@ -694,10 +694,10 @@ const Node* Parser::selector(const Node * preceedingIdentifier)
 
 			// Find the receferenced identifier in the records inner symbol table
 			const Node* identifier = ident();
-			Node child = preceedingIdentifier->getChildren().at(0);
-			std::shared_ptr<SymbolTable> recordsIdentifiers = child.getSymbolTable();
-			recordsIdentifiers->getSymbol(&identifier->getValue());
-			failUndeclaredSymbol(identifier);
+			std::shared_ptr<SymbolTable> recordsIdentifiers = preceedingIdentifier->getSymbolTable();
+			Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
+			failUndeclaredSymbol(identifiersSymbol, identifier);
+			failIfNotAVariable(identifiersSymbol);
 
 			node->addChild(*identifier);
 		}
@@ -796,8 +796,7 @@ void Parser::failIfNotAType(Symbol *identifier) {
 	const SymbolType sType = identifier->getSymbolType();
 	if (sType == SymbolType::module
 		|| sType == SymbolType::procedure
-		|| sType == SymbolType::constant
-		|| sType == SymbolType::variable) {
+		|| sType == SymbolType::constant) {
 		std::stringstream ss;
 		ss << identifier->getName() << " is not a type.";
 		logger_->error(word->getPosition(), ss.str());
@@ -856,6 +855,24 @@ void Parser::failIfNotProcedure(const Node * identifier)
 	throw std::invalid_argument("You failed!" + ss.str());
 }
 
+void Parser::failIfNotAVariable(Symbol * variable)
+{
+	if (variable->isVariable()) {
+		return;
+	}
+
+	std::stringstream ss;
+	ss << *variable->getName() << " is a type";
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed!" + ss.str());
+}
+
+void Parser::failIfNotAVariable(const Node * identifier)
+{
+	Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
+	failIfNotAVariable(symbol);
+}
+
 void Parser::newSymbolTable()
 {
 	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_);
@@ -863,7 +880,7 @@ void Parser::newSymbolTable()
 	currentTable_ = newTable;
 }
 
-void Parser::addType(const Node * identifier, Node * typeDef)
+void Parser::addType(const Node * identifier, Node * typeDef, bool asVariable)
 {		
 	// New type is an "alias" of an existing type. Check if that existing type exists
 	Symbol* type = currentTable_->getSymbol(&typeDef->getValue());
@@ -871,13 +888,13 @@ void Parser::addType(const Node * identifier, Node * typeDef)
 	// The type exists. Add the alias of that type to the symbol table.
 	std::vector<Symbol*> types;
 	types.push_back(type);
-	Symbol newAlias = Symbol(identifier->getValue(), types, SymbolType::type);
+	Symbol newAlias = Symbol(identifier->getValue(), types, SymbolType::type, asVariable);
 	if (currentTable_->insert(newAlias)) {
 		failSymbolExists(&newAlias);
 	}
 }
 
-void Parser::addArray(const Node * identifier, Node * typeDef)
+void Parser::addArray(const Node * identifier, Node * typeDef, bool asVariable)
 {
 	// New type is an array. Check if the specified array type exists.
 	Node typeDef2 = typeDef->getChildren().at(1).getChildren().at(0);
@@ -888,13 +905,13 @@ void Parser::addArray(const Node * identifier, Node * typeDef)
 	// The type exists. Add the array of that type to the symbol table.
 	std::vector<Symbol*> types;
 	types.push_back(type);
-	Symbol newArray = Symbol(identifier->getValue(), types, SymbolType::array);
+	Symbol newArray = Symbol(identifier->getValue(), types, SymbolType::array, asVariable);
 	if (currentTable_->insert(newArray)) {
 		failSymbolExists(&newArray);
 	}
 }
 
-void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef)
+void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef, bool asVariable)
 {
 	// New lexical scope
 	newSymbolTable();
@@ -915,7 +932,7 @@ void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef)
 		// Type exists. Add the identifiers.
 		std::vector<Node> identifiers = fieldList.getChildren().at(0).getChildren();
 		for (Node ident : identifiers) {
-			Symbol newIdent(ident.getValue(), types, SymbolType::variable);
+			Symbol newIdent(ident.getValue(), types, SymbolType::type, true);
 			if (currentTable_->insert(newIdent)) {
 				failSymbolExists(&newIdent);
 			}
@@ -925,7 +942,7 @@ void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef)
 
 	// Finished adding symbols to lexical subscope. Adding RecordType to current scope.
 	currentTable_ = node->getSymbolTable();
-	Symbol newRecord = Symbol(identifier->getValue(), recordTypes, SymbolType::record);
+	Symbol newRecord = Symbol(identifier->getValue(), recordTypes, SymbolType::record, asVariable);
 	if (currentTable_->insert(newRecord)) {
 		failSymbolExists(&newRecord);
 	}

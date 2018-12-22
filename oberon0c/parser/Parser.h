@@ -100,12 +100,14 @@ private:
 	void failIfNotAArray(const Node * identifier);
 	void failNetiherRecordNorArray(const Node * identifier);
 	void failIfNotProcedure(const Node * identifier);
+	void failIfNotAVariable(Symbol * variable);
+	void failIfNotAVariable(const Node* identifier);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable();
-	void addType(const Node* identifier, Node* typeDef);
-	void addArray(const Node* identifier, Node* typeDef);
-	void addRecord(Node* node, const Node* identifier, Node* typeDef);
+	void addType(const Node* identifier, Node* typeDef, bool asVariable);
+	void addArray(const Node* identifier, Node* typeDef, bool asVariable);
+	void addRecord(Node* node, const Node* identifier, Node* typeDef, bool asVariable);
 
 	void postParserTypeCheck(const Node* module);
 	Symbol* typeOfSimpleExpression(const Node* simpleExpression);
