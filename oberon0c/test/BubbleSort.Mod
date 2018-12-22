@@ -21,6 +21,7 @@ VAR a: ARRAY Dim OF INTEGER;
     d: Point3D;
     o,r,q : INTEGER;
     e: Point7D;
+    f: RECORD a,b,c: INTEGER END;
 
 (* Initializes the array. *)
 PROCEDURE Init();

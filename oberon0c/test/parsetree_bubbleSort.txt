@@ -87,14 +87,14 @@ MODULE
 |-|-TYPE declarations
 |-|-|-identifier: Point7D
 |-|-|-type
-|-|-|-|-array_type
-|-|-|-|-|-expression
-|-|-|-|-|-|-simple_expression
-|-|-|-|-|-|-|-term
-|-|-|-|-|-|-|-|-factor
-|-|-|-|-|-|-|-|-|-number: 7
-|-|-|-|-|-type
-|-|-|-|-|-|-identifier: Point6D
+|-|-|-|-record_type
+|-|-|-|-|-field_list
+|-|-|-|-|-|-ident_list
+|-|-|-|-|-|-|-identifier: x
+|-|-|-|-|-|-|-identifier: y
+|-|-|-|-|-|-|-identifier: z
+|-|-|-|-|-|-type
+|-|-|-|-|-|-|-identifier: Point6D
 |-|-var_declarations
 |-|-|-ident_list
 |-|-|-|-identifier: a
@@ -133,11 +133,28 @@ MODULE
 |-|-|-|-identifier: Point3D
 |-|-var_declarations
 |-|-|-ident_list
-|-|-|-|-identifier: x
-|-|-|-|-identifier: y
-|-|-|-|-identifier: z
+|-|-|-|-identifier: o
+|-|-|-|-identifier: r
+|-|-|-|-identifier: q
 |-|-|-type
 |-|-|-|-identifier: INTEGER
+|-|-var_declarations
+|-|-|-ident_list
+|-|-|-|-identifier: e
+|-|-|-type
+|-|-|-|-identifier: Point7D
+|-|-var_declarations
+|-|-|-ident_list
+|-|-|-|-identifier: f
+|-|-|-type
+|-|-|-|-record_type
+|-|-|-|-|-field_list
+|-|-|-|-|-|-ident_list
+|-|-|-|-|-|-|-identifier: a
+|-|-|-|-|-|-|-identifier: b
+|-|-|-|-|-|-|-identifier: c
+|-|-|-|-|-|-type
+|-|-|-|-|-|-|-identifier: INTEGER
 |-|-procedure_declaration
 |-|-|-procedure_heading
 |-|-|-|-identifier: Init
@@ -472,3 +489,19 @@ MODULE
 |-|-|-|-identifier: Bubble
 |-|-|-|-selector
 |-|-|-|-acutal_parameters
+|-|-statement
+|-|-|-assignment
+|-|-|-|-identifier: e
+|-|-|-|-selector
+|-|-|-|-|-identifier: x
+|-|-|-|-|-expression
+|-|-|-|-|-|-simple_expression
+|-|-|-|-|-|-|-term
+|-|-|-|-|-|-|-|-factor
+|-|-|-|-|-|-|-|-|-number: 2
+|-|-|-|-expression
+|-|-|-|-|-simple_expression
+|-|-|-|-|-|-term
+|-|-|-|-|-|-|-factor
+|-|-|-|-|-|-|-|-number: 1
+|-|-statement
