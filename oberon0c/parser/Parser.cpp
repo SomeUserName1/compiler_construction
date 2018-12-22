@@ -1028,9 +1028,12 @@ Symbol * Parser::typeOfIdentifier(const Node * identifier)
 	std::shared_ptr<SymbolTable> st = identifier->getSymbolTable();
 	Symbol* symbol = st->getSymbol(&identifier->getValue());
 	std::vector<Symbol*>* types = symbol->getTypes();
-	if (types->size() > 0) {
+	if (types->size() > 1) {
 		// It's a record. Irrelevant to return a type.
 		return nullptr;
+	}
+	else if (types->size() == 0) {
+		throw std::invalid_argument("Tried to infer a type of something that is not a type");
 	}
 	else {
 		return types->at(0);
