@@ -715,28 +715,6 @@ const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * pr
 		tokenTypes->push_back(peekTokenType);
 
 		peekTokenType = scanner_->peekToken()->getType();
-		/*std::vector<const Node*> selectChildren = select->getChildren();
-
-		// Check if the selector is again a selectable identifier and if so make it the next preceeding symbol.
-		// Check also if the next preceeding identifier is of an appropriate type for the next symbol.
-		if (selectChildren.size() > 0) {
-			const Node* preceedingCandidate = selectChildren.at(0);
-			if (preceedingCandidate->getNodeType() == NodeType::identifier) {
-				Symbol* currentPreceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
-				std::shared_ptr<SymbolTable> nextPreceedingSymbolTable = recordsSymbolTables_[currentPreceedingSymbol];
-				Symbol* nextPreceedingSymbol = nextPreceedingSymbolTable->getSymbol(&preceedingCandidate->getValue());
-
-				switch (scanner_->peekToken()->getType()) {
-				case TokenType::period:
-					failIfNotARecord(preceedingCandidate);
-					break;
-				case TokenType::lbrack:
-					failIfNotAArray(preceedingCandidate);
-					break;
-				}
-				preceedingIdentifier = preceedingCandidate;
-			}
-		}*/
 	}
 
 	for (int i = 0; i < (int)(selectors->size()) - 1; i++) {
