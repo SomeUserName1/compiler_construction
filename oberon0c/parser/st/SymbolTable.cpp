@@ -1,5 +1,27 @@
 #include "SymbolTable.h"
 
+void SymbolTable::printTreeRec(std::ostream & stream, int depth) const
+{
+	for (int i = 0; i < depth; i++) {
+		stream << "|-";
+	}
+	stream << name_ << ":" << std::endl;
+
+	depth++;
+
+	for (auto pair : symbolTable_) {
+		Symbol symbol = pair.second;
+		for (int i = 0; i < depth; i++) {
+			stream << "|-";
+		}
+		stream << symbol << std::endl;
+	}
+
+	for (auto child : children_) {
+		child->printTreeRec(stream, depth);
+	}
+}
+
 // Creates a SymbolTable for the outermost lexical scope
 SymbolTable::SymbolTable(std::string name) {
 	level_ = 0;
@@ -103,3 +125,14 @@ std::shared_ptr<SymbolTable> SymbolTable::deepCopy(std::string name)
 	return std::make_shared<SymbolTable>(parent_, name, symbolTable_, children_);
 }
 
+void SymbolTable::printTree(std::ostream & stream) const
+{
+	printTreeRec(stream, 0);
+}
+
+std::ostream & operator<<(std::ostream & stream, const SymbolTable & node)
+{
+	node.printTree(stream);
+
+	return stream;
+}

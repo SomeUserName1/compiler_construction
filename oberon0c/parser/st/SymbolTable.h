@@ -15,6 +15,8 @@ private:
 	std::vector<std::shared_ptr<SymbolTable>> children_;
 	std::string name_;
 
+	void printTreeRec(std::ostream &stream, int depth) const;
+
 public:
 	   
 	explicit SymbolTable(std::string name);
@@ -33,5 +35,9 @@ public:
 	std::shared_ptr<SymbolTable> getChild(std::string childsName);
 
 	std::shared_ptr<SymbolTable> deepCopy(std::string name);
+
+	virtual void printTree(std::ostream &stream) const;
+	//void print(std::ostream & stream) const;
+	friend std::ostream& operator<<(std::ostream &stream, const SymbolTable &node);
 };
 #endif

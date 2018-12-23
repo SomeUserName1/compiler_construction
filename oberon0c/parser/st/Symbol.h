@@ -1,4 +1,6 @@
 #include <vector>
+#include <ostream>
+#include <string>
 
 //enum class Type : char {
 //	integer, boolean, array, constant
@@ -28,4 +30,7 @@ public:
 	bool isVariable() const;
 
 	Symbol copy(std::string name);
+
+	void print(std::ostream & stream) const;
+	friend std::ostream& operator<<(std::ostream &stream, const Symbol &node);
 };

@@ -24,6 +24,7 @@ const std::unique_ptr<const Node> Parser::parse() {
 	tree = nullptr;
 	   
     std::cout << *parse_tree << std::endl;
+	std::cout << *symbolTables_.front() << std::endl;
 
     return parse_tree;
 }

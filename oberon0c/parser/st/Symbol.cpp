@@ -41,3 +41,42 @@ Symbol Symbol::copy(std::string name)
 {
 	return Symbol(name, types_, symbolType_, isVariable_);
 }
+
+void Symbol::print(std::ostream & stream) const
+{
+	stream << name_ << ": ";
+	switch (symbolType_) {
+	case SymbolType::array:
+		stream << "Array";
+		break;
+	case SymbolType::constant:
+		stream << "Constant";
+		break;
+	case SymbolType::module:
+		stream << "Module";
+		break;
+	case SymbolType::procedure:
+		stream << "Procedure";
+		break;
+	case SymbolType::record:
+		stream << "Record";
+		break;
+	case SymbolType::type:
+		stream << "Type";
+		break;
+	}
+
+	if (isVariable_) {
+		stream << " as Variable";
+	}
+	else {
+		stream << " as TypeDef";
+	}
+}
+
+std::ostream & operator<<(std::ostream & stream, const Symbol & symbol)
+{
+	symbol.print(stream);
+
+	return stream;
+}
