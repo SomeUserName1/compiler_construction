@@ -32,7 +32,7 @@ class Node {
 private:
     NodeType nodeType_;
     FilePos pos_;
-	std::vector<Node> children_;
+	std::vector<const Node*> children_;
 	std::string value_;
 	std::shared_ptr<SymbolTable> symbolTable_;
 
@@ -45,14 +45,14 @@ public:
 
     const NodeType getNodeType() const;
     const FilePos getFilePos() const;
-	const std::vector<Node> getChildren() const;
+	const std::vector<const Node*> getChildren() const;
 	std::shared_ptr<SymbolTable> getSymbolTable() const;
 
     virtual void print(std::ostream &stream) const;
 	virtual void printTree(std::ostream &stream) const;
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 	
-	void addChild(Node node);
+	void addChild(const Node* node);
 	std::string getValue() const;
 };
 

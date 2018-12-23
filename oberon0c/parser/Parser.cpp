@@ -51,7 +51,7 @@ const Node* Parser::module() {
 	module_t();
 	Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
 	const Node* identifier = ident();
-	moduleNode->addChild(*identifier);
+	moduleNode->addChild(identifier);
 	semicolon_t();
 	Symbol newDeclaration = Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module, false);
 	if (currentTable_->insert(newDeclaration)) {
@@ -59,12 +59,12 @@ const Node* Parser::module() {
 	}
 
 	// Declarations
-	moduleNode->addChild(*declarations());
+	moduleNode->addChild(declarations());
 
 	// Optional: Begin (main method)
 	if (scanner_->peekToken()->getType() == TokenType::kw_begin) {
 		begin_t();
-		moduleNode->addChild(*statement_sequence());
+		moduleNode->addChild(statement_sequence());
 	}
 
 	//End
@@ -87,7 +87,7 @@ const Node* Parser::declarations() {
 		const_t();
 
 		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-			node->addChild(*const_declarations());
+			node->addChild(const_declarations());
 		}
 	}
 
@@ -95,7 +95,7 @@ const Node* Parser::declarations() {
 	if (scanner_->peekToken()->getType() == TokenType::kw_type) {
 		type_t();
 		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-			node->addChild(*type_declarations());
+			node->addChild(type_declarations());
 		}
 	}
 
@@ -103,14 +103,14 @@ const Node* Parser::declarations() {
 	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
 		var_t();
 		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-			node->addChild(*var_declarations());
+			node->addChild(var_declarations());
 		}
 	}
 
 
 	// Optional Procedures
 	while (scanner_->peekToken()->getType() == TokenType::kw_procedure) {
-		node->addChild(*procedure_declaration());
+		node->addChild(procedure_declaration());
 	}
 
 	return node;
@@ -121,9 +121,9 @@ const Node* Parser::const_declarations() {
 
 	// Processing one constant
 	const Node * identifier = ident();
-	node->addChild(*identifier);
+	node->addChild(identifier);
 	equals_symbol_t();
-	node->addChild(*expression());
+	node->addChild(expression());
 	semicolon_t();
 
 	// Add processed constant to the symbol table
@@ -143,25 +143,25 @@ const Node* Parser::type_declarations() {
 
 	// Processing one type
 	const Node * identifier = ident();
-	node->addChild(*identifier);
+	node->addChild(identifier);
 	equals_symbol_t();
 	const Node * typeNode = type();
-	node->addChild(*typeNode);
+	node->addChild(typeNode);
 	semicolon_t();
 
 	// Add processed type to the symbol table
-	Node typeDef = typeNode->getChildren().at(0);
-	switch (typeDef.getNodeType()) {
+	const Node* typeDef = typeNode->getChildren().at(0);
+	switch (typeDef->getNodeType()) {
 		case (NodeType::identifier): {
-			addType(identifier, &typeDef, false);
+			addType(identifier, typeDef, false);
 		}
 			break;
 		case (NodeType::array_type): {
-			addArray(identifier, &typeDef, false);
+			addArray(identifier, typeDef, false);
 		}
 			break;
 		case (NodeType::record_type): {
-			addRecord(node, identifier, &typeDef, false);
+			addRecord(node, identifier, typeDef, false);
 		}
 			break;
 	}
@@ -173,44 +173,44 @@ const Node* Parser::var_declarations() {
 	Node* node = new Node(NodeType::var_declarations, word->getPosition(), currentTable_);
 
 	const Node* identifiersNode = ident_list();
-	node->addChild(*identifiersNode);
+	node->addChild(identifiersNode);
 	double_colon_t();
 	const Node* typeNode = type();
-	node->addChild(*typeNode);
+	node->addChild(typeNode);
 	semicolon_t();
 
-	std::vector<Node> identifiers = identifiersNode->getChildren();
-	Node typeDef = typeNode->getChildren().at(0);
-	switch (typeDef.getNodeType()) {
+	std::vector<const Node *> identifiers = identifiersNode->getChildren();
+	const Node* typeDef = typeNode->getChildren().at(0);
+	switch (typeDef->getNodeType()) {
 		case (NodeType::identifier): {
-			for (Node identifier : identifiers) {
-				switch (currentTable_->getSymbol(&typeDef.getValue())->getSymbolType()) {
+			for (const Node* identifier : identifiers) {
+				switch (currentTable_->getSymbol(&typeDef->getValue())->getSymbolType()) {
 				case SymbolType::array:
-					addArray(&identifier, &typeDef, true);
+					addArray(identifier, typeDef, true);
 					break;
 				case SymbolType::record: {
-					addRecord(node, &identifier, &typeDef, true);
-					Symbol* identifierSymbol = currentTable_->getSymbol(&identifier.getValue());
-					Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef.getValue());
+					addRecord(node, identifier, typeDef, true);
+					Symbol* identifierSymbol = currentTable_->getSymbol(&identifier->getValue());
+					Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef->getValue());
 					recordsSymbolTables_[identifierSymbol] = recordsSymbolTables_[typeDefSymbol];
 					break;
 				}
 				case SymbolType::type:
-					addType(&identifier, &typeDef, true);
+					addType(identifier, typeDef, true);
 					break;
 				}
 			}
 		}
 			break;
 		case (NodeType::array_type): {
-			for (Node identifier : identifiers) {
-				addArray(&identifier, &typeDef, true);
+			for (const Node* identifier : identifiers) {
+				addArray(identifier, typeDef, true);
 			}
 		}
 			break;
 		case (NodeType::record_type): {
-			for (Node identifier : identifiers) {
-				addRecord(node, &identifier, &typeDef, true);
+			for (const Node* identifier : identifiers) {
+				addRecord(node, identifier, typeDef, true);
 			}
 		}
 			break;
@@ -222,9 +222,9 @@ const Node* Parser::var_declarations() {
 const Node* Parser::procedure_declaration() {
 	Node* node = new Node(NodeType::procedure_declaration, word->getPosition(), currentTable_);
 
-	node->addChild(*procedure_heading());
+	node->addChild(procedure_heading());
 	semicolon_t();
-	node->addChild(*procedure_body());
+	node->addChild(procedure_body());
 
 	// TODO currentTable_ to parent
 	currentTable_ = node->getSymbolTable();
@@ -235,14 +235,14 @@ const Node* Parser::procedure_declaration() {
 const Node* Parser::expression() {
 	Node* node = new Node(NodeType::expression, word->getPosition(), currentTable_);
 
-	node->addChild(*simple_expression());
+	node->addChild(simple_expression());
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::op_eq || type == TokenType::op_neq
 		|| type == TokenType::op_lt || type == TokenType::op_leq
 		|| type == TokenType::op_gt || type == TokenType::op_geq) {
-		node->addChild(*binary_op());
-		node->addChild(*simple_expression());
+		node->addChild(binary_op());
+		node->addChild(simple_expression());
 	}
 
 	return node;
@@ -253,15 +253,15 @@ const Node* Parser::simple_expression() {
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::op_plus || type == TokenType::op_minus) {
-		node->addChild(*binary_op());
+		node->addChild(binary_op());
 	}
-	node->addChild(*term());
+	node->addChild(term());
 
 	type = scanner_->peekToken()->getType();
 	while (type == TokenType::op_plus || type == TokenType::op_minus
 		|| type == TokenType::op_or) {
-		node->addChild(*binary_op());
-		node->addChild(*term());
+		node->addChild(binary_op());
+		node->addChild(term());
 
 		type = scanner_->peekToken()->getType();
 	}
@@ -273,13 +273,13 @@ const Node* Parser::simple_expression() {
 const Node* Parser::term() {
 	Node* node = new Node(NodeType::term, word->getPosition(), currentTable_);
 
-	node->addChild(*factor());
+	node->addChild(factor());
 
 	TokenType type = scanner_->peekToken()->getType();
 	while (type == TokenType::op_times || type == TokenType::op_div
 		|| type == TokenType::op_mod || type == TokenType::op_and) {
-		node->addChild(*binary_op());
-		node->addChild(*factor());
+		node->addChild(binary_op());
+		node->addChild(factor());
 
 		type = scanner_->peekToken()->getType();
 	}
@@ -311,7 +311,7 @@ const Node* Parser::factor() {
 		const Node* identifier = ident();
 		failUndeclaredSymbol(identifier);
 		failIfNotAVariable(identifier);
-		node->addChild(*identifier);
+		node->addChild(identifier);
 
 		switch (scanner_->peekToken()->getType()) {
 			case TokenType::period:
@@ -349,19 +349,19 @@ const Node* Parser::factor() {
 				failNetiherRecordNorArray(identifier); //TODO: Check if this makes sense since this could also be a procedure?!
 		}
 
-		node->addChild(*selector(identifier));
+		node->addChild(selector(identifier));
 	}
 	else if (type == TokenType::const_number) {
-        node->addChild(*number());
+        node->addChild(number());
 	}
 	else if (type == TokenType::lparen) {
 		lparen_t();
-		node->addChild(*expression());
+		node->addChild(expression());
 		rparen_t();
 	}
 	else if (type == TokenType::op_not) {
 		not_t();
-		node->addChild(*factor());
+		node->addChild(factor());
 	}
 	else {
 		word = scanner_->nextToken();
@@ -377,13 +377,13 @@ const Node* Parser::type() {
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
-		node->addChild(*ident());
+		node->addChild(ident());
 	}
 	else if (type == TokenType::kw_array) {
-		node->addChild(*array_type());
+		node->addChild(array_type());
 	}
 	else if (type == TokenType::kw_record) {
-		node->addChild(*record_type());
+		node->addChild(record_type());
 	}
 	else {
 	    std::string s = std::string("Unknown error (expected type) type()");
@@ -397,9 +397,9 @@ const Node* Parser::array_type() {
 	Node* node = new Node(NodeType::array_type, word->getPosition(), currentTable_);
 
 	array_t();
-	node->addChild(*expression());
+	node->addChild(expression());
 	of_t();
-	node->addChild(*type());
+	node->addChild(type());
 
 	return node;
 }
@@ -408,12 +408,12 @@ const Node* Parser::record_type() {
 	Node* node = new Node(NodeType::record_type, word->getPosition(), currentTable_);
 
 	record_t();
-	node->addChild(*field_list());
+	node->addChild(field_list());
 
 	TokenType type = scanner_->peekToken()->getType();
 	while (type == TokenType::semicolon) {
 		semicolon_t();
-		node->addChild(*field_list());
+		node->addChild(field_list());
 
 		type = scanner_->peekToken()->getType();
 	}
@@ -427,9 +427,9 @@ const Node* Parser::field_list() {
 
 	TokenType t_type = scanner_->peekToken()->getType();
 	if (t_type == TokenType::const_ident) {
-		node->addChild(*ident_list());
+		node->addChild(ident_list());
 		double_colon_t();
-		node->addChild(*type());
+		node->addChild(type());
 	}
 	return node;
 }
@@ -437,11 +437,11 @@ const Node* Parser::field_list() {
 const Node* Parser::ident_list() {
 	Node* node = new Node(NodeType::ident_list, word->getPosition(), currentTable_);
 
-	node->addChild(*ident());
+	node->addChild(ident());
 
 	while (scanner_->peekToken()->getType() == TokenType::comma) {
 		comma_t();
-		node->addChild(*ident());
+		node->addChild(ident());
 	}
 
 	return node;
@@ -453,7 +453,7 @@ const Node* Parser::procedure_heading() {
 	// Parse procedure identifier
 	procedure_t();
 	const Node* procIdent = ident();
-	node->addChild(*procIdent);
+	node->addChild(procIdent);
 
 	// Add symbol for procedure.
 	Symbol procSymbol = Symbol(procIdent->getValue(), std::vector<Symbol*>(), SymbolType::procedure, true);
@@ -468,31 +468,31 @@ const Node* Parser::procedure_heading() {
 	if (scanner_->peekToken()->getType() == TokenType::lparen) {
 		// Parsing
 		const Node* fParams = formal_parameters();
-		node->addChild(*fParams);
+		node->addChild(fParams);
 
 		// Adding identifiers of procedure parameters
-		for (Node fpSection : fParams->getChildren()) {
-			std::vector<Node> children = fpSection.getChildren();
+		for (const Node* fpSection : fParams->getChildren()) {
+			std::vector<const Node*> children = fpSection->getChildren();
 			size_t identPosition = 0;// children.at(0).getNodeType() != NodeType::var_declarations;
-			Node varIdentifiers = children.at(identPosition);
-			Node typeDef = children.at(++identPosition).getChildren().at(0);
+			const Node* varIdentifiers = children.at(identPosition);
+			const Node* typeDef = children.at(++identPosition)->getChildren().at(0);
 
-			switch (typeDef.getNodeType()) {
+			switch (typeDef->getNodeType()) {
 			case (NodeType::identifier): {
-				for (Node identifier : varIdentifiers.getChildren()) {
-					addType(&identifier, &typeDef, true);
+				for (const Node* identifier : varIdentifiers->getChildren()) {
+					addType(identifier, typeDef, true);
 				}
 			}
 					break;
 			case (NodeType::array_type): {
-				for (Node identifier : varIdentifiers.getChildren()) {
-					addArray(&identifier, &typeDef, true);
+				for (const Node* identifier : varIdentifiers->getChildren()) {
+					addArray(identifier, typeDef, true);
 				}
 			}
 				break;
 			case (NodeType::record_type): {
-				for (Node identifier : varIdentifiers.getChildren()) {
-					addRecord(node, &identifier, &typeDef, true);
+				for (const Node* identifier : varIdentifiers->getChildren()) {
+					addRecord(node, identifier, typeDef, true);
 				}
 			}
 				break;
@@ -507,14 +507,14 @@ const Node* Parser::procedure_body()
 {
 	Node* node = new Node(NodeType::procedure_body, word->getPosition(), currentTable_);
 
-	node->addChild(*declarations());
+	node->addChild(declarations());
 
 	if (scanner_->peekToken()->getType() == TokenType::kw_begin) {
 		begin_t();
-		node->addChild(*statement_sequence());
+		node->addChild(statement_sequence());
 	}
 	end_t();
-	node->addChild(*ident());
+	node->addChild(ident());
 	semicolon_t();
 
 	return node;
@@ -528,10 +528,10 @@ const Node* Parser::formal_parameters()
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::kw_var || type == TokenType::const_ident) {
-		node->addChild(*fp_section());
+		node->addChild(fp_section());
 		while (scanner_->peekToken()->getType() == TokenType::semicolon) {
 			semicolon_t();
-			node->addChild(*fp_section());
+			node->addChild(fp_section());
 		}
 	}
 	rparen_t();
@@ -546,9 +546,9 @@ const Node* Parser::fp_section()
 	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
 		var_t();
 	}
-	node->addChild(*ident_list());
+	node->addChild(ident_list());
 	double_colon_t();
-	node->addChild(*type());
+	node->addChild(type());
 
 	return node;
 }
@@ -557,10 +557,10 @@ const Node* Parser::statement_sequence()
 {
 	Node* node = new Node(NodeType::statement_sequence, word->getPosition(), currentTable_);
 
-	node->addChild(*statement());
+	node->addChild(statement());
 	while (scanner_->peekToken()->getType() == TokenType::semicolon) {
 		semicolon_t();
-		node->addChild(*statement());
+		node->addChild(statement());
 	}
 	return node;
 }
@@ -571,13 +571,13 @@ const Node* Parser::statement()
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
-		node->addChild(*A());
+		node->addChild(A());
 	}
 	else if (type == TokenType::kw_if) {
-		node->addChild(*if_statement());
+		node->addChild(if_statement());
 	}
 	else if (type == TokenType::kw_while) {
-		node->addChild(*while_statement());
+		node->addChild(while_statement());
 	}
 
 
@@ -602,17 +602,17 @@ const Node* Parser::A()
 	if (peeked->getType() == TokenType::op_becomes) {
 		failIfNotAVariable(identifier);
 		node = new Node(NodeType::assignment, word->getPosition(), currentTable_);
-		node->addChild(*identifier);
+		node->addChild(identifier);
 		// Check the previously peeked token to decide if the identifier is used as record or array
 		// and check if the identifier correspondingly is a record or a array.
 		switch (followIdentifier.getType()) {
 		case TokenType::period:
 			failIfNotARecord(identifier);
-			node->addChild(*select);
+			node->addChild(select);
 			break;
 		case TokenType::lbrack:
 			failIfNotAArray(identifier);
-			node->addChild(*select);
+			node->addChild(select);
 			break;
 		case TokenType::op_becomes: {
 			Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
@@ -627,23 +627,23 @@ const Node* Parser::A()
 			failNetiherRecordNorArray(identifier);
 		}
 		becomes_t();
-		node->addChild(*expression());
+		node->addChild(expression());
 	}
 	else {
 		// Procedure could be the identifier or (if present) the last selector behind the identifier.
 		// Note: Actually in the latter case we'd have to check if the procedure hangs behind modules but as we do not have a linker
 		// we cannot do that.
-		std::vector<Node> children = select->getChildren();
+		std::vector<const Node*> children = select->getChildren();
 		//Node* procedure = (children.size() > 0) ? children.back() : identifier;
 		//failIfNotProcedure(procedure);
 		//TODO Activate procedure checking
 
 		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
-		node->addChild(*identifier);
-		node->addChild(*select);
+		node->addChild(identifier);
+		node->addChild(select);
 
 		if (scanner_->peekToken()->getType() == TokenType::lparen) {
-			node->addChild(*actual_parameters());
+			node->addChild(actual_parameters());
 		}
 	}
 
@@ -655,19 +655,19 @@ const Node* Parser::if_statement()
 	Node* node = new Node(NodeType::if_statement, word->getPosition(), currentTable_);
 
 	if_t();
-	node->addChild(*expression());
+	node->addChild(expression());
 	then_t();
-	node->addChild(*statement_sequence());
+	node->addChild(statement_sequence());
 
 	while (scanner_->peekToken()->getType() == TokenType::kw_elsif) {
 		elseif_t();
-		node->addChild(*expression());
+		node->addChild(expression());
 		then_t();
-		node->addChild(*statement_sequence());
+		node->addChild(statement_sequence());
 	}
 	if (scanner_->peekToken()->getType() == TokenType::kw_else) {
 		else_t();
-		node->addChild(*statement_sequence());
+		node->addChild(statement_sequence());
 	}
 	end_t();
 
@@ -679,9 +679,9 @@ const Node* Parser::while_statement()
 	Node* node = new Node(NodeType::while_statement, word->getPosition(), currentTable_);
 
 	while_t();
-	node->addChild(*expression());
+	node->addChild(expression());
 	do_t();
-	node->addChild(*statement_sequence());
+	node->addChild(statement_sequence());
 	end_t();
 
 	return node;
@@ -693,10 +693,10 @@ const Node* Parser::actual_parameters()
 
 	lparen_t();
 	if (scanner_->peekToken()->getType() != TokenType::rparen) {
-		node->addChild(*expression());
+		node->addChild(expression());
 		while (scanner_->peekToken()->getType() == TokenType::comma) {
 			comma_t();
-			node->addChild(*expression());
+			node->addChild(expression());
 		}
 	}
 	rparen_t();
@@ -723,11 +723,11 @@ const Node* Parser::selector(const Node * preceedingIdentifier)
 			failUndeclaredSymbol(identifiersSymbol, identifier);
 			failIfNotAVariable(identifiersSymbol);
 
-			node->addChild(*identifier);
+			node->addChild(identifier);
 		}
 		else {
 			lbrack_t();
-			node->addChild(*expression());
+			node->addChild(expression());
 			rbrack_t();
 		}
 	}
@@ -917,7 +917,7 @@ void Parser::newSymbolTable()
 	currentTable_ = newTable;
 }
 
-void Parser::addType(const Node * identifier, Node * typeDef, bool asVariable)
+void Parser::addType(const Node * identifier, const Node * typeDef, bool asVariable)
 {		
 	// New type is an "alias" of an existing type. Check if that existing type exists
 	Symbol* type = currentTable_->getSymbol(&typeDef->getValue());
@@ -931,12 +931,12 @@ void Parser::addType(const Node * identifier, Node * typeDef, bool asVariable)
 	}
 }
 
-void Parser::addArray(const Node * identifier, Node * typeDef, bool asVariable)
+void Parser::addArray(const Node * identifier, const Node * typeDef, bool asVariable)
 {
 	// New type is an array. Check if the specified array type exists.
-	Node typeDef2 = typeDef->getChildren().at(1).getChildren().at(0);
-	Symbol* type = currentTable_->getSymbol(&typeDef2.getValue());
-	failUndeclaredSymbol(type, &typeDef2);
+	const Node* typeDef2 = typeDef->getChildren().at(1)->getChildren().at(0);
+	Symbol* type = currentTable_->getSymbol(&typeDef2->getValue());
+	failUndeclaredSymbol(type, typeDef2);
 	failIfNotAType(type);
 
 	// The type exists. Add the array of that type to the symbol table.
@@ -948,28 +948,28 @@ void Parser::addArray(const Node * identifier, Node * typeDef, bool asVariable)
 	}
 }
 
-void Parser::addRecord(Node* node, const Node * identifier, Node * typeDef, bool asVariable)
+void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef, bool asVariable)
 {
 	// New lexical scope
 	newSymbolTable();
 
 	// New Type is a record. Check if all specified types exist.
 	std::vector<Symbol*> recordTypes;
-	const std::vector<Node> fieldLists = typeDef->getChildren();
-	for (Node fieldList : fieldLists) {
-		Node identifierList = fieldList.getChildren().at(0);
-		Node typeNode2 = fieldList.getChildren().at(1);
-		Node typeIdentifier = typeNode2.getChildren().at(0);
-		Symbol* type = currentTable_->getSymbol(&typeIdentifier.getValue());
+	const std::vector<const Node*> fieldLists = typeDef->getChildren();
+	for (const Node* fieldList : fieldLists) {
+		const Node* identifierList = fieldList->getChildren().at(0);
+		const Node* typeNode2 = fieldList->getChildren().at(1);
+		const Node* typeIdentifier = typeNode2->getChildren().at(0);
+		Symbol* type = currentTable_->getSymbol(&typeIdentifier->getValue());
 		std::vector<Symbol*> types;
 		types.push_back(type);
-		failUndeclaredSymbol(type, &typeIdentifier);
+		failUndeclaredSymbol(type, typeIdentifier);
 		failIfNotAType(type);
 
 		// Type exists. Add the identifiers.
-		std::vector<Node> identifiers = fieldList.getChildren().at(0).getChildren();
-		for (Node ident : identifiers) {
-			Symbol newIdent(ident.getValue(), types, SymbolType::type, true);
+		std::vector<const Node*> identifiers = fieldList->getChildren().at(0)->getChildren();
+		for (const Node* ident : identifiers) {
+			Symbol newIdent(ident->getValue(), types, SymbolType::type, true);
 			if (currentTable_->insert(newIdent)) {
 				failSymbolExists(&newIdent);
 			}

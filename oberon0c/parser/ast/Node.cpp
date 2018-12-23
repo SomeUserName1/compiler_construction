@@ -23,7 +23,7 @@ const FilePos Node::getFilePos() const
 	return pos_;
 }
 
-const std::vector<Node> Node::getChildren() const {
+const std::vector<const Node*> Node::getChildren() const {
 	return children_;
 }
 
@@ -92,12 +92,12 @@ void Node::printTreeRec(std::ostream & stream, int depth) const
 	this->print(stream);
 	stream << std::endl;
 
-	for (Node child : children_) {
-		child.printTreeRec(stream, depth + 1);
+	for (const Node* child : children_) {
+		child->printTreeRec(stream, depth + 1);
 	}
 }
 
-void Node::addChild(Node node)
+void Node::addChild(const Node* node)
 {
 	children_.push_back(node);
 }

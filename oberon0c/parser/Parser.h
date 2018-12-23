@@ -106,9 +106,9 @@ private:
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable();
-	void addType(const Node* identifier, Node* typeDef, bool asVariable);
-	void addArray(const Node* identifier, Node* typeDef, bool asVariable);
-	void addRecord(Node* node, const Node* identifier, Node* typeDef, bool asVariable);
+	void addType(const Node* identifier, const Node* typeDef, bool asVariable);
+	void addArray(const Node* identifier, const Node* typeDef, bool asVariable);
+	void addRecord(Node* node, const Node* identifier, const Node* typeDef, bool asVariable);
 
 	void postParserTypeCheck(const Node* module);
 	Symbol* typeOfSimpleExpression(const Node* simpleExpression);
