@@ -50,13 +50,14 @@ private:
     const Node* if_statement();
     const Node* while_statement();
     const Node* actual_parameters();
-    const Node* selector(const Node * preceedingIdentifier);
+    const std::shared_ptr<std::vector<const Node*>> selector(const Node * preceedingIdentifier);
     const Node* ident();
 	const Node* number();
 
 	// Added non-terminals
 	const Node* binary_op();
 	const Node* A();
+	const Node* B(const Node* preceeingIdentifier);
 
 	//Terminals
 	void module_t();
@@ -97,8 +98,11 @@ private:
 	void failIfNotAType(Symbol *identifier);
 	void failSymbolExists(Symbol * symbol);
 	void failIfNotASomething(const Node * identifier, SymbolType symbolType);
+	void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType, std::shared_ptr<SymbolTable> symbolTable);
 	void failIfNotARecord(const Node * identifier);
+	void failIfNotARecord(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable);
 	void failIfNotAArray(const Node * identifier);
+	void failIfNotAArray(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable);
 	void failNetiherRecordNorArray(const Node * identifier);
 	void failIfNotProcedure(const Node * identifier);
 	void failIfNotAVariable(Symbol * variable);

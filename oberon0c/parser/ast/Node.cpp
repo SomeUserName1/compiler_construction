@@ -102,6 +102,13 @@ void Node::addChild(const Node* node)
 	children_.push_back(node);
 }
 
+void Node::addChilds(std::shared_ptr<std::vector<const Node*>> nodes)
+{
+	for (const Node* node : *nodes) {
+		addChild(node);
+	}
+}
+
 std::string Node::getValue() const
 {
 	return value_;

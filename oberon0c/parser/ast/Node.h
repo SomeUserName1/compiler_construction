@@ -53,6 +53,7 @@ public:
     friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 	
 	void addChild(const Node* node);
+	void addChilds(std::shared_ptr<std::vector<const Node*>> nodes);
 	std::string getValue() const;
 };
 

@@ -349,7 +349,7 @@ const Node* Parser::factor() {
 				failNetiherRecordNorArray(identifier); //TODO: Check if this makes sense since this could also be a procedure?!
 		}
 
-		node->addChild(selector(identifier));
+		node->addChilds(selector(identifier));
 	}
 	else if (type == TokenType::const_number) {
         node->addChild(number());
@@ -596,7 +596,7 @@ const Node* Parser::A()
 	// Peek ahead the right next token before processing the selector.
 	const Token followIdentifier = *scanner_->peekToken();
 	
-	const Node* select = selector(identifier);
+	std::shared_ptr<std::vector<const Node*>> select = selector(identifier);
 
 	const Token* peeked = scanner_->peekToken();
 	if (peeked->getType() == TokenType::op_becomes) {
@@ -608,11 +608,11 @@ const Node* Parser::A()
 		switch (followIdentifier.getType()) {
 		case TokenType::period:
 			failIfNotARecord(identifier);
-			node->addChild(select);
+			node->addChilds(select);
 			break;
 		case TokenType::lbrack:
 			failIfNotAArray(identifier);
-			node->addChild(select);
+			node->addChilds(select);
 			break;
 		case TokenType::op_becomes: {
 			Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
@@ -633,14 +633,12 @@ const Node* Parser::A()
 		// Procedure could be the identifier or (if present) the last selector behind the identifier.
 		// Note: Actually in the latter case we'd have to check if the procedure hangs behind modules but as we do not have a linker
 		// we cannot do that.
-		std::vector<const Node*> children = select->getChildren();
-		//Node* procedure = (children.size() > 0) ? children.back() : identifier;
-		//failIfNotProcedure(procedure);
-		//TODO Activate procedure checking
+		const Node* procedure = (select->size() > 0) ? select->back()->getChildren().at(0) : identifier;
+		failIfNotProcedure(procedure);
 
 		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
 		node->addChild(identifier);
-		node->addChild(select);
+		node->addChilds(select);
 
 		if (scanner_->peekToken()->getType() == TokenType::lparen) {
 			node->addChild(actual_parameters());
@@ -704,33 +702,97 @@ const Node* Parser::actual_parameters()
 	return node;
 }
 
-const Node* Parser::selector(const Node * preceedingIdentifier)
-{
-	Node* node = new Node(NodeType::selector, word->getPosition(), currentTable_);
+const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * preceedingIdentifier) {
+	auto selectors = std::make_shared<std::vector<const Node*>>();
+	std::vector<TokenType>* tokenTypes = &std::vector<TokenType>();
 
-	while (scanner_->peekToken()->getType() == TokenType::period
-			|| scanner_->peekToken()->getType() == TokenType::lbrack) {
-		if (scanner_->peekToken()->getType() == TokenType::period) {
-			point_t();
+	TokenType peekTokenType = scanner_->peekToken()->getType();
+	while (peekTokenType == TokenType::period
+		|| peekTokenType == TokenType::lbrack) {
+		// Get select and add it to return values
+		const Node* select = B(preceedingIdentifier);
+		selectors->push_back(select);
+		tokenTypes->push_back(peekTokenType);
 
-			// Find the receferenced identifier in the records inner symbol table
-			const Node* identifier = ident();
+		peekTokenType = scanner_->peekToken()->getType();
+		/*std::vector<const Node*> selectChildren = select->getChildren();
+
+		// Check if the selector is again a selectable identifier and if so make it the next preceeding symbol.
+		// Check also if the next preceeding identifier is of an appropriate type for the next symbol.
+		if (selectChildren.size() > 0) {
+			const Node* preceedingCandidate = selectChildren.at(0);
+			if (preceedingCandidate->getNodeType() == NodeType::identifier) {
+				Symbol* currentPreceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
+				std::shared_ptr<SymbolTable> nextPreceedingSymbolTable = recordsSymbolTables_[currentPreceedingSymbol];
+				Symbol* nextPreceedingSymbol = nextPreceedingSymbolTable->getSymbol(&preceedingCandidate->getValue());
+
+				switch (scanner_->peekToken()->getType()) {
+				case TokenType::period:
+					failIfNotARecord(preceedingCandidate);
+					break;
+				case TokenType::lbrack:
+					failIfNotAArray(preceedingCandidate);
+					break;
+				}
+				preceedingIdentifier = preceedingCandidate;
+			}
+		}*/
+	}
+
+	for (int i = 0; i < (int)(selectors->size()) - 1; i++) {
+		TokenType tokenType = (*tokenTypes)[i+1];
+		const Node* select = (*selectors)[i];
+		std::vector<const Node*> selectChildren = select->getChildren();
+
+		if (selectChildren.size() > 0) {
+			const Node* preceedingCandidate = selectChildren.at(0);
+
 			Symbol* preceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
-			//Symbol* preceedingSymbolType = preceedingSymbol->getTypes()->at(0);
+			std::shared_ptr<SymbolTable> recordsTable = recordsSymbolTables_[preceedingSymbol];
+			Symbol* candidateSymbol = recordsTable->getSymbol(&preceedingCandidate->getValue());
 
-			std::shared_ptr<SymbolTable> recordsIdentifiers = recordsSymbolTables_[preceedingSymbol];
-			Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
-			failUndeclaredSymbol(identifiersSymbol, identifier);
-			failIfNotAVariable(identifiersSymbol);
+			failUndeclaredSymbol(candidateSymbol, preceedingCandidate);
 
-			node->addChild(identifier);
-		}
-		else {
-			lbrack_t();
-			node->addChild(expression());
-			rbrack_t();
+			switch (tokenType) {
+			case TokenType::period:
+				// Next after candidate is period, so the candidate must be a record.
+				failIfNotARecord(preceedingCandidate, recordsTable);
+				break;
+			case TokenType::lbrack:
+				// Next after candidate is expression, so this must be an array
+				failIfNotAArray(preceedingCandidate, recordsTable);
+				break;
+			}
 		}
 	}
+
+	return selectors;
+}
+
+const Node* Parser::B(const Node* preceedingIdentifier) {
+	Node* node = new Node(NodeType::selector, word->getPosition(), currentTable_);
+
+	if (scanner_->peekToken()->getType() == TokenType::period) {
+		point_t();
+
+		// Find the receferenced identifier in the records inner symbol table
+		const Node* identifier = ident();
+		Symbol* preceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
+		//Symbol* preceedingSymbolType = preceedingSymbol->getTypes()->at(0);
+
+		std::shared_ptr<SymbolTable> recordsIdentifiers = recordsSymbolTables_[preceedingSymbol];
+		Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
+		failUndeclaredSymbol(identifiersSymbol, identifier);
+		failIfNotAVariable(identifiersSymbol);
+
+		node->addChild(identifier);
+	}
+	else {
+		lbrack_t();
+		node->addChild(expression());
+		rbrack_t();
+	}
+
 
 	return node;
 }
@@ -838,7 +900,12 @@ void Parser::failSymbolExists(Symbol * symbol)
 
 void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType)
 {
-	Symbol* possibleRecord = currentTable_->getSymbol(&identifier->getValue());
+	failIfNotASomething(identifier, symbolType, currentTable_);
+}
+
+void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType, std::shared_ptr<SymbolTable> symbolTable)
+{
+	Symbol* possibleRecord = symbolTable->getSymbol(&identifier->getValue());
 	if (possibleRecord->getSymbolType() == symbolType) {
 		return;
 	}
@@ -867,9 +934,19 @@ void Parser::failIfNotARecord(const Node * identifier)
 	failIfNotASomething(identifier, SymbolType::record);
 }
 
+void Parser::failIfNotARecord(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable)
+{
+	failIfNotASomething(identifier, SymbolType::record, symbolTable);
+}
+
 void Parser::failIfNotAArray(const Node * identifier)
 {
 	failIfNotASomething(identifier, SymbolType::array);
+}
+
+void Parser::failIfNotAArray(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable)
+{
+	failIfNotASomething(identifier, SymbolType::array, symbolTable);
 }
 
 void Parser::failNetiherRecordNorArray(const Node * identifier)

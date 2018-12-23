@@ -23,6 +23,7 @@ VAR a: ARRAY Dim OF INTEGER;
     o,r,q : INTEGER;
     e: Point7D;
     f: RECORD a,b,c: INTEGER END;
+    g: Point8D;
 
 (* Initializes the array. *)
 PROCEDURE Init();
@@ -73,6 +74,6 @@ BEGIN
     Init;
     Bubble();
     (* Testing sophisticated selectors *)
-    e.x.x[2] := 1;
+    g.x.x[2] := 1;
     e.x.x[2] := e.x[2];
 END BubbleSort.
