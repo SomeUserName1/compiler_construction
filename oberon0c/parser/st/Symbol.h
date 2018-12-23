@@ -26,4 +26,6 @@ public:
 
 	bool isType() const;
 	bool isVariable() const;
+
+	Symbol copy(std::string name);
 };

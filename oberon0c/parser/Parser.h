@@ -109,7 +109,7 @@ private:
 	void failIfNotAVariable(const Node* identifier);
 
 	// Helper methods for building the SymbolTables
-	void newSymbolTable();
+	void newSymbolTable(std::string name);
 	void addType(const Node* identifier, const Node* typeDef, bool asVariable);
 	void addArray(const Node* identifier, const Node* typeDef, bool asVariable);
 	void addRecord(Node* node, const Node* identifier, const Node* typeDef, bool asVariable);

@@ -1,9 +1,10 @@
 #include "SymbolTable.h"
 
 // Creates a SymbolTable for the outermost lexical scope
-SymbolTable::SymbolTable() {
+SymbolTable::SymbolTable(std::string name) {
 	level_ = 0;
 	parent_ = nullptr;
+	name_ = name;
 
 	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::type, false));
 	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::type, false));
@@ -12,14 +13,30 @@ SymbolTable::SymbolTable() {
 }
 
 // Creates a SymbolTable for a child scope of another lexical scope.
-SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent) {
+SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name) {
 	level_ = parent->getLevel() + 1;
 	parent_ = parent;
+	name_ = name;
+}
+
+SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name, std::unordered_map<std::string, Symbol> symbolTable, std::vector<std::shared_ptr<SymbolTable>> children)
+{
+	level_ = parent->getLevel() + 1;
+	parent_ = parent;
+	name_ = name;
+	symbolTable_ = symbolTable;
+	children_ = children;
 }
 
 // Creates a new SymbolTable as a child of the current one.
-std::shared_ptr<SymbolTable> SymbolTable::nestedTable(std::shared_ptr<SymbolTable> parent) {
-	return std::make_shared<SymbolTable>(parent);
+std::shared_ptr<SymbolTable> SymbolTable::nestedTable(std::shared_ptr<SymbolTable> parent, std::string name) {
+	auto newTable = std::make_shared<SymbolTable>(parent, name);
+
+	if (parent != nullptr) {
+		parent->addChild(newTable);
+	}
+
+	return newTable;
 }
 
 size_t SymbolTable::getLevel() {
@@ -58,5 +75,31 @@ int SymbolTable::insert(Symbol symbol) {
 	//symbolTable_[*name] = symbol;
 	symbolTable_.insert(std::unordered_map< std::string, Symbol>::value_type(*name, symbol));
 	return 0;
+}
+
+std::string SymbolTable::getName()
+{
+	return name_;
+}
+
+void SymbolTable::addChild(std::shared_ptr<SymbolTable> child)
+{
+	children_.push_back(child);
+}
+
+std::shared_ptr<SymbolTable> SymbolTable::getChild(std::string childsName)
+{
+	for (auto child : children_) {
+		if (child->getName() == childsName) {
+			return child;
+		}
+	}
+
+	return nullptr;
+}
+
+std::shared_ptr<SymbolTable> SymbolTable::deepCopy(std::string name)
+{
+	return std::make_shared<SymbolTable>(parent_, name, symbolTable_, children_);
 }
 

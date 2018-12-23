@@ -42,15 +42,18 @@ const Node* Parser::ident() {
 }
 
 const Node* Parser::module() {
-	//Adding the first scope SymbolTable 
-	std::shared_ptr<SymbolTable> newTable = std::make_shared<SymbolTable>();
-	symbolTables_.push_back(newTable);
-	currentTable_ = newTable;
 
 	// Module declaration
 	module_t();
 	Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
 	const Node* identifier = ident();
+
+	//Adding the first scope SymbolTable 
+	std::shared_ptr<SymbolTable> newTable = std::make_shared<SymbolTable>(identifier->getValue());
+	symbolTables_.push_back(newTable);
+	currentTable_ = newTable;
+
+
 	moduleNode->addChild(identifier);
 	semicolon_t();
 	Symbol newDeclaration = Symbol(identifier->getValue(), std::vector<Symbol*>(), SymbolType::module, false);
@@ -189,10 +192,30 @@ const Node* Parser::var_declarations() {
 					addArray(identifier, typeDef, true);
 					break;
 				case SymbolType::record: {
-					addRecord(node, identifier, typeDef, true);
-					Symbol* identifierSymbol = currentTable_->getSymbol(&identifier->getValue());
 					Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef->getValue());
-					recordsSymbolTables_[identifierSymbol] = recordsSymbolTables_[typeDefSymbol];
+					//std::shared_ptr<SymbolTable> typeDefTable = recordsSymbolTables_[typeDefSymbol];
+					std::shared_ptr<SymbolTable> typeDefTable = currentTable_->getChild(*typeDefSymbol->getName());
+					std::shared_ptr<SymbolTable> alias = typeDefTable->deepCopy(identifier->getValue());
+					symbolTables_.push_back(alias);
+
+					Symbol newSymbol = Symbol(identifier->getValue(), *typeDefSymbol->getTypes(), SymbolType::record, true);
+					currentTable_->insert(newSymbol);
+					currentTable_->addChild(alias);
+					Symbol* newSymbolsNewLocation = currentTable_->getSymbol(&identifier->getValue());
+					recordsSymbolTables_.insert(std::unordered_map<Symbol*, std::shared_ptr<SymbolTable>>::value_type(newSymbolsNewLocation, alias));
+
+
+					/*addRecord(node, identifier, typeDef, true);
+					Symbol* identifiersSymbol = currentTable_->getSymbol(&identifier->getValue());
+					Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef->getValue());
+					std::shared_ptr<SymbolTable> identifiersTable = recordsSymbolTables_[identifiersSymbol];
+					std::shared_ptr<SymbolTable> typeDefTable = recordsSymbolTables_[typeDefSymbol];
+					identifiersTable->addChild(typeDefTable);
+
+					Symbol* identifierSymbol = currentTable_->getSymbol(&identifier->getValue());
+					//Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef->getValue());
+					recordsSymbolTables_[identifierSymbol] = recordsSymbolTables_[typeDefSymbol];*/
+
 					break;
 				}
 				case SymbolType::type:
@@ -462,7 +485,7 @@ const Node* Parser::procedure_heading() {
 	}
 
 	// Creating symbolTable for the new lexicalScope in the new procedure.
-	newSymbolTable();
+	newSymbolTable(procIdent->getValue());
 
 	// Parse formal parameters
 	if (scanner_->peekToken()->getType() == TokenType::lparen) {
@@ -704,29 +727,41 @@ const Node* Parser::actual_parameters()
 
 const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * preceedingIdentifier) {
 	auto selectors = std::make_shared<std::vector<const Node*>>();
+	auto preceedingIdentifiers = std::vector<const Node*>();
+	preceedingIdentifiers.push_back(preceedingIdentifier);
 	std::vector<TokenType>* tokenTypes = &std::vector<TokenType>();
-
+	
+	const Node* select = preceedingIdentifier;
 	TokenType peekTokenType = scanner_->peekToken()->getType();
 	while (peekTokenType == TokenType::period
 		|| peekTokenType == TokenType::lbrack) {
 		// Get select and add it to return values
-		const Node* select = B(preceedingIdentifier);
+		select = B(preceedingIdentifier);
 		selectors->push_back(select);
 		tokenTypes->push_back(peekTokenType);
 
 		peekTokenType = scanner_->peekToken()->getType();
+
+		if (peekTokenType == TokenType::period
+			|| peekTokenType == TokenType::lbrack) {
+			preceedingIdentifier = select->getChildren().at(0);
+			preceedingIdentifiers.push_back(preceedingIdentifier);
+		}
 	}
 
+	std::shared_ptr<SymbolTable> table = currentTable_;
 	for (int i = 0; i < (int)(selectors->size()) - 1; i++) {
 		TokenType tokenType = (*tokenTypes)[i+1];
 		const Node* select = (*selectors)[i];
 		std::vector<const Node*> selectChildren = select->getChildren();
 
-		if (selectChildren.size() > 0) {
+
+		//if (selectChildren.size() > 0) {
 			const Node* preceedingCandidate = selectChildren.at(0);
 
-			Symbol* preceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
-			std::shared_ptr<SymbolTable> recordsTable = recordsSymbolTables_[preceedingSymbol];
+			//Symbol* preceedingSymbol = table->getSymbol(&preceedingIdentifiers[i]->getValue());
+			//std::shared_ptr<SymbolTable> recordsTable = recordsSymbolTables_[preceedingSymbol];
+			std::shared_ptr<SymbolTable>  recordsTable = table->getChild(preceedingIdentifiers[i]->getValue());
 			Symbol* candidateSymbol = recordsTable->getSymbol(&preceedingCandidate->getValue());
 
 			failUndeclaredSymbol(candidateSymbol, preceedingCandidate);
@@ -735,13 +770,17 @@ const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * pr
 			case TokenType::period:
 				// Next after candidate is period, so the candidate must be a record.
 				failIfNotARecord(preceedingCandidate, recordsTable);
+				table = table->getChild(preceedingIdentifiers[i]->getValue());
+
+				//table = recordsSymbolTables_[candidateSymbol];
 				break;
 			case TokenType::lbrack:
 				// Next after candidate is expression, so this must be an array
 				failIfNotAArray(preceedingCandidate, recordsTable);
 				break;
 			}
-		}
+		//}
+
 	}
 
 	return selectors;
@@ -755,12 +794,12 @@ const Node* Parser::B(const Node* preceedingIdentifier) {
 
 		// Find the receferenced identifier in the records inner symbol table
 		const Node* identifier = ident();
-		Symbol* preceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
+		//Symbol* preceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
 		//Symbol* preceedingSymbolType = preceedingSymbol->getTypes()->at(0);
 
-		std::shared_ptr<SymbolTable> recordsIdentifiers = recordsSymbolTables_[preceedingSymbol];
-		Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
-		failUndeclaredSymbol(identifiersSymbol, identifier);
+		//std::shared_ptr<SymbolTable> recordsIdentifiers = recordsSymbolTables_[preceedingSymbol];
+		//Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
+		//failUndeclaredSymbol(identifiersSymbol, identifier);
 		//failIfNotAVariable(identifiersSymbol);
 
 		node->addChild(identifier);
@@ -965,9 +1004,9 @@ void Parser::failIfNotAVariable(const Node * identifier)
 	failIfNotAVariable(symbol);
 }
 
-void Parser::newSymbolTable()
+void Parser::newSymbolTable(std::string name)
 {
-	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_);
+	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_, name);
 	symbolTables_.push_back(newTable);
 	currentTable_ = newTable;
 }
@@ -1006,7 +1045,7 @@ void Parser::addArray(const Node * identifier, const Node * typeDef, bool asVari
 void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef, bool asVariable)
 {
 	// New lexical scope
-	newSymbolTable();
+	newSymbolTable(identifier->getValue());
 
 	// New Type is a record. Check if all specified types exist.
 	std::vector<Symbol*> recordTypes;
@@ -1029,9 +1068,15 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 		// If typeDef (the type of the newly added identifiers) is a record add the already existing Symbols, if not add new symbols.
 		std::vector<const Node*> identifiers = fieldList->getChildren().at(0)->getChildren();
 
-		if (typeOfTypeSymbol->getSymbolType() == SymbolType::record) {
+		switch (typeOfTypeSymbol->getSymbolType()) {
+		case SymbolType::record: {
 			std::shared_ptr<SymbolTable> typeOfTypeSymbolTable = recordsSymbolTables_[typeOfTypeSymbol];
+
 			for (const Node* ident : identifiers) {
+				std::shared_ptr<SymbolTable> copy = typeOfTypeSymbolTable->deepCopy(ident->getValue());
+				symbolTables_.push_back(copy);
+				currentTable_->addChild(copy);
+
 				Symbol* identSymbol = currentTable_->getSymbol(&typeOfType->getValue());//typeOfTypeSymbolTable->getSymbol(&ident->getValue());
 				std::vector<Symbol*> types;
 				types.push_back(identSymbol);
@@ -1042,15 +1087,25 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 
 				recordTypes.push_back(type);
 			}
-			continue;
 		}
-
-		for (const Node* ident : identifiers) {
-			Symbol newIdent(ident->getValue(), types, SymbolType::type, true);
-			if (currentTable_->insert(newIdent)) {
-				failSymbolExists(&newIdent);
+			break;
+		case SymbolType::array:
+			for (const Node* ident : identifiers) {
+				Symbol newArray = typeOfTypeSymbol->copy(ident->getValue());
+				if (currentTable_->insert(newArray)) {
+					failSymbolExists(&newArray);
+				}
+				recordTypes.push_back(type);
 			}
-			recordTypes.push_back(type);
+			break;
+		case SymbolType::type:
+			for (const Node* ident : identifiers) {
+				Symbol newIdent(ident->getValue(), types, SymbolType::type, true);
+				if (currentTable_->insert(newIdent)) {
+					failSymbolExists(&newIdent);
+				}
+				recordTypes.push_back(type);
+			}
 		}
 	}
 

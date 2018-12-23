@@ -36,3 +36,8 @@ bool Symbol::isVariable() const
 {
 	return isVariable_;
 }
+
+Symbol Symbol::copy(std::string name)
+{
+	return Symbol(name, types_, symbolType_, isVariable_);
+}
