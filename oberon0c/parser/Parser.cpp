@@ -761,7 +761,7 @@ const Node* Parser::B(const Node* preceedingIdentifier) {
 		std::shared_ptr<SymbolTable> recordsIdentifiers = recordsSymbolTables_[preceedingSymbol];
 		Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
 		failUndeclaredSymbol(identifiersSymbol, identifier);
-		failIfNotAVariable(identifiersSymbol);
+		//failIfNotAVariable(identifiersSymbol);
 
 		node->addChild(identifier);
 	}
@@ -1012,6 +1012,10 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 	std::vector<Symbol*> recordTypes;
 	const std::vector<const Node*> fieldLists = typeDef->getChildren();
 	for (const Node* fieldList : fieldLists) {
+		// Get the symbol of the type of this field list
+		const Node* typeOfType = fieldList->getChildren().at(1)->getChildren().at(0);
+		Symbol* typeOfTypeSymbol = currentTable_->getSymbol(&typeOfType->getValue());
+
 		const Node* identifierList = fieldList->getChildren().at(0);
 		const Node* typeNode2 = fieldList->getChildren().at(1);
 		const Node* typeIdentifier = typeNode2->getChildren().at(0);
@@ -1022,7 +1026,25 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 		failIfNotAType(type);
 
 		// Type exists. Add the identifiers.
+		// If typeDef (the type of the newly added identifiers) is a record add the already existing Symbols, if not add new symbols.
 		std::vector<const Node*> identifiers = fieldList->getChildren().at(0)->getChildren();
+
+		if (typeOfTypeSymbol->getSymbolType() == SymbolType::record) {
+			std::shared_ptr<SymbolTable> typeOfTypeSymbolTable = recordsSymbolTables_[typeOfTypeSymbol];
+			for (const Node* ident : identifiers) {
+				Symbol* identSymbol = currentTable_->getSymbol(&typeOfType->getValue());//typeOfTypeSymbolTable->getSymbol(&ident->getValue());
+				std::vector<Symbol*> types;
+				types.push_back(identSymbol);
+				Symbol newIdent(ident->getValue(), types, SymbolType::record, asVariable);
+				if (currentTable_->insert(newIdent)) {
+					failSymbolExists(identSymbol);
+				}
+
+				recordTypes.push_back(type);
+			}
+			continue;
+		}
+
 		for (const Node* ident : identifiers) {
 			Symbol newIdent(ident->getValue(), types, SymbolType::type, true);
 			if (currentTable_->insert(newIdent)) {
