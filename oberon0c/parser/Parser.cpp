@@ -630,7 +630,14 @@ const Node* Parser::A()
 		node->addChild(*expression());
 	}
 	else {
-		failIfNotProcedure(identifier);
+		// Procedure could be the identifier or (if present) the last selector behind the identifier.
+		// Note: Actually in the latter case we'd have to check if the procedure hangs behind modules but as we do not have a linker
+		// we cannot do that.
+		std::vector<Node> children = select->getChildren();
+		//Node* procedure = (children.size() > 0) ? children.back() : identifier;
+		//failIfNotProcedure(procedure);
+		//TODO Activate procedure checking
+
 		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
 		node->addChild(*identifier);
 		node->addChild(*select);
@@ -837,7 +844,20 @@ void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType)
 	}
 
 	std::stringstream ss;
-	ss << *possibleRecord->getName() << " is not a appropriate type"; //TODO change to type
+	ss << *possibleRecord->getName() << " is not ";
+	switch (symbolType) {
+	case SymbolType::array:
+		ss << "an Array";
+		break;
+	case SymbolType::record:
+		ss << "a Record";
+		break;
+	case SymbolType::type:
+		ss << "a Type";
+		break;
+	}
+	ss << ".";
+
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!" + ss.str());
 }
