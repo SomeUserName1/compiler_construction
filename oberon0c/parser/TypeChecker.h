@@ -10,6 +10,7 @@
  *      match acutal params on call
  *    2.6 selector must be on array or record. if array check boundaries, if record check existence of field
  *    2.7 IF & WHILE conditions must be bool
+ *    2.8 assignment to an array must be of same type as array
  *
  */
 

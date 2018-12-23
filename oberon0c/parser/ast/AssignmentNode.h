@@ -5,8 +5,8 @@
 #ifndef OBERON0C_ASSIGNMENTNODE_H
 #define OBERON0C_ASSIGNMENTNODE_H
 
-#include <ASTNode.h>
-class AssignmentNode : ASTNode{
+#include <Node.h>
+class AssignmentNode : Node{
 
 };
 

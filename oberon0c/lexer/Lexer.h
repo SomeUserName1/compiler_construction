@@ -1,5 +1,5 @@
 /*
- * Header of the scanner class used by the Oberon-0 compiler.
+ * Header of the lexer class used by the Oberon-0 compiler.
  *
  * Created by Michael Grossniklaus on 12/15/17.
  */
@@ -17,7 +17,7 @@
 #include "../util/Logger.h"
 
 
-class Scanner {
+class Lexer {
 
 private:
     std::string filename_;
@@ -38,8 +38,8 @@ private:
     void comment();
 
 public:
-    explicit Scanner(const std::string &filename, const Logger *logger);
-    ~Scanner();
+    explicit Lexer(const std::string &filename, const Logger *logger);
+    ~Lexer();
     const Token* peekToken();
     std::unique_ptr<const Token> nextToken();
 

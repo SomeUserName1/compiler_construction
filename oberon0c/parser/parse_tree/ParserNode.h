@@ -1,5 +1,7 @@
 /**
  * @author fabian.klopfer@uni-konstanz.de
+ *
+ * Generic node to convert the code to a tree structure and do syntax checking during construction
  */
 #ifndef OBERON0C_AST_H
 #define OBERON0C_AST_H
@@ -7,9 +9,12 @@
 #include <vector>
 #include <string>
 #include <ostream>
+#include <utility>
+#include <Node.h>
 #include "../../util/Logger.h"
 
-enum class NodeType : char {
+
+enum class ParserNodeType : char {
 	module, declarations, const_declarations,
 	type_declarations, var_declarations,
 	procedure_declaration, identifier, number, binary_op,
@@ -20,33 +25,31 @@ enum class NodeType : char {
 	selector, assignment, procedure_call
 };
 
-std::ostream& operator<<(std::ostream &stream, const NodeType &type);
+std::ostream& operator<<(std::ostream &stream, const ParserNodeType &type);
 
 /**
  * Generic Parse Tree class. Used for a minimal Oberon-0 compiler for now, easily extendable to other grammars
  */
-class Node {
+class ParserNode : public Node {
 
 private:
-    NodeType nodeType_;
+    ParserNodeType nodeType_;
     FilePos pos_;
-	std::vector<Node> children_;
 	std::string value_;
 
 	void printTreeRec(std::ostream &stream, int depth) const;
 
 public:
-	explicit Node(NodeType nodeType, FilePos pos);
-	explicit Node(NodeType nodeType, FilePos pos, std::string value);
-	virtual ~Node();
+	ParserNode(ParserNodeType nodeType, FilePos pos);
+	ParserNode(ParserNodeType nodeType, FilePos pos, std::string value);
+	~ParserNode() override;
 
-    const NodeType getNodeType() const;
+    const ParserNodeType getParserNodeType() const;
 
     virtual void print(std::ostream &stream) const;
 	virtual void printTree(std::ostream &stream) const;
-    friend std::ostream& operator<<(std::ostream &stream, const Node &node);
-	
-	void addChild(Node node);
+    friend std::ostream& operator<<(std::ostream &stream, const ParserNode &node);
+
 	std::string getValue() const;
 };
 

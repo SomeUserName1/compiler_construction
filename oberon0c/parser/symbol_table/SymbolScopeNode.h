@@ -9,8 +9,9 @@
 #ifndef OBERON0C_SYMBOLTABLE_H
 #define OBERON0C_SYMBOLTABLE_H
 
-
-class SymbolTable {
+#include <vector>
+#include <Node.h>
+class SymbolScopeNode : Node {
 
 };
 

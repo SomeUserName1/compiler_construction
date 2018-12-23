@@ -1,19 +1,20 @@
 /*
- * Implementation of the scanner class used by the Oberon-0 compiler.
+ * Implementation of the lexer class used by the Oberon-0 compiler.
  *
  * Created by Michael Grossniklaus on 12/15/17.
  */
 
 
-#include "Scanner.h"
+#include "Lexer.h"
 #include "IdentToken.h"
 #include "NumberToken.h"
 #include "StringToken.h"
 
-Scanner::Scanner(const std::string &filename, const Logger *logger) :
-        filename_(filename), logger_(logger), token_(nullptr), lineNo_(1), charNo_(0) {
+Lexer::Lexer(const std::string &filename, const Logger *logger) :
+        filename_(filename), logger_(logger), token_(nullptr), lineNo_(1), charNo_(0), file_(filename, std::ios::in)
+        , ch_('\0') {
     this->initTable();
-    file_.open(filename_, std::ios::in);
+    //file_.open(filename_, std::ios::in);
     if (!file_.is_open()) {
         // TODO I/O Exception
         logger_->error(filename_, "Cannot open file.");
@@ -22,7 +23,7 @@ Scanner::Scanner(const std::string &filename, const Logger *logger) :
     read();
 }
 
-Scanner::~Scanner() {
+Lexer::~Lexer() {
 
     delete token_;
 
@@ -31,7 +32,7 @@ Scanner::~Scanner() {
     }
 }
 
-void Scanner::initTable() {
+void Lexer::initTable() {
     keywords_ = { { "DIV", TokenType::op_div }, { "MOD", TokenType::op_mod }, { "OR", TokenType::op_or },
                   { "MODULE", TokenType::kw_module }, { "PROCEDURE", TokenType::kw_procedure },
                   { "BEGIN", TokenType::kw_begin }, { "END", TokenType::kw_end },
@@ -44,14 +45,14 @@ void Scanner::initTable() {
                   { "TRUE", TokenType::const_true }, { "FALSE", TokenType::const_false } };
 }
 
-const Token* Scanner::peekToken() {
+const Token* Lexer::peekToken() {
     if (token_ == nullptr) {
         token_ = this->next();
     }
     return token_;
 }
 
-std::unique_ptr<const Token> Scanner::nextToken() {
+std::unique_ptr<const Token> Lexer::nextToken() {
     const Token *token;
     if (token_ != nullptr) {
         token = token_;
@@ -62,7 +63,7 @@ std::unique_ptr<const Token> Scanner::nextToken() {
     return std::unique_ptr<const Token>(token);
 }
 
-const Token* Scanner::next() {
+const Token* Lexer::next() {
     const Token *token;
     // Skip whitespace
     while ((ch_ != -1) && (ch_ <= ' ')) {
@@ -182,7 +183,7 @@ const Token* Scanner::next() {
     return token;
 }
 
-void Scanner::read() {
+void Lexer::read() {
     if (ch_ == '\n') {
         lineNo_++;
         charNo_ = 0;
@@ -199,7 +200,7 @@ void Scanner::read() {
 
 }
 
-const FilePos Scanner::getPosition() const {
+const FilePos Lexer::getPosition() const {
     FilePos pos;
     pos.fileName = filename_;
     pos.lineNo = lineNo_;
@@ -207,7 +208,7 @@ const FilePos Scanner::getPosition() const {
     return pos;
 }
 
-void Scanner::comment() {
+void Lexer::comment() {
     FilePos pos = getPosition();
     read();
     while (true) {
@@ -238,7 +239,7 @@ void Scanner::comment() {
     }
 }
 
-const Token* Scanner::ident() {
+const Token* Lexer::ident() {
     FilePos pos = getPosition();
     std::stringstream ss;
     do {
@@ -255,7 +256,7 @@ const Token* Scanner::ident() {
     return new IdentToken(pos, ident);
 }
 
-const int Scanner::number() {
+const int Lexer::number() {
     bool isHex = false;
     int decValue = 0;
     int hexValue = 0;
@@ -287,7 +288,7 @@ const int Scanner::number() {
     return decValue;
 }
 
-const std::string Scanner::string() {
+const std::string Lexer::string() {
     std::stringstream ss;
     do {
         ss << ch_;

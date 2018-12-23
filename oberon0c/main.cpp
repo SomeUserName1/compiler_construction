@@ -5,7 +5,7 @@
  */
 
 #include <iostream>
-#include "scanner/Scanner.h"
+#include "lexer/Lexer.h"
 #include "parser/Parser.h"
 
 int main(const int argc, const char *argv[]) {
@@ -16,8 +16,8 @@ int main(const int argc, const char *argv[]) {
     std::string filename = argv[1];
     auto logger = std::make_unique<Logger>();
     logger->setLevel(LogLevel::DEBUG);
-    auto scanner = std::make_unique<Scanner>(filename, logger.get());
-    auto parser = std::make_unique<Parser>(scanner.get(), logger.get());
+    auto lexer = std::make_unique<Lexer>(filename, logger.get());
+    auto parser = std::make_unique<Parser>(lexer.get(), logger.get());
     parser->parse();
     logger->info(filename, "Parsing complete.");
     exit(0);
