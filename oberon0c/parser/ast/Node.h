@@ -22,7 +22,8 @@ enum class NodeType : char {
 	array_type, field_list, ident_list, procedure_heading,
 	procedure_body, formal_parameters, fp_section, statement_sequence,
 	statement, if_statement, while_statement, acutal_parameters,
-	selector, assignment, procedure_call
+	selector, assignment, procedure_call,
+	plus, minus, div, times, or, and, leq, lt, geq, gt, eq, neq, mod
 };
 
 std::ostream& operator<<(std::ostream &stream, const NodeType &type);
@@ -55,6 +56,8 @@ public:
 	void addChild(const Node* node);
 	void addChilds(std::shared_ptr<std::vector<const Node*>> nodes);
 	std::string getValue() const;
+
+	bool isBinaryOp() const;
 };
 
 #endif //OBERON0C_AST_H

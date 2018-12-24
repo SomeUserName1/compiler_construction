@@ -820,43 +820,43 @@ const Node* Parser::binary_op() {
 
 	TokenType type = word->getType();
 	if (type == TokenType::op_eq) {
-		return new Node(NodeType::binary_op, word->getPosition(), "=", currentTable_);
+		return new Node(NodeType::eq, word->getPosition(), "=", currentTable_);
 	}
 	else if (type == TokenType::op_neq) {
-		return new Node(NodeType::binary_op, word->getPosition(), "#", currentTable_);
+		return new Node(NodeType::neq, word->getPosition(), "#", currentTable_);
 	}
 	else if (type == TokenType::op_lt) {
-		return new Node(NodeType::binary_op, word->getPosition(), "<", currentTable_);
+		return new Node(NodeType::lt, word->getPosition(), "<", currentTable_);
 	}
 	else if (type == TokenType::op_leq) {
-		return new Node(NodeType::binary_op, word->getPosition(), "<=", currentTable_);
+		return new Node(NodeType::leq, word->getPosition(), "<=", currentTable_);
 	}
 	else if (type == TokenType::op_gt) {
-		return new Node(NodeType::binary_op, word->getPosition(), ">", currentTable_);
+		return new Node(NodeType::gt, word->getPosition(), ">", currentTable_);
 	}
 	else if (type == TokenType::op_geq) {
-		return new Node(NodeType::binary_op, word->getPosition(), ">=", currentTable_);
+		return new Node(NodeType::geq, word->getPosition(), ">=", currentTable_);
 	}
 	else if (type == TokenType::op_plus) {
-		return new Node(NodeType::binary_op, word->getPosition(), "+", currentTable_);
+		return new Node(NodeType::plus, word->getPosition(), "+", currentTable_);
 	}
 	else if (type == TokenType::op_minus) {
-		return new Node(NodeType::binary_op, word->getPosition(), "-", currentTable_);
+		return new Node(NodeType::minus, word->getPosition(), "-", currentTable_);
 	}
 	else if (type == TokenType::op_or) {
-		return new Node(NodeType::binary_op, word->getPosition(), "OR", currentTable_);
+		return new Node(NodeType::or, word->getPosition(), "OR", currentTable_);
 	}
 	else if (type == TokenType::op_times) {
-		return new Node(NodeType::binary_op, word->getPosition(), "*", currentTable_);
+		return new Node(NodeType::times, word->getPosition(), "*", currentTable_);
 	}
 	else if (type == TokenType::op_div) {
-		return new Node(NodeType::binary_op, word->getPosition(), "DIV", currentTable_);
+		return new Node(NodeType::div, word->getPosition(), "DIV", currentTable_);
 	}
 	else if (type == TokenType::op_mod) {
-		return new Node(NodeType::binary_op, word->getPosition(), "MOD", currentTable_);
+		return new Node(NodeType::mod, word->getPosition(), "MOD", currentTable_);
 	}
 	else if (type == TokenType::op_and) {
-		return new Node(NodeType::binary_op, word->getPosition(), "&", currentTable_);
+		return new Node(NodeType::and, word->getPosition(), "&", currentTable_);
 	}
 
 	std::string s = std::string("Expected binary operator in method binary op");
@@ -1003,6 +1003,14 @@ void Parser::failIfNotAVariable(const Node * identifier)
 {
 	Symbol* symbol = currentTable_->getSymbol(&identifier->getValue());
 	failIfNotAVariable(symbol);
+}
+
+void Parser::failTypeCheckBinary(const Symbol * a, const Symbol * b, const Node * op)
+{
+	std::stringstream ss;
+	ss << "Types are not appropriate for " << a->getValue() << ", " << b->getValue() << ": " << op->getValue();
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed!: " + ss.str());
 }
 
 void Parser::newSymbolTable(std::string name)
@@ -1202,7 +1210,65 @@ Symbol * Parser::typeOfExpression(const Node * expression)
 
 Symbol * Parser::typeOfTerm(const Node * term)
 {
-	return nullptr;
+	// TODO Check if vector is appropriate.
+	std::vector<const Node*> children = term->getChildren();
+	std::list<const Node*> operators;
+	std::list<Symbol* > typesOfFactors;
+
+	for (const Node* child : children) {
+		if (child->getNodeType() == NodeType::factor) {
+			typesOfFactors.push_back(typeOfFactor(child));
+		}
+		else if (child->isBinaryOp()) {
+			operators.push_back(child);
+		}
+		else {
+			throw std::invalid_argument("Something failed horrible");
+		}
+	}
+
+	while (typesOfFactors.size() > 1) {
+		Symbol* typeA = typesOfFactors.front();
+		typesOfFactors.pop_front();
+		Symbol* typeB = typesOfFactors.front();
+		typesOfFactors.pop_front();
+		const Node* op = operators.front();
+		operators.pop_front();
+
+		// TODO take care of constants
+		if (*typeA != *typeB) {
+			if (*typeA->getName() == std::string("INTEGER")) {
+				if (*typeB->getName() != std::string("CONSTANT")) {
+					failTypeCheckBinary(typeA, typeB, op);
+				}
+			}
+			else if (*typeB->getName() == std::string("CONSTANT")) {
+				if (*typeB->getName() != std::string("INTEGER")) {
+					failTypeCheckBinary(typeA, typeB, op);
+				}
+			}
+		}
+
+		switch (op->getNodeType()) {
+		case NodeType::times:
+		case NodeType::div:
+		case NodeType::mod:
+			if (*typeA->getName() != "INTEGER" && *typeA->getName() != "CONSTANT") {
+				failTypeCheckBinary(typeA, typeB, op);
+			}
+			else {
+				typesOfFactors.push_front(symbolTables_.at(0)->getSymbol(&std::string("INTEGER")));
+			}
+		case NodeType::and:
+			if (*typeA->getName() != "BOOLEAN") {
+				failTypeCheckBinary(typeA, typeB, op);
+			}
+			else {
+				typesOfFactors.push_front(symbolTables_.at(0)->getSymbol(&std::string("BOOLEAN")));
+			}
+		}
+
+	}
 }
 
 Symbol * Parser::typeOfFactor(const Node * factor)

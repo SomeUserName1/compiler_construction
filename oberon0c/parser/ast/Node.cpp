@@ -114,6 +114,28 @@ std::string Node::getValue() const
 	return value_;
 }
 
+bool Node::isBinaryOp() const
+{
+	switch (nodeType_) {
+	case NodeType::plus:
+	case NodeType::minus:
+	case NodeType::div:
+	case NodeType::times:
+	case NodeType::or:
+	case NodeType::and:
+	case NodeType::leq:
+	case NodeType::lt:
+	case NodeType::geq:
+	case NodeType::gt:
+	case NodeType::eq:
+	case NodeType::neq:
+	case NodeType::mod:
+		return true;
+	default:
+		return false;
+	}
+}
+
 std::ostream & operator<<(std::ostream & stream, const Node & node)
 {
 	node.printTree(stream);

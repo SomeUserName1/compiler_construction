@@ -74,6 +74,31 @@ void Symbol::print(std::ostream & stream) const
 	}
 }
 
+bool Symbol::operator==(Symbol other)
+{
+	auto otherTypes = other.getTypes();
+	if (types_.size() != otherTypes->size()) {
+		return false;
+	}
+
+	if (types_.size() == 0) {
+		return name_ == *other.getName();
+	}
+
+	for (int i = 0; i < types_.size(); i++) {
+		if (types_.at(i) != otherTypes->at(i)) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+bool Symbol::operator!=(Symbol other)
+{
+	return !((*this) == other);
+}
+
 std::ostream & operator<<(std::ostream & stream, const Symbol & symbol)
 {
 	symbol.print(stream);

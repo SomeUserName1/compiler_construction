@@ -33,4 +33,7 @@ public:
 
 	void print(std::ostream & stream) const;
 	friend std::ostream& operator<<(std::ostream &stream, const Symbol &node);
+
+	bool operator==(Symbol other);
+	bool operator!=(Symbol other);
 };
