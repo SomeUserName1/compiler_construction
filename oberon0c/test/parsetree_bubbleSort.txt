@@ -83,9 +83,20 @@ MODULE
 |-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-number: 6
 |-|-|-|-|-type
-|-|-|-|-|-|-identifier: INTEGER
+|-|-|-|-|-|-identifier: Point5D
 |-|-TYPE declarations
 |-|-|-identifier: Point7D
+|-|-|-type
+|-|-|-|-record_type
+|-|-|-|-|-field_list
+|-|-|-|-|-|-ident_list
+|-|-|-|-|-|-|-identifier: l
+|-|-|-|-|-|-|-identifier: k
+|-|-|-|-|-|-|-identifier: m
+|-|-|-|-|-|-type
+|-|-|-|-|-|-|-identifier: Point6D
+|-|-TYPE declarations
+|-|-|-identifier: Point8D
 |-|-|-type
 |-|-|-|-record_type
 |-|-|-|-|-field_list
@@ -94,7 +105,22 @@ MODULE
 |-|-|-|-|-|-|-identifier: y
 |-|-|-|-|-|-|-identifier: z
 |-|-|-|-|-|-type
-|-|-|-|-|-|-|-identifier: Point6D
+|-|-|-|-|-|-|-identifier: Point7D
+|-|-TYPE declarations
+|-|-|-identifier: Point9D
+|-|-|-type
+|-|-|-|-identifier: INTEGER
+|-|-TYPE declarations
+|-|-|-identifier: Point10D
+|-|-|-type
+|-|-|-|-array_type
+|-|-|-|-|-expression
+|-|-|-|-|-|-simple_expression
+|-|-|-|-|-|-|-term
+|-|-|-|-|-|-|-|-factor
+|-|-|-|-|-|-|-|-|-number: 10
+|-|-|-|-|-type
+|-|-|-|-|-|-identifier: Point9D
 |-|-var_declarations
 |-|-|-ident_list
 |-|-|-|-identifier: a
@@ -105,7 +131,6 @@ MODULE
 |-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-identifier: Dim
-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-type
 |-|-|-|-|-|-identifier: INTEGER
 |-|-var_declarations
@@ -123,7 +148,6 @@ MODULE
 |-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-identifier: Dim1
-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-type
 |-|-|-|-|-|-identifier: INTEGER
 |-|-var_declarations
@@ -155,6 +179,11 @@ MODULE
 |-|-|-|-|-|-|-identifier: c
 |-|-|-|-|-|-type
 |-|-|-|-|-|-|-identifier: INTEGER
+|-|-var_declarations
+|-|-|-ident_list
+|-|-|-|-identifier: g
+|-|-|-type
+|-|-|-|-identifier: Point8D
 |-|-procedure_declaration
 |-|-|-procedure_heading
 |-|-|-|-identifier: Init
@@ -182,13 +211,11 @@ MODULE
 |-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-binary_op: <
 |-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-identifier: Dim
-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-statement_sequence
 |-|-|-|-|-|-|-|-statement
 |-|-|-|-|-|-|-|-|-assignment
@@ -199,18 +226,15 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: Dim
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-binary_op: -
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-statement
 |-|-|-|-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-|-|-|-identifier: i
@@ -219,7 +243,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-binary_op: +
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
@@ -256,7 +279,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-identifier: a
-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-statement
 |-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-identifier: a
@@ -265,7 +287,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-identifier: b
-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-statement
 |-|-|-|-|-|-assignment
 |-|-|-|-|-|-|-identifier: b
@@ -274,7 +295,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-identifier: t
-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-identifier: Swap
 |-|-procedure_declaration
 |-|-|-procedure_heading
@@ -296,7 +316,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-identifier: Dim
-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-statement
 |-|-|-|-|-|-while_statement
 |-|-|-|-|-|-|-expression
@@ -304,7 +323,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-binary_op: >
 |-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-term
@@ -319,7 +337,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-binary_op: -
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
@@ -331,7 +348,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: j
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-binary_op: >
 |-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-term
@@ -355,7 +371,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-binary_op: >
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
@@ -367,7 +382,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: j
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-binary_op: &
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-expression
@@ -384,7 +398,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-statement
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-procedure_call
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: Swap
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-acutal_parameters
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-simple_expression
@@ -397,7 +410,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
@@ -409,7 +421,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: j
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-|-expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
@@ -460,7 +471,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: j
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-binary_op: +
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-|-|-factor
@@ -473,7 +483,6 @@ MODULE
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-|-|-|-|-|-|-identifier: i
-|-|-|-|-|-|-|-|-|-|-|-|-|-|-selector
 |-|-|-|-|-|-|-|-|-|-|-|-binary_op: +
 |-|-|-|-|-|-|-|-|-|-|-|-term
 |-|-|-|-|-|-|-|-|-|-|-|-|-factor
@@ -483,17 +492,18 @@ MODULE
 |-|-statement
 |-|-|-procedure_call
 |-|-|-|-identifier: Init
-|-|-|-|-selector
 |-|-statement
 |-|-|-procedure_call
 |-|-|-|-identifier: Bubble
-|-|-|-|-selector
 |-|-|-|-acutal_parameters
 |-|-statement
 |-|-|-assignment
-|-|-|-|-identifier: e
+|-|-|-|-identifier: g
 |-|-|-|-selector
 |-|-|-|-|-identifier: x
+|-|-|-|-selector
+|-|-|-|-|-identifier: l
+|-|-|-|-selector
 |-|-|-|-|-expression
 |-|-|-|-|-|-simple_expression
 |-|-|-|-|-|-|-term
@@ -505,3 +515,139 @@ MODULE
 |-|-|-|-|-|-|-factor
 |-|-|-|-|-|-|-|-number: 1
 |-|-statement
+|-|-|-assignment
+|-|-|-|-identifier: e
+|-|-|-|-selector
+|-|-|-|-|-identifier: l
+|-|-|-|-selector
+|-|-|-|-|-expression
+|-|-|-|-|-|-simple_expression
+|-|-|-|-|-|-|-term
+|-|-|-|-|-|-|-|-factor
+|-|-|-|-|-|-|-|-|-number: 2
+|-|-|-|-expression
+|-|-|-|-|-simple_expression
+|-|-|-|-|-|-term
+|-|-|-|-|-|-|-factor
+|-|-|-|-|-|-|-|-identifier: e
+|-|-|-|-|-|-|-|-selector
+|-|-|-|-|-|-|-|-|-identifier: l
+|-|-|-|-|-|-|-|-selector
+|-|-|-|-|-|-|-|-|-expression
+|-|-|-|-|-|-|-|-|-|-simple_expression
+|-|-|-|-|-|-|-|-|-|-|-term
+|-|-|-|-|-|-|-|-|-|-|-|-factor
+|-|-|-|-|-|-|-|-|-|-|-|-|-number: 2
+|-|-statement
+
+BubbleSort:
+|-INTEGER: Type as TypeDef
+|-CONSTANT: Type as TypeDef
+|-Point2D: Record as TypeDef
+|-BubbleSort: Module as TypeDef
+|-BOOLEAN: Type as TypeDef
+|-Dim2: Constant as Variable
+|-f: Record as Variable
+|-Dim: Constant as Variable
+|-Dim1: Constant as Variable
+|-g: Record as Variable
+|-Point3D: Record as TypeDef
+|-Point4D: Record as TypeDef
+|-Point5D: Type as TypeDef
+|-Init: Procedure as Variable
+|-Point6D: Array as TypeDef
+|-Point7D: Record as TypeDef
+|-Point8D: Record as TypeDef
+|-Point9D: Type as TypeDef
+|-Point10D: Array as TypeDef
+|-a: Array as Variable
+|-p: Record as Variable
+|-c: Array as Variable
+|-d: Record as Variable
+|-o: Type as Variable
+|-r: Type as Variable
+|-q: Type as Variable
+|-e: Record as Variable
+|-Swap: Procedure as Variable
+|-Bubble: Procedure as Variable
+|-Point2D:
+|-|-x: Type as Variable
+|-|-y: Type as Variable
+|-Point3D:
+|-|-x: Type as Variable
+|-|-y: Type as Variable
+|-|-z: Type as Variable
+|-|-w: Record as TypeDef
+|-|-w:
+|-|-|-x: Type as Variable
+|-|-|-y: Type as Variable
+|-Point4D:
+|-|-w: Type as Variable
+|-|-x: Type as Variable
+|-|-y: Type as Variable
+|-|-z: Type as Variable
+|-Point7D:
+|-|-l: Array as TypeDef
+|-|-k: Array as TypeDef
+|-|-m: Array as TypeDef
+|-Point8D:
+|-|-x: Record as TypeDef
+|-|-y: Record as TypeDef
+|-|-z: Record as TypeDef
+|-|-x:
+|-|-|-l: Array as TypeDef
+|-|-|-k: Array as TypeDef
+|-|-|-m: Array as TypeDef
+|-|-y:
+|-|-|-l: Array as TypeDef
+|-|-|-k: Array as TypeDef
+|-|-|-m: Array as TypeDef
+|-|-z:
+|-|-|-l: Array as TypeDef
+|-|-|-k: Array as TypeDef
+|-|-|-m: Array as TypeDef
+|-p:
+|-|-x: Type as Variable
+|-|-y: Type as Variable
+|-d:
+|-|-x: Type as Variable
+|-|-y: Type as Variable
+|-|-z: Type as Variable
+|-|-w: Record as TypeDef
+|-|-w:
+|-|-|-x: Type as Variable
+|-|-|-y: Type as Variable
+|-e:
+|-|-l: Array as TypeDef
+|-|-k: Array as TypeDef
+|-|-m: Array as TypeDef
+|-f:
+|-|-a: Type as Variable
+|-|-b: Type as Variable
+|-|-c: Type as Variable
+|-g:
+|-|-x: Record as TypeDef
+|-|-y: Record as TypeDef
+|-|-z: Record as TypeDef
+|-|-x:
+|-|-|-l: Array as TypeDef
+|-|-|-k: Array as TypeDef
+|-|-|-m: Array as TypeDef
+|-|-y:
+|-|-|-l: Array as TypeDef
+|-|-|-k: Array as TypeDef
+|-|-|-m: Array as TypeDef
+|-|-z:
+|-|-|-l: Array as TypeDef
+|-|-|-k: Array as TypeDef
+|-|-|-m: Array as TypeDef
+|-Init:
+|-|-i: Type as Variable
+|-Swap:
+|-|-a: Type as Variable
+|-|-b: Type as Variable
+|-|-c: Type as Variable
+|-|-t: Type as Variable
+|-Bubble:
+|-|-i: Type as Variable
+|-|-j: Type as Variable
