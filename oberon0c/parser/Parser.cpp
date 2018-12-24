@@ -1307,7 +1307,13 @@ Symbol * Parser::typeOfFactor(const Node * factor)
 	const Node* child = children.at(0);
 	switch (child->getNodeType()) {
 	case NodeType::identifier:
-		return typeOfSelector(children.at(1));
+		const Node* lastSelector;
+		for (auto possibleSelector : children) {
+			if (possibleSelector->getNodeType() == NodeType::selector) {
+				lastSelector = possibleSelector;
+			}
+		}
+		return typeOfSelector(lastSelector);
 	case NodeType::number:
 		return symbolTables_.front()->getSymbol(&std::string("INTEGER"));
 	case NodeType::expression:
