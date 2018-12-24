@@ -737,7 +737,7 @@ const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * pr
 	while (peekTokenType == TokenType::period
 		|| peekTokenType == TokenType::lbrack) {
 		// Get select and add it to return values
-		select = B(preceedingIdentifier);
+		select = B();
 		selectors->push_back(select);
 		tokenTypes->push_back(peekTokenType);
 
@@ -753,57 +753,44 @@ const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * pr
 	std::shared_ptr<SymbolTable> table = currentTable_;
 	for (int i = 0; i < (int)(selectors->size()) - 1; i++) {
 		TokenType tokenType = (*tokenTypes)[i+1];
-		const Node* select = (*selectors)[i];
-		std::vector<const Node*> selectChildren = select->getChildren();
+		const Node* select2 = (*selectors)[i];
+		std::vector<const Node*> selectChildren = select2->getChildren();
+		
+		const Node* preceedingCandidate = selectChildren.at(0);
 
+		//Symbol* preceedingSymbol = table->getSymbol(&preceedingIdentifiers[i]->getValue());
+		//std::shared_ptr<SymbolTable> recordsTable = recordsSymbolTables_[preceedingSymbol];
+		std::shared_ptr<SymbolTable>  recordsTable = table->getChild(preceedingIdentifiers[i]->getValue());
+		Symbol* candidateSymbol = recordsTable->getSymbol(&preceedingCandidate->getValue());
 
-		//if (selectChildren.size() > 0) {
-			const Node* preceedingCandidate = selectChildren.at(0);
+		failUndeclaredSymbol(candidateSymbol, preceedingCandidate);
 
-			//Symbol* preceedingSymbol = table->getSymbol(&preceedingIdentifiers[i]->getValue());
-			//std::shared_ptr<SymbolTable> recordsTable = recordsSymbolTables_[preceedingSymbol];
-			std::shared_ptr<SymbolTable>  recordsTable = table->getChild(preceedingIdentifiers[i]->getValue());
-			Symbol* candidateSymbol = recordsTable->getSymbol(&preceedingCandidate->getValue());
+		switch (tokenType) {
+		case TokenType::period:
+			// Next after candidate is period, so the candidate must be a record.
+			failIfNotARecord(preceedingCandidate, recordsTable);
+			table = table->getChild(preceedingIdentifiers[i]->getValue());
 
-			failUndeclaredSymbol(candidateSymbol, preceedingCandidate);
-
-			switch (tokenType) {
-			case TokenType::period:
-				// Next after candidate is period, so the candidate must be a record.
-				failIfNotARecord(preceedingCandidate, recordsTable);
-				table = table->getChild(preceedingIdentifiers[i]->getValue());
-
-				//table = recordsSymbolTables_[candidateSymbol];
-				break;
-			case TokenType::lbrack:
-				// Next after candidate is expression, so this must be an array
-				failIfNotAArray(preceedingCandidate, recordsTable);
-				break;
-			}
-		//}
+			//table = recordsSymbolTables_[candidateSymbol];
+			break;
+		case TokenType::lbrack:
+			// Next after candidate is expression, so this must be an array
+			failIfNotAArray(preceedingCandidate, recordsTable);
+			break;
+		}
 
 	}
 
 	return selectors;
 }
 
-const Node* Parser::B(const Node* preceedingIdentifier) {
+const Node* Parser::B() {
 	Node* node = new Node(NodeType::selector, word->getPosition(), currentTable_);
 
 	if (scanner_->peekToken()->getType() == TokenType::period) {
 		point_t();
 
-		// Find the receferenced identifier in the records inner symbol table
-		const Node* identifier = ident();
-		//Symbol* preceedingSymbol = currentTable_->getSymbol(&preceedingIdentifier->getValue());
-		//Symbol* preceedingSymbolType = preceedingSymbol->getTypes()->at(0);
-
-		//std::shared_ptr<SymbolTable> recordsIdentifiers = recordsSymbolTables_[preceedingSymbol];
-		//Symbol* identifiersSymbol = recordsIdentifiers->getSymbol(&identifier->getValue());
-		//failUndeclaredSymbol(identifiersSymbol, identifier);
-		//failIfNotAVariable(identifiersSymbol);
-
-		node->addChild(identifier);
+		node->addChild(ident());
 	}
 	else {
 		lbrack_t();
@@ -1005,10 +992,10 @@ void Parser::failIfNotAVariable(const Node * identifier)
 	failIfNotAVariable(symbol);
 }
 
-void Parser::failTypeCheckBinary(const Symbol * a, const Symbol * b, const Node * op)
+void Parser::failTypeCheckBinary(Symbol * a, Symbol * b, const Node * op)
 {
 	std::stringstream ss;
-	ss << "Types are not appropriate for " << a->getValue() << ", " << b->getValue() << ": " << op->getValue();
+	ss << "Types are not appropriate for " << a->getName() << ", " << b->getName() << ": " << op->getValue();
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!: " + ss.str());
 }
@@ -1064,7 +1051,7 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 		const Node* typeOfType = fieldList->getChildren().at(1)->getChildren().at(0);
 		Symbol* typeOfTypeSymbol = currentTable_->getSymbol(&typeOfType->getValue());
 
-		const Node* identifierList = fieldList->getChildren().at(0);
+//		const Node* identifierList = fieldList->getChildren().at(0);
 		const Node* typeNode2 = fieldList->getChildren().at(1);
 		const Node* typeIdentifier = typeNode2->getChildren().at(0);
 		Symbol* type = currentTable_->getSymbol(&typeIdentifier->getValue());
@@ -1087,9 +1074,9 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 				currentTable_->addChild(copy);
 
 				Symbol* identSymbol = currentTable_->getSymbol(&typeOfType->getValue());//typeOfTypeSymbolTable->getSymbol(&ident->getValue());
-				std::vector<Symbol*> types;
-				types.push_back(identSymbol);
-				Symbol newIdent(ident->getValue(), types, SymbolType::record, asVariable);
+				std::vector<Symbol*> types2;
+				types2.push_back(identSymbol);
+				Symbol newIdent(ident->getValue(), types2, SymbolType::record, asVariable);
 				if (currentTable_->insert(newIdent)) {
 					failSymbolExists(identSymbol);
 				}
@@ -1306,20 +1293,28 @@ Symbol * Parser::typeOfFactor(const Node * factor)
 
 	const Node* child = children.at(0);
 	switch (child->getNodeType()) {
-	case NodeType::identifier:
-		const Node* lastSelector;
+	case NodeType::identifier: {
+		const Node* lastSelector = children.at(1);
 		for (auto possibleSelector : children) {
 			if (possibleSelector->getNodeType() == NodeType::selector) {
 				lastSelector = possibleSelector;
 			}
 		}
 		return typeOfSelector(lastSelector);
+	}
+							   break;
 	case NodeType::number:
 		return symbolTables_.front()->getSymbol(&std::string("INTEGER"));
+		break;
 	case NodeType::expression:
 		return typeOfExpression(child);
+		break;
 	case NodeType::factor:
-		typeOfFactor(child);
+		return typeOfFactor(child);
+		break;
+	default:
+		return nullptr;
+		break;
 	}
 }
 
@@ -1336,8 +1331,13 @@ Symbol * Parser::typeOfSelector(const Node * selector)
 	switch (child->getNodeType()) {
 	case NodeType::identifier:
 		return typeOfIdentifier(child);
+		break;
 	case NodeType::expression:
 		return typeOfExpression(child);
+		break;
+	default:
+		return nullptr;
+		break;
 	}
 }
 

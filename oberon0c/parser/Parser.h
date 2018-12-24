@@ -57,7 +57,7 @@ private:
 	// Added non-terminals
 	const Node* binary_op();
 	const Node* A();
-	const Node* B(const Node* preceeingIdentifier);
+	const Node* B();
 
 	//Terminals
 	void module_t();
@@ -107,7 +107,7 @@ private:
 	void failIfNotProcedure(const Node * identifier);
 	void failIfNotAVariable(Symbol * variable);
 	void failIfNotAVariable(const Node* identifier);
-	void failTypeCheckBinary(const Symbol* a, const Symbol* b, const Node* op);
+	void failTypeCheckBinary(Symbol* a, Symbol* b, const Node* op);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);

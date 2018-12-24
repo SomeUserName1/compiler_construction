@@ -85,7 +85,7 @@ bool Symbol::operator==(Symbol other)
 		return name_ == *other.getName();
 	}
 
-	for (int i = 0; i < types_.size(); i++) {
+	for (size_t i = 0; i < types_.size(); i++) {
 		if (types_.at(i) != otherTypes->at(i)) {
 			return false;
 		}
