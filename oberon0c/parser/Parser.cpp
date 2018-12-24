@@ -1212,7 +1212,19 @@ Symbol * Parser::typeOfFactor(const Node * factor)
 
 Symbol * Parser::typeOfSelector(const Node * selector)
 {
-	return nullptr;
+	std::vector<const Node*> children = selector->getChildren();
+	if (children.size() == 0) {
+		// Not a actual selector.
+		return nullptr;
+	}
+
+	const Node* child = children.at(0);
+	switch (child->getNodeType()) {
+	case NodeType::identifier:
+		return typeOfIdentifier(child);
+	case NodeType::expression:
+		return typeOfExpression(child);
+	}
 }
 
 Symbol * Parser::typeOfIdentifier(const Node * identifier)
