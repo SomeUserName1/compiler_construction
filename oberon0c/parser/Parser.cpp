@@ -1200,18 +1200,49 @@ void Parser::postParserTypeCheck(const Node * module)
 
 Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
 {
-	return nullptr;
+	auto nodeTypesA = std::vector<NodeType>();
+	nodeTypesA[0] = NodeType::plus;
+	nodeTypesA[1] = NodeType::minus;
+
+	auto nodeTypesB = std::vector<NodeType>();
+	nodeTypesB[0] = NodeType::or;
+
+	return binaryTypeChecker(simpleExpression, nodeTypesA, nodeTypesB);
 }
 
 Symbol * Parser::typeOfExpression(const Node * expression)
 {
-	return nullptr;
+	auto nodeTypesA = std::vector<NodeType>();
+	nodeTypesA[0] = NodeType::eq;
+	nodeTypesA[1] = NodeType::neq;
+	nodeTypesA[2] = NodeType::lt;
+	nodeTypesA[3] = NodeType::leq;
+	nodeTypesA[4] = NodeType::gt;
+	nodeTypesA[5] = NodeType::geq;
+
+	auto nodeTypesB = std::vector<NodeType>();
+
+	return binaryTypeChecker(expression, nodeTypesA, nodeTypesB);
 }
 
 Symbol * Parser::typeOfTerm(const Node * term)
 {
-	// TODO Check if vector is appropriate.
-	std::vector<const Node*> children = term->getChildren();
+	auto nodeTypesA = std::vector<NodeType>();
+	nodeTypesA[0] = NodeType::times;
+	nodeTypesA[1] = NodeType::div;
+	nodeTypesA[2] = NodeType::mod;
+
+	auto nodeTypesB = std::vector<NodeType>();
+	nodeTypesB[0] = NodeType::and;
+
+	return binaryTypeChecker(term, nodeTypesA, nodeTypesB);
+}
+
+
+
+Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB)
+{
+	std::vector<const Node*> children = expSexpFact->getChildren();
 	std::list<const Node*> operators;
 	std::list<Symbol* > typesOfFactors;
 
@@ -1235,7 +1266,6 @@ Symbol * Parser::typeOfTerm(const Node * term)
 		const Node* op = operators.front();
 		operators.pop_front();
 
-		// TODO take care of constants
 		if (*typeA != *typeB) {
 			if (*typeA->getName() == std::string("INTEGER")) {
 				if (*typeB->getName() != std::string("CONSTANT")) {
@@ -1249,17 +1279,15 @@ Symbol * Parser::typeOfTerm(const Node * term)
 			}
 		}
 
-		switch (op->getNodeType()) {
-		case NodeType::times:
-		case NodeType::div:
-		case NodeType::mod:
+		if (std::find(nodeTypesA.begin(), nodeTypesA.end(), op->getNodeType()) != nodeTypesA.end()) {
 			if (*typeA->getName() != "INTEGER" && *typeA->getName() != "CONSTANT") {
 				failTypeCheckBinary(typeA, typeB, op);
 			}
 			else {
 				typesOfFactors.push_front(symbolTables_.at(0)->getSymbol(&std::string("INTEGER")));
 			}
-		case NodeType::and:
+		}
+		else {
 			if (*typeA->getName() != "BOOLEAN") {
 				failTypeCheckBinary(typeA, typeB, op);
 			}
@@ -1267,8 +1295,9 @@ Symbol * Parser::typeOfTerm(const Node * term)
 				typesOfFactors.push_front(symbolTables_.at(0)->getSymbol(&std::string("BOOLEAN")));
 			}
 		}
-
 	}
+
+	return typesOfFactors.front();
 }
 
 Symbol * Parser::typeOfFactor(const Node * factor)

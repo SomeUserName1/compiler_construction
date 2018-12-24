@@ -122,6 +122,7 @@ private:
 	Symbol* typeOfFactor(const Node* factor);
 	Symbol* typeOfSelector(const Node* selector);
 	Symbol* typeOfIdentifier(const Node* identifier);
+	Symbol* binaryTypeChecker(const Node* expSexpFact, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB);
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
