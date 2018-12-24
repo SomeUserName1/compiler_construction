@@ -1207,7 +1207,19 @@ Symbol * Parser::typeOfTerm(const Node * term)
 
 Symbol * Parser::typeOfFactor(const Node * factor)
 {
-	return nullptr;
+	std::vector<const Node*> children = factor->getChildren();
+
+	const Node* child = children.at(0);
+	switch (child->getNodeType()) {
+	case NodeType::identifier:
+		return typeOfSelector(children.at(1));
+	case NodeType::number:
+		return symbolTables_.front()->getSymbol(&std::string("INTEGER"));
+	case NodeType::expression:
+		return typeOfExpression(child);
+	case NodeType::factor:
+		typeOfFactor(child);
+	}
 }
 
 Symbol * Parser::typeOfSelector(const Node * selector)
@@ -1218,6 +1230,7 @@ Symbol * Parser::typeOfSelector(const Node * selector)
 		return nullptr;
 	}
 
+	// TODO: Check for further selectors
 	const Node* child = children.at(0);
 	switch (child->getNodeType()) {
 	case NodeType::identifier:
