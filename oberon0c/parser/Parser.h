@@ -108,6 +108,7 @@ private:
 	void failIfNotAVariable(Symbol * variable);
 	void failIfNotAVariable(const Node* identifier);
 	void failTypeCheckBinary(Symbol* a, Symbol* b, const Node* op);
+	void failConstType(const Node* identifier, const Node* expression);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
@@ -116,13 +117,30 @@ private:
 	void addRecord(Node* node, const Node* identifier, const Node* typeDef, bool asVariable);
 
 	void postParserTypeCheck(const Node* module);
-	Symbol* typeOfSimpleExpression(const Node* simpleExpression);
 	Symbol* typeOfExpression(const Node* expression);
+	Symbol* typeOfSimpleExpression(const Node* simpleExpression);
 	Symbol* typeOfTerm(const Node* term);
 	Symbol* typeOfFactor(const Node* factor);
 	Symbol* typeOfSelector(const Node* selector);
 	Symbol* typeOfIdentifier(const Node* identifier);
-	Symbol* binaryTypeChecker(const Node* expSexpFact, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB);
+	Symbol* binaryTypeChecker(const Node* expSexpFact, NodeType sub, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB);
+
+	void checkConstDeclType(const Node* node);
+	void checkAssignmentType(const Node* node);
+	void checkSelectorType(const Node* node);
+	void checkProcedureCallTypes(const Node* node);
+	void checkIfStatementType(const Node* node);
+	void checkElseIfStatementType(const Node* node);
+	void checkWhileStatementType(const Node* node);
+	void checkArrayType(const Node* node);
+
+	int evaluateExpression(const Node* node);
+	int evaluateSimpleExpression(const Node* node);
+	int evaluateTerm(const Node* node);
+	int evaluateFactor(const Node* node);
+	int evaluateSelector(const Node* node);
+	int evaluateIdentifier(const Node* node);
+
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
