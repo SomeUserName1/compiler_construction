@@ -33,7 +33,7 @@ class Node {
 private:
     NodeType nodeType_;
     FilePos pos_;
-	std::vector<const Node*> children_;
+	std::vector<Node*> children_;
 	std::string value_;
 	std::shared_ptr<SymbolTable> symbolTable_;
 
@@ -46,18 +46,19 @@ public:
 
     const NodeType getNodeType() const;
     const FilePos getFilePos() const;
-	const std::vector<const Node*> getChildren() const;
+	const std::vector<Node*> getChildren();
 	std::shared_ptr<SymbolTable> getSymbolTable() const;
+	void addChild(Node* node);
+	void addChilds(std::shared_ptr<std::vector<Node*>> nodes);
+	std::string getValue() const;
+	bool isBinaryOp() const;
+	void setSymbolTable(std::shared_ptr<SymbolTable> symbolTable);
 
     virtual void print(std::ostream &stream) const;
 	virtual void printTree(std::ostream &stream) const;
-    friend std::ostream& operator<<(std::ostream &stream, const Node &node);
+    friend std::ostream& operator<<(std::ostream &stream, Node &node);
 	
-	void addChild(const Node* node);
-	void addChilds(std::shared_ptr<std::vector<const Node*>> nodes);
-	std::string getValue() const;
 
-	bool isBinaryOp() const;
 };
 
 #endif //OBERON0C_AST_H

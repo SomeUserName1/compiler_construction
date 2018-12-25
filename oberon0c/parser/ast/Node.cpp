@@ -23,7 +23,7 @@ const FilePos Node::getFilePos() const
 	return pos_;
 }
 
-const std::vector<const Node*> Node::getChildren() const {
+const std::vector<Node*> Node::getChildren() {
 	return children_;
 }
 
@@ -92,19 +92,19 @@ void Node::printTreeRec(std::ostream & stream, int depth) const
 	this->print(stream);
 	stream << std::endl;
 
-	for (const Node* child : children_) {
+	for (Node* child : children_) {
 		child->printTreeRec(stream, depth + 1);
 	}
 }
 
-void Node::addChild(const Node* node)
+void Node::addChild(Node* node)
 {
 	children_.push_back(node);
 }
 
-void Node::addChilds(std::shared_ptr<std::vector<const Node*>> nodes)
+void Node::addChilds(std::shared_ptr<std::vector<Node*>> nodes)
 {
-	for (const Node* node : *nodes) {
+	for (Node* node : *nodes) {
 		addChild(node);
 	}
 }
@@ -136,7 +136,12 @@ bool Node::isBinaryOp() const
 	}
 }
 
-std::ostream & operator<<(std::ostream & stream, const Node & node)
+void Node::setSymbolTable(std::shared_ptr<SymbolTable> symbolTable)
+{
+	symbolTable_ = symbolTable;
+}
+
+std::ostream & operator<<(std::ostream & stream, Node & node)
 {
 	node.printTree(stream);
 

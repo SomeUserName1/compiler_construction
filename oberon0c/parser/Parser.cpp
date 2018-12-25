@@ -17,11 +17,11 @@ Parser::Parser(Scanner *scanner, Logger *logger) :
 
 Parser::~Parser() = default;
 
-const std::unique_ptr<const Node> Parser::parse() {
+const std::unique_ptr<Node> Parser::parse() {
 	std::shared_ptr<Node> tree = module();
 	postParserTypeCheck(moduleNode.get());
 
-    std::unique_ptr<const Node> parse_tree(tree.get());
+    std::unique_ptr<Node> parse_tree(tree.get());
 	tree = nullptr;
 	   
     std::cout << *parse_tree << std::endl;
@@ -30,7 +30,7 @@ const std::unique_ptr<const Node> Parser::parse() {
     return parse_tree;
 }
 
-const Node* Parser::ident() {
+Node* Parser::ident() {
 	word = scanner_->nextToken();
 
 	if (word->getType() != TokenType::const_ident) {
@@ -43,13 +43,13 @@ const Node* Parser::ident() {
 	return node;
 }
 
-const std::shared_ptr<Node> Parser::module() {
+std::shared_ptr<Node> Parser::module() {
 
 	// Module declaration
 	module_t();
 	//Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
 	moduleNode = std::make_shared<Node>(NodeType::module, word->getPosition(), currentTable_);
-	const Node* identifier = ident();
+	Node* identifier = ident();
 
 	//Adding the first scope SymbolTable 
 	std::shared_ptr<SymbolTable> newTable = std::make_shared<SymbolTable>(identifier->getValue());
@@ -81,11 +81,11 @@ const std::shared_ptr<Node> Parser::module() {
 	}
 	point_t();
 
-	currentTable_ = nullptr;
+//	currentTable_ = nullptr;
 	return moduleNode;
 }
 
-const Node* Parser::declarations() {
+Node* Parser::declarations() {
 	Node* node = new Node(NodeType::declarations, word->getPosition(), currentTable_);
 
 	// CONSTs
@@ -122,11 +122,11 @@ const Node* Parser::declarations() {
 	return node;
 }
 
-const Node* Parser::const_declarations() {
+Node* Parser::const_declarations() {
 	Node* node = new Node(NodeType::const_declarations, word->getPosition(), currentTable_);
 
 	// Processing one constant
-	const Node * identifier = ident();
+	Node * identifier = ident();
 	node->addChild(identifier);
 	equals_symbol_t();
 	node->addChild(expression());
@@ -145,19 +145,19 @@ const Node* Parser::const_declarations() {
 	return node;
 }
 
-const Node* Parser::type_declarations() {
+Node* Parser::type_declarations() {
 	Node* node = new Node(NodeType::type_declarations, word->getPosition(), currentTable_);
 
 	// Processing one type
-	const Node * identifier = ident();
+	Node * identifier = ident();
 	node->addChild(identifier);
 	equals_symbol_t();
-	const Node * typeNode = type();
+	Node * typeNode = type();
 	node->addChild(typeNode);
 	semicolon_t();
 
 	// Add processed type to the symbol table
-	const Node* typeDef = typeNode->getChildren().at(0);
+	Node* typeDef = typeNode->getChildren().at(0);
 	switch (typeDef->getNodeType()) {
 		case (NodeType::identifier): {
 			addType(identifier, typeDef, false);
@@ -176,21 +176,21 @@ const Node* Parser::type_declarations() {
 	return node;
 }
 
-const Node* Parser::var_declarations() {
+Node* Parser::var_declarations() {
 	Node* node = new Node(NodeType::var_declarations, word->getPosition(), currentTable_);
 
-	const Node* identifiersNode = ident_list();
+	Node* identifiersNode = ident_list();
 	node->addChild(identifiersNode);
 	double_colon_t();
-	const Node* typeNode = type();
+	Node* typeNode = type();
 	node->addChild(typeNode);
 	semicolon_t();
 
-	std::vector<const Node *> identifiers = identifiersNode->getChildren();
-	const Node* typeDef = typeNode->getChildren().at(0);
+	std::vector<Node *> identifiers = identifiersNode->getChildren();
+	Node* typeDef = typeNode->getChildren().at(0);
 	switch (typeDef->getNodeType()) {
 		case (NodeType::identifier): {
-			for (const Node* identifier : identifiers) {
+			for (Node* identifier : identifiers) {
 				auto temp = typeDef->getValue();
 				switch (currentTable_->getSymbol(&temp)->getSymbolType()) {
 				case SymbolType::array:
@@ -221,13 +221,13 @@ const Node* Parser::var_declarations() {
 		}
 			break;
 		case (NodeType::array_type): {
-			for (const Node* identifier : identifiers) {
+			for (Node* identifier : identifiers) {
 				addArray(identifier, typeDef, true);
 			}
 		}
 			break;
 		case (NodeType::record_type): {
-			for (const Node* identifier : identifiers) {
+			for (Node* identifier : identifiers) {
 				addRecord(node, identifier, typeDef, true);
 			}
 		}
@@ -237,7 +237,7 @@ const Node* Parser::var_declarations() {
 	return node;
 }
 
-const Node* Parser::procedure_declaration() {
+Node* Parser::procedure_declaration() {
 	Node* node = new Node(NodeType::procedure_declaration, word->getPosition(), currentTable_);
 
 	node->addChild(procedure_heading());
@@ -250,7 +250,7 @@ const Node* Parser::procedure_declaration() {
 	return node;
 }
 
-const Node* Parser::expression() {
+Node* Parser::expression() {
 	Node* node = new Node(NodeType::expression, word->getPosition(), currentTable_);
 
 	node->addChild(simple_expression());
@@ -266,7 +266,7 @@ const Node* Parser::expression() {
 	return node;
 }
 
-const Node* Parser::simple_expression() {
+Node* Parser::simple_expression() {
 	Node* node = new Node(NodeType::simple_expression, word->getPosition(), currentTable_);
 
 	TokenType type = scanner_->peekToken()->getType();
@@ -288,7 +288,7 @@ const Node* Parser::simple_expression() {
 	return node;
 }
 
-const Node* Parser::term() {
+Node* Parser::term() {
 	Node* node = new Node(NodeType::term, word->getPosition(), currentTable_);
 
 	node->addChild(factor());
@@ -305,7 +305,7 @@ const Node* Parser::term() {
 	return node;
 }
 
-const Node* Parser::number() {
+Node* Parser::number() {
     word = scanner_->nextToken();
 
     if (word->getType() != TokenType::const_number) {
@@ -319,14 +319,14 @@ const Node* Parser::number() {
 }
 
 
-const Node* Parser::factor() {
+Node* Parser::factor() {
 	Node* node = new Node(NodeType::factor, word->getPosition(), currentTable_);
 
 
 	TokenType type = scanner_->peekToken()->getType();
 	if (type == TokenType::const_ident) {
 		// Check if the identifier is declared and appropriate (a record or an array).
-		const Node* identifier = ident();
+		Node* identifier = ident();
 		failUndeclaredSymbol(identifier);
 		failIfNotAVariable(identifier);
 		node->addChild(identifier);
@@ -391,7 +391,7 @@ const Node* Parser::factor() {
 	return node;
 }
 
-const Node* Parser::type() {
+Node* Parser::type() {
 	Node* node = new Node(NodeType::type, word->getPosition(), currentTable_);
 
 	TokenType type = scanner_->peekToken()->getType();
@@ -412,7 +412,7 @@ const Node* Parser::type() {
 	return node;
 }
 
-const Node* Parser::array_type() {
+Node* Parser::array_type() {
 	Node* node = new Node(NodeType::array_type, word->getPosition(), currentTable_);
 
 	array_t();
@@ -423,7 +423,7 @@ const Node* Parser::array_type() {
 	return node;
 }
 
-const Node* Parser::record_type() {
+Node* Parser::record_type() {
 	Node* node = new Node(NodeType::record_type, word->getPosition(), currentTable_);
 
 	record_t();
@@ -441,7 +441,7 @@ const Node* Parser::record_type() {
 	return node;
 }
 
-const Node* Parser::field_list() {
+Node* Parser::field_list() {
 	Node* node = new Node(NodeType::field_list, word->getPosition(), currentTable_);
 
 	TokenType t_type = scanner_->peekToken()->getType();
@@ -453,7 +453,7 @@ const Node* Parser::field_list() {
 	return node;
 }
 
-const Node* Parser::ident_list() {
+Node* Parser::ident_list() {
 	Node* node = new Node(NodeType::ident_list, word->getPosition(), currentTable_);
 
 	node->addChild(ident());
@@ -466,12 +466,12 @@ const Node* Parser::ident_list() {
 	return node;
 }
 
-const Node* Parser::procedure_heading() {
+Node* Parser::procedure_heading() {
 	Node* node = new Node(NodeType::procedure_heading, word->getPosition(), currentTable_);
 
 	// Parse procedure identifier
 	procedure_t();
-	const Node* procIdent = ident();
+	Node* procIdent = ident();
 	node->addChild(procIdent);
 
 	// Add symbol for procedure.
@@ -486,31 +486,31 @@ const Node* Parser::procedure_heading() {
 	// Parse formal parameters
 	if (scanner_->peekToken()->getType() == TokenType::lparen) {
 		// Parsing
-		const Node* fParams = formal_parameters();
+		Node* fParams = formal_parameters();
 		node->addChild(fParams);
 
 		// Adding identifiers of procedure parameters
-		for (const Node* fpSection : fParams->getChildren()) {
-			std::vector<const Node*> children = fpSection->getChildren();
+		for (Node* fpSection : fParams->getChildren()) {
+			std::vector<Node*> children = fpSection->getChildren();
 			size_t identPosition = 0;// children.at(0).getNodeType() != NodeType::var_declarations;
-			const Node* varIdentifiers = children.at(identPosition);
-			const Node* typeDef = children.at(++identPosition)->getChildren().at(0);
+			Node* varIdentifiers = children.at(identPosition);
+			Node* typeDef = children.at(++identPosition)->getChildren().at(0);
 
 			switch (typeDef->getNodeType()) {
 			case (NodeType::identifier): {
-				for (const Node* identifier : varIdentifiers->getChildren()) {
+				for (Node* identifier : varIdentifiers->getChildren()) {
 					addType(identifier, typeDef, true);
 				}
 			}
 					break;
 			case (NodeType::array_type): {
-				for (const Node* identifier : varIdentifiers->getChildren()) {
+				for (Node* identifier : varIdentifiers->getChildren()) {
 					addArray(identifier, typeDef, true);
 				}
 			}
 				break;
 			case (NodeType::record_type): {
-				for (const Node* identifier : varIdentifiers->getChildren()) {
+				for (Node* identifier : varIdentifiers->getChildren()) {
 					addRecord(node, identifier, typeDef, true);
 				}
 			}
@@ -522,7 +522,7 @@ const Node* Parser::procedure_heading() {
 	return node;
 }
 
-const Node* Parser::procedure_body()
+Node* Parser::procedure_body()
 {
 	Node* node = new Node(NodeType::procedure_body, word->getPosition(), currentTable_);
 
@@ -539,7 +539,7 @@ const Node* Parser::procedure_body()
 	return node;
 }
 
-const Node* Parser::formal_parameters()
+Node* Parser::formal_parameters()
 {
 	Node* node = new Node(NodeType::formal_parameters, word->getPosition(), currentTable_);
 
@@ -558,7 +558,7 @@ const Node* Parser::formal_parameters()
 	return node;
 }
 
-const Node* Parser::fp_section()
+Node* Parser::fp_section()
 {
 	Node* node = new Node(NodeType::fp_section, word->getPosition(), currentTable_);
 
@@ -572,7 +572,7 @@ const Node* Parser::fp_section()
 	return node;
 }
 
-const Node* Parser::statement_sequence()
+Node* Parser::statement_sequence()
 {
 	Node* node = new Node(NodeType::statement_sequence, word->getPosition(), currentTable_);
 
@@ -584,7 +584,7 @@ const Node* Parser::statement_sequence()
 	return node;
 }
 
-const Node* Parser::statement()
+Node* Parser::statement()
 { //TODO
 	Node* node = new Node(NodeType::statement, word->getPosition(), currentTable_);
 
@@ -605,17 +605,17 @@ const Node* Parser::statement()
 }
 
 // Implements Assignment & ProcedureCall
-const Node* Parser::A()
+Node* Parser::A()
 {
 	Node* node;
 
 	// Get the identifier of this assignment or procedure call
-	const Node* identifier = ident();
+	Node* identifier = ident();
 	failUndeclaredSymbol(identifier);
 	// Peek ahead the right next token before processing the selector.
 	const Token followIdentifier = *scanner_->peekToken();
 	
-	std::shared_ptr<std::vector<const Node*>> select = selector(identifier);
+	std::shared_ptr<std::vector<Node*>> select = selector(identifier);
 
 	const Token* peeked = scanner_->peekToken();
 	if (peeked->getType() == TokenType::op_becomes) {
@@ -653,7 +653,7 @@ const Node* Parser::A()
 		// Procedure could be the identifier or (if present) the last selector behind the identifier.
 		// Note: Actually in the latter case we'd have to check if the procedure hangs behind modules but as we do not have a linker
 		// we cannot do that.
-		const Node* procedure = (select->size() > 0) ? select->back()->getChildren().at(0) : identifier;
+		Node* procedure = (select->size() > 0) ? select->back()->getChildren().at(0) : identifier;
 		failIfNotProcedure(procedure);
 
 		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
@@ -668,7 +668,7 @@ const Node* Parser::A()
 	return node;
 }
 
-const Node* Parser::if_statement()
+Node* Parser::if_statement()
 {
 	Node* node = new Node(NodeType::if_statement, word->getPosition(), currentTable_);
 
@@ -692,7 +692,7 @@ const Node* Parser::if_statement()
 	return node;
 }
 
-const Node* Parser::while_statement()
+Node* Parser::while_statement()
 {
 	Node* node = new Node(NodeType::while_statement, word->getPosition(), currentTable_);
 
@@ -705,7 +705,7 @@ const Node* Parser::while_statement()
 	return node;
 }
 
-const Node* Parser::actual_parameters()
+Node* Parser::actual_parameters()
 {
 	Node* node = new Node(NodeType::acutal_parameters, word->getPosition(), currentTable_);
 
@@ -722,14 +722,14 @@ const Node* Parser::actual_parameters()
 	return node;
 }
 
-const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * preceedingIdentifier) {
-	auto selectors = std::make_shared<std::vector<const Node*>>();
-	auto preceedingIdentifiers = std::vector<const Node*>();
+std::shared_ptr<std::vector<Node*>> Parser::selector(Node * preceedingIdentifier) {
+	auto selectors = std::make_shared<std::vector<Node*>>();
+	auto preceedingIdentifiers = std::vector<Node*>();
 	preceedingIdentifiers.push_back(preceedingIdentifier);
 	auto temp6 = std::vector<TokenType>();
 	std::vector<TokenType>* tokenTypes = &temp6;
 	
-	const Node* select = preceedingIdentifier;
+	Node* select = preceedingIdentifier;
 	TokenType peekTokenType = scanner_->peekToken()->getType();
 	while (peekTokenType == TokenType::period
 		|| peekTokenType == TokenType::lbrack) {
@@ -750,10 +750,10 @@ const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * pr
 	std::shared_ptr<SymbolTable> table = currentTable_;
 	for (int i = 0; i < (int)(selectors->size()) - 1; i++) {
 		TokenType tokenType = (*tokenTypes)[i+1];
-		const Node* select2 = (*selectors)[i];
-		std::vector<const Node*> selectChildren = select2->getChildren();
+		Node* select2 = (*selectors)[i];
+		std::vector<Node*> selectChildren = select2->getChildren();
 		
-		const Node* preceedingCandidate = selectChildren.at(0);
+		Node* preceedingCandidate = selectChildren.at(0);
 
 		//Symbol* preceedingSymbol = table->getSymbol(&preceedingIdentifiers[i]->getValue());
 		//std::shared_ptr<SymbolTable> recordsTable = recordsSymbolTables_[preceedingSymbol];
@@ -782,7 +782,7 @@ const std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * pr
 	return selectors;
 }
 
-const Node* Parser::B() {
+Node* Parser::B() {
 	Node* node = new Node(NodeType::selector, word->getPosition(), currentTable_);
 
 	if (scanner_->peekToken()->getType() == TokenType::period) {
@@ -800,7 +800,7 @@ const Node* Parser::B() {
 	return node;
 }
 
-const Node* Parser::binary_op() {
+Node* Parser::binary_op() {
 	word = scanner_->nextToken();
 
 	TokenType type = word->getType();
@@ -864,7 +864,7 @@ void Parser::failSymbol(std::string &msg) {
 	throw std::invalid_argument("You failed!" + msg);
 }
 
-void Parser::failUndeclaredSymbol(Symbol * undeclaredSymbol, const Node * identifier)
+void Parser::failUndeclaredSymbol(Symbol * undeclaredSymbol, Node * identifier)
 {
 	if (undeclaredSymbol != nullptr) {
 		return;
@@ -875,7 +875,7 @@ void Parser::failUndeclaredSymbol(Symbol * undeclaredSymbol, const Node * identi
 	throw std::invalid_argument("You failed!" + ss.str());
 }
 
-void Parser::failUndeclaredSymbol(const Node * identifier)
+void Parser::failUndeclaredSymbol(Node * identifier)
 {
 	auto temp8 = identifier->getValue();
 	Symbol* undeclaredSymbol = currentTable_->getSymbol(&temp8);
@@ -902,12 +902,12 @@ void Parser::failSymbolExists(Symbol * symbol)
 	throw std::invalid_argument("You failed!" + ss.str());
 }
 
-void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType)
+void Parser::failIfNotASomething(Node * identifier, SymbolType symbolType)
 {
 	failIfNotASomething(identifier, symbolType, currentTable_);
 }
 
-void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType, std::shared_ptr<SymbolTable> symbolTable)
+void Parser::failIfNotASomething(Node * identifier, SymbolType symbolType, std::shared_ptr<SymbolTable> symbolTable)
 {
 	auto temp9 = identifier->getValue();
 	Symbol* possibleRecord = symbolTable->getSymbol(&temp9);
@@ -934,27 +934,27 @@ void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType,
 	throw std::invalid_argument("You failed!" + ss.str());
 }
 
-void Parser::failIfNotARecord(const Node * identifier)
+void Parser::failIfNotARecord(Node * identifier)
 {
 	failIfNotASomething(identifier, SymbolType::record);
 }
 
-void Parser::failIfNotARecord(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable)
+void Parser::failIfNotARecord(Node * identifier, std::shared_ptr<SymbolTable> symbolTable)
 {
 	failIfNotASomething(identifier, SymbolType::record, symbolTable);
 }
 
-void Parser::failIfNotAArray(const Node * identifier)
+void Parser::failIfNotAArray(Node * identifier)
 {
 	failIfNotASomething(identifier, SymbolType::array);
 }
 
-void Parser::failIfNotAArray(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable)
+void Parser::failIfNotAArray(Node * identifier, std::shared_ptr<SymbolTable> symbolTable)
 {
 	failIfNotASomething(identifier, SymbolType::array, symbolTable);
 }
 
-void Parser::failNetiherRecordNorArray(const Node * identifier)
+void Parser::failNetiherRecordNorArray(Node * identifier)
 {
 	std::stringstream ss;
 	ss << identifier->getValue() << " is neither an Array nor a Record";
@@ -962,7 +962,7 @@ void Parser::failNetiherRecordNorArray(const Node * identifier)
 	throw std::invalid_argument("You failed!" + ss.str());
 }
 
-void Parser::failIfNotProcedure(const Node * identifier)
+void Parser::failIfNotProcedure(Node * identifier)
 {
 	auto temp10 = identifier->getValue();
 	if (currentTable_->getSymbol(&temp10)->getSymbolType() == SymbolType::procedure) {
@@ -987,14 +987,14 @@ void Parser::failIfNotAVariable(Symbol * variable)
 	throw std::invalid_argument("You failed!" + ss.str());
 }
 
-void Parser::failIfNotAVariable(const Node * identifier)
+void Parser::failIfNotAVariable(Node * identifier)
 {
 	auto temp11 = identifier->getValue();
 	Symbol* symbol = currentTable_->getSymbol(&temp11);
 	failIfNotAVariable(symbol);
 }
 
-void Parser::failTypeCheckBinary(Symbol * a, Symbol * b, const Node * op)
+void Parser::failTypeCheckBinary(Symbol * a, Symbol * b, Node * op)
 {
 	std::stringstream ss;
 	ss << "Types are not appropriate for " << a->getName() << ", " << b->getName() << ": " << op->getValue();
@@ -1002,7 +1002,7 @@ void Parser::failTypeCheckBinary(Symbol * a, Symbol * b, const Node * op)
 	throw std::invalid_argument("You failed!: " + ss.str());
 }
 
-void Parser::failConstType(const Node * identifier, const Node * expression)
+void Parser::failConstType(Node * identifier, Node * expression)
 {
 	std::stringstream ss;
 	ss << "Failed to assign constant on " << identifier->getValue() << ". ";
@@ -1013,7 +1013,7 @@ void Parser::failConstType(const Node * identifier, const Node * expression)
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
-void Parser::failLeftHandNotVariable(const Node * identifier)
+void Parser::failLeftHandNotVariable(Node * identifier)
 {
 	std::stringstream ss;
 	ss << identifier->getValue() << " is not a variable";
@@ -1022,16 +1022,16 @@ void Parser::failLeftHandNotVariable(const Node * identifier)
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
-void Parser::failTypeCheckAssignment(const Node * var, const Node * expression)
+void Parser::failTypeCheckAssignment(Node * var, Node * expression)
 {
 	std::stringstream ss;
-	ss << var->getValue() + " and " << expression->getValue() << " are not of the same type";
+	ss << var->getValue() + " and " << std::endl << *expression << " are not of the same type";
 
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
-void Parser::failWrongParamCount(const Node * calledFunction, size_t formalCount, size_t actualCount)
+void Parser::failWrongParamCount(Node * calledFunction, size_t formalCount, size_t actualCount)
 {
 	std::stringstream ss;
 	ss << calledFunction->getValue() << " takes " << formalCount << " Arguments but " << actualCount << " were given.";
@@ -1040,7 +1040,7 @@ void Parser::failWrongParamCount(const Node * calledFunction, size_t formalCount
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
-void Parser::wrongActualParams(const Node * calledFunction, Symbol * formalParam, Symbol * actualParam)
+void Parser::wrongActualParams(Node * calledFunction, Symbol * formalParam, Symbol * actualParam)
 {
 	std::stringstream ss;
 	ss << "Call to: " << calledFunction->getValue() << ". Parameter incompatibility: Was: " << *actualParam << " but should have been " << *formalParam;
@@ -1053,7 +1053,7 @@ void Parser::newSymbolTable(std::string name)
 	currentTable_ = newTable;
 }
 
-void Parser::addType(const Node * identifier, const Node * typeDef, bool asVariable)
+void Parser::addType(Node * identifier, Node * typeDef, bool asVariable)
 {		
 	// New type is an "alias" of an existing type. Check if that existing type exists
 	auto temp12 = typeDef->getValue();
@@ -1068,10 +1068,10 @@ void Parser::addType(const Node * identifier, const Node * typeDef, bool asVaria
 	}
 }
 
-void Parser::addArray(const Node * identifier, const Node * typeDef, bool asVariable)
+void Parser::addArray(Node * identifier, Node * typeDef, bool asVariable)
 {
 	// New type is an array. Check if the specified array type exists.
-	const Node* typeDef2 = typeDef->getChildren().at(1)->getChildren().at(0);
+	Node* typeDef2 = typeDef->getChildren().at(1)->getChildren().at(0);
 	auto temp13 = typeDef2->getValue();
 	Symbol* type = currentTable_->getSymbol(&temp13);
 	failUndeclaredSymbol(type, typeDef2);
@@ -1086,23 +1086,23 @@ void Parser::addArray(const Node * identifier, const Node * typeDef, bool asVari
 	}
 }
 
-void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef, bool asVariable)
+void Parser::addRecord(Node* node, Node * identifier, Node * typeDef, bool asVariable)
 {
 	// New lexical scope
 	newSymbolTable(identifier->getValue());
 
 	// New Type is a record. Check if all specified types exist.
 	std::vector<Symbol*> recordTypes;
-	const std::vector<const Node*> fieldLists = typeDef->getChildren();
-	for (const Node* fieldList : fieldLists) {
+	std::vector<Node*> fieldLists = typeDef->getChildren();
+	for (Node* fieldList : fieldLists) {
 		// Get the symbol of the type of this field list
-		const Node* typeOfType = fieldList->getChildren().at(1)->getChildren().at(0);
+		Node* typeOfType = fieldList->getChildren().at(1)->getChildren().at(0);
 		auto temp14 = typeOfType->getValue();
 		Symbol* typeOfTypeSymbol = currentTable_->getSymbol(&temp14);
 
-//		const Node* identifierList = fieldList->getChildren().at(0);
-		const Node* typeNode2 = fieldList->getChildren().at(1);
-		const Node* typeIdentifier = typeNode2->getChildren().at(0);
+//		Node* identifierList = fieldList->getChildren().at(0);
+		Node* typeNode2 = fieldList->getChildren().at(1);
+		Node* typeIdentifier = typeNode2->getChildren().at(0);
 		auto temp15 = typeIdentifier->getValue();
 		Symbol* type = currentTable_->getSymbol(&temp15);
 		std::vector<Symbol*> types;
@@ -1112,13 +1112,13 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 
 		// Type exists. Add the identifiers.
 		// If typeDef (the type of the newly added identifiers) is a record add the already existing Symbols, if not add new symbols.
-		std::vector<const Node*> identifiers = fieldList->getChildren().at(0)->getChildren();
+		std::vector<Node*> identifiers = fieldList->getChildren().at(0)->getChildren();
 
 		switch (typeOfTypeSymbol->getSymbolType()) {
 		case SymbolType::record: {
 			std::shared_ptr<SymbolTable> typeOfTypeSymbolTable = recordsSymbolTables_[typeOfTypeSymbol];
 
-			for (const Node* ident : identifiers) {
+			for (Node* ident : identifiers) {
 				std::shared_ptr<SymbolTable> copy = typeOfTypeSymbolTable->deepCopy(ident->getValue());
 				symbolTables_.push_back(copy);
 				currentTable_->addChild(copy);
@@ -1137,7 +1137,7 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 		}
 			break;
 		case SymbolType::array:
-			for (const Node* ident : identifiers) {
+			for (Node* ident : identifiers) {
 				Symbol newArray = typeOfTypeSymbol->copy(ident->getValue());
 				if (currentTable_->insert(newArray)) {
 					failSymbolExists(&newArray);
@@ -1146,13 +1146,18 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 			}
 			break;
 		case SymbolType::type:
-			for (const Node* ident : identifiers) {
+			for (Node* ident : identifiers) {
 				Symbol newIdent(ident->getValue(), types, SymbolType::type, true);
 				if (currentTable_->insert(newIdent)) {
 					failSymbolExists(&newIdent);
 				}
 				recordTypes.push_back(type);
 			}
+		}
+
+		// Update the pointer to the symbolTable
+		for (Node* ident : identifiers) {
+			ident->setSymbolTable(currentTable_);
 		}
 	}
 
@@ -1169,15 +1174,23 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 	recordsSymbolTables_.insert(std::unordered_map<Symbol*, std::shared_ptr<SymbolTable>>::value_type(recordsSymbol, recordsSymbolTable));
 }
 
-void Parser::postParserTypeCheck(const Node * module)
+void Parser::postParserTypeCheck(Node * module)
 {
+	auto oldTable = currentTable_;
+	if (module->getNodeType() == NodeType::procedure_declaration) {
+		auto next = currentTable_->getChild(module->getChildren().at(0)->getChildren().at(0)->getValue());
+		if (next != nullptr) {
+			currentTable_ = next;
+		}
+	}
+
 	for (auto child : module->getChildren()) {
 		switch (child->getNodeType()) {
 		case NodeType::const_declarations:
 			checkConstDeclType(child);
 			break;
 		case NodeType::assignment:
-			// Check if identifier of l is of same type as result of expression on r.
+			checkAssignmentType(child);
 			break;
 		case NodeType::selector:
 			// If an array is selected check wether the expression evaluates to a non-negative integer that is in range.
@@ -1200,9 +1213,11 @@ void Parser::postParserTypeCheck(const Node * module)
 		}
 		postParserTypeCheck(child);
 	}
+
+	currentTable_ = oldTable;
 }
 
-Symbol * Parser::typeOfExpression(const Node * expression)
+Symbol * Parser::typeOfExpression(Node * expression)
 {
 	auto nodeTypesA = std::vector<NodeType>();
 	nodeTypesA.push_back(NodeType::eq);
@@ -1217,7 +1232,7 @@ Symbol * Parser::typeOfExpression(const Node * expression)
 	return binaryTypeChecker(expression, NodeType::simple_expression, nodeTypesA, nodeTypesB);
 }
 
-Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
+Symbol * Parser::typeOfSimpleExpression(Node * simpleExpression)
 {
 	// TODO throw one operator away.
 	auto nodeTypesA = std::vector<NodeType>();
@@ -1230,7 +1245,7 @@ Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
 	return binaryTypeChecker(simpleExpression, NodeType::term, nodeTypesA, nodeTypesB);
 }
 
-Symbol * Parser::typeOfTerm(const Node * term)
+Symbol * Parser::typeOfTerm(Node * term)
 {
 	auto nodeTypesA = std::vector<NodeType>();
 	nodeTypesA.push_back(NodeType::times);
@@ -1245,13 +1260,13 @@ Symbol * Parser::typeOfTerm(const Node * term)
 
 
 
-Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB)
+Symbol * Parser::binaryTypeChecker(Node * expSexpFact, NodeType sub, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB)
 {
-	std::vector<const Node*> children = expSexpFact->getChildren();
-	std::list<const Node*> operators;
+	std::vector<Node*> children = expSexpFact->getChildren();
+	std::list<Node*> operators;
 	std::list<Symbol* > typesOfSubs;
 
-	for (const Node* child : children) {
+	for (Node* child : children) {
 		if (child->getNodeType() == sub) {
 			switch (sub) {
 			case NodeType::simple_expression:
@@ -1282,7 +1297,7 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 		typesOfSubs.pop_front();
 		Symbol* typeB = typesOfSubs.front();
 		typesOfSubs.pop_front();
-		const Node* op = operators.front();
+		Node* op = operators.front();
 		operators.pop_front();
 
 		if (*typeA != *typeB) {
@@ -1327,10 +1342,10 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 	return typesOfSubs.front();
 }
 
-void Parser::checkConstDeclType(const Node * node)
+void Parser::checkConstDeclType(Node * node)
 {
-	const Node* identifier = node->getChildren().at(0);
-	const Node* expression = node->getChildren().at(1);
+	Node* identifier = node->getChildren().at(0);
+	Node* expression = node->getChildren().at(1);
 	Symbol* type = typeOfExpression(expression);
 
 	// Check wether the expression evaluates to a constant.
@@ -1346,30 +1361,38 @@ void Parser::checkConstDeclType(const Node * node)
 	nodeSymbol->setValue(expVal);
 }
 
-void Parser::checkAssignmentType(const Node * node)
+void Parser::checkAssignmentType(Node * node)
 {
-	std::vector<const Node*> children = node->getChildren();
-	const Node* var = lastSelectorVariable(&children);
+	std::vector<Node*> children = node->getChildren();
+	std::shared_ptr<SymbolTable> tableOfVar = currentTable_;
+	Node* var = lastSelectorVariable(&children, &tableOfVar);
 
 	auto temp = var->getValue();
-	Symbol* varSymb = var->getSymbolTable()->getSymbol(&temp);
+	Symbol* varSymb = tableOfVar->getSymbol(&temp);
 
 	if (!varSymb->isVariable()) {
 		failLeftHandNotVariable(var);
 	}
 
-	const Node* expression = children.back();
+	Node* expression = children.back();
+	std::vector<Symbol*>* varTypes = varSymb->getTypes();
+	Symbol* varType = varTypes->at(0);
 	Symbol* expressionType = typeOfExpression(expression);
 
-	if (varSymb != expressionType) {
+	if (varTypes->size() > 1) {
 		failTypeCheckAssignment(var, expression);
+	}
+	if (varType != expressionType) {
+		if (*varType->getName() != "INTEGER" || *expressionType->getName() != "CONSTANT") {
+			failTypeCheckAssignment(var, expression);
+		}
 	}
 }
 
-/*void Parser::checkSelectorType(const Node * node)
+/*void Parser::checkSelectorType(Node * node)
 {
-	std::vector<const Node*> children = node->getChildren();
-	const Node* expression = children.at(0);
+	std::vector<Node*> children = node->getChildren();
+	Node* expression = children.at(0);
 
 	if (expression->getNodeType() != NodeType::expression) {
 		return;
@@ -1380,10 +1403,10 @@ void Parser::checkAssignmentType(const Node * node)
 	}
 }*/
 
-void Parser::checkProcedureCallTypes(const Node * node)
+void Parser::checkProcedureCallTypes(Node * node)
 {
-	std::vector<const Node*> callChildren = node->getChildren();
-	const Node* procedureIdentifier = callChildren.at(0);
+	std::vector<Node*> callChildren = node->getChildren();
+	Node* procedureIdentifier = callChildren.at(0);
 
 	std::vector<Symbol*> actParamTypes;
 	for (size_t i = 1; i < callChildren.size(); i++) {
@@ -1407,30 +1430,30 @@ void Parser::checkProcedureCallTypes(const Node * node)
 	}
 }
 
-void Parser::checkIfStatementType(const Node * node)
+void Parser::checkIfStatementType(Node * node)
 {
 }
 
-void Parser::checkElseIfStatementType(const Node * node)
+void Parser::checkElseIfStatementType(Node * node)
 {
 }
 
-void Parser::checkWhileStatementType(const Node * node)
+void Parser::checkWhileStatementType(Node * node)
 {
 }
 
-void Parser::checkArrayType(const Node * node)
+void Parser::checkArrayType(Node * node)
 {
 }
 
-int Parser::evaluateExpression(const Node * node)
+int Parser::evaluateExpression(Node * node)
 {
-	std::vector<const Node*> children = node->getChildren();
-	std::list<const Node*> operators;
-	std::list<const Node*> simpleExpressions;
+	std::vector<Node*> children = node->getChildren();
+	std::list<Node*> operators;
+	std::list<Node*> simpleExpressions;
 
 
-	for (const Node* child : children) {
+	for (Node* child : children) {
 		if (child->getNodeType() == NodeType::simple_expression) {
 			simpleExpressions.push_back(child);
 		}
@@ -1445,8 +1468,8 @@ int Parser::evaluateExpression(const Node * node)
 	int returnVal = evaluateSimpleExpression(simpleExpressions.front());
 	simpleExpressions.pop_front();
 	while (simpleExpressions.size() > 0) {
-		const Node* op = operators.front();
-		const Node* se = simpleExpressions.front();
+		Node* op = operators.front();
+		Node* se = simpleExpressions.front();
 		operators.pop_front();
 		simpleExpressions.pop_front();
 		int seValue = evaluateSimpleExpression(se);
@@ -1470,14 +1493,14 @@ int Parser::evaluateExpression(const Node * node)
 	return returnVal;
 }
 
-int Parser::evaluateSimpleExpression(const Node * node)
+int Parser::evaluateSimpleExpression(Node * node)
 {
 	// TODO Code duplication
-	std::vector<const Node*> children = node->getChildren();
-	std::list<const Node*> operators;
-	std::list<const Node*> terms;
+	std::vector<Node*> children = node->getChildren();
+	std::list<Node*> operators;
+	std::list<Node*> terms;
 
-	for (const Node* child : children) {
+	for (Node* child : children) {
 		if (child->getNodeType() == NodeType::term) {
 			terms.push_back(child);
 		}
@@ -1499,8 +1522,8 @@ int Parser::evaluateSimpleExpression(const Node * node)
 		operators.pop_front();
 	}
 	while (terms.size() > 0) {
-		const Node* op = operators.front();
-		const Node* se = terms.front();
+		Node* op = operators.front();
+		Node* se = terms.front();
 		operators.pop_front();
 		terms.pop_front();
 		int seValue = evaluateTerm(se);
@@ -1518,14 +1541,14 @@ int Parser::evaluateSimpleExpression(const Node * node)
 	return returnVal;
 }
 
-int Parser::evaluateTerm(const Node * node)
+int Parser::evaluateTerm(Node * node)
 {
 	// TODO Code duplication
-	std::vector<const Node*> children = node->getChildren();
-	std::list<const Node*> operators;
-	std::list<const Node*> factors;
+	std::vector<Node*> children = node->getChildren();
+	std::list<Node*> operators;
+	std::list<Node*> factors;
 
-	for (const Node* child : children) {
+	for (Node* child : children) {
 		if (child->getNodeType() == NodeType::factor) {
 			factors.push_back(child);
 		}
@@ -1540,8 +1563,8 @@ int Parser::evaluateTerm(const Node * node)
 	int returnVal = evaluateFactor(factors.front());
 	factors.pop_front();
 	while (factors.size() > 0) {
-		const Node* op = operators.front();
-		const Node* se = factors.front();
+		Node* op = operators.front();
+		Node* se = factors.front();
 		operators.pop_front();
 		factors.pop_front();
 		int seValue = evaluateFactor(se);
@@ -1565,14 +1588,15 @@ int Parser::evaluateTerm(const Node * node)
 	return returnVal;
 }
 
-int Parser::evaluateFactor(const Node * node)
+int Parser::evaluateFactor(Node * node)
 {
-	std::vector<const Node*> children = node->getChildren();
+	std::vector<Node*> children = node->getChildren();
 
-	const Node* child = children.at(0);
+	Node* child = children.at(0);
 	switch (child->getNodeType()) {
 	case NodeType::identifier: {
-		return evaluateSelector(lastSelectorVariable(&children));
+		auto table = currentTable_;
+		return evaluateSelector(lastSelectorVariable(&children, &table));
 	}
 		break;
 	case NodeType::number: 
@@ -1590,12 +1614,12 @@ int Parser::evaluateFactor(const Node * node)
 	}
 }
 
-int Parser::evaluateSelector(const Node * node)
+int Parser::evaluateSelector(Node * node)
 {
 	throw std::invalid_argument("Selectors may not be evaluated at compile time");
 }
 
-int Parser::evaluateIdentifier(const Node * node)
+int Parser::evaluateIdentifier(Node * node)
 {
 	auto symbolTable = node->getSymbolTable();
 	auto temp = node->getValue();
@@ -1603,38 +1627,51 @@ int Parser::evaluateIdentifier(const Node * node)
 	return symbol->getValue();
 }
 
-int Parser::evaluateNumber(const Node * node)
+int Parser::evaluateNumber(Node * node)
 {
 	return atoi(node->getValue().c_str());
 }
 
-const Node * Parser::lastSelectorVariable(std::vector<const Node*>* children)
+Node * Parser::lastSelectorVariable(std::vector<Node*>* children, std::shared_ptr<SymbolTable>* table)
 {
-	const Node* lastSelector = children->at(0);
+	Node* lastSelector = children->at(0);
+	std::string lastSelName = lastSelector->getValue();
+	auto possibleChildSymbolTable = (*table)->getChild(lastSelName);
+	if (possibleChildSymbolTable != nullptr) {
+		*table = possibleChildSymbolTable;
+	}
+
 	for (auto possibleSelector : *children) {
 		if (possibleSelector->getNodeType() == NodeType::selector
 			&& possibleSelector->getChildren().at(0)->getNodeType() == NodeType::identifier) {
-			lastSelector = possibleSelector;
+			lastSelector = possibleSelector->getChildren().at(0);
+
+			lastSelName = lastSelector->getValue();
+			possibleChildSymbolTable = (*table)->getChild(lastSelName);
+			if (possibleChildSymbolTable != nullptr) {
+				*table = possibleChildSymbolTable;
+			}
 		}
 	}
 
 	return lastSelector;
 }
 
-Symbol * Parser::typeOfFactor(const Node * factor)
+Symbol * Parser::typeOfFactor(Node * factor)
 {
-	std::vector<const Node*> children = factor->getChildren();
+	std::vector<Node*> children = factor->getChildren();
 
-	const Node* child = children.at(0);
+	Node* child = children.at(0);
 	switch (child->getNodeType()) {
 	case NodeType::identifier: {
-		const Node* lastSelector = children.at(1);
-		for (auto possibleSelector : children) {
-			if (possibleSelector->getNodeType() == NodeType::selector) {
-				lastSelector = possibleSelector;
-			}
-		}
-		return typeOfSelector(lastSelector);
+		auto table = currentTable_;
+		Node* lastSelector = lastSelectorVariable(&children, &table);
+
+		auto oldTable = currentTable_;
+		currentTable_ = table;
+		Symbol* returnVal = typeOfSelector(lastSelector);
+		currentTable_ = oldTable;
+		return returnVal;
 	}
 		break;
 	case NodeType::number: {
@@ -1654,15 +1691,19 @@ Symbol * Parser::typeOfFactor(const Node * factor)
 	}
 }
 
-Symbol * Parser::typeOfSelector(const Node * selector)
+Symbol * Parser::typeOfSelector(Node * selector)
 {
-	std::vector<const Node*> children = selector->getChildren();
+	std::vector<Node*> children = selector->getChildren();
 	if (children.size() == 0) {
-		// Not a actual selector.
-		return nullptr;
+		if (selector->getNodeType() == NodeType::identifier) {
+			return typeOfIdentifier(selector);
+		}
+		else {
+			return nullptr;
+		}
 	}
 
-	const Node* child = children.at(0);
+	Node* child = children.at(0);
 	switch (child->getNodeType()) {
 	case NodeType::identifier:
 		return typeOfIdentifier(child);
@@ -1676,11 +1717,11 @@ Symbol * Parser::typeOfSelector(const Node * selector)
 	}
 }
 
-Symbol * Parser::typeOfIdentifier(const Node * identifier)
+Symbol * Parser::typeOfIdentifier(Node * identifier)
 {
-	std::shared_ptr<SymbolTable> st = identifier->getSymbolTable();
+	//std::shared_ptr<SymbolTable> st = identifier->getSymbolTable();
 	auto temp20 = identifier->getValue();
-	Symbol* symbol = st->getSymbol(&temp20);
+	Symbol* symbol = currentTable_->getSymbol(&temp20);
 	std::vector<Symbol*>* types = symbol->getTypes();
 	if (types->size() > 1) {
 		// It's a record. Irrelevant to return a type.

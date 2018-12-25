@@ -27,38 +27,38 @@ private:
 
 
 	// None-Terminals
-    const std::shared_ptr<Node> module();
-    const Node* declarations();
-    const Node* const_declarations();
-    const Node* type_declarations();
-    const Node* var_declarations();
-    const Node* procedure_declaration();
-    const Node* expression();
-    const Node* simple_expression();
-    const Node* term();
-    const Node* factor();
-    const Node* type();
-    const Node* array_type();
-    const Node* record_type();
-    const Node* field_list();
-    const Node* ident_list();
-    const Node* procedure_heading();
-    const Node* procedure_body();
-    const Node* formal_parameters();
-    const Node* fp_section();
-    const Node* statement_sequence();
-    const Node* statement();
-    const Node* if_statement();
-    const Node* while_statement();
-    const Node* actual_parameters();
-    const std::shared_ptr<std::vector<const Node*>> selector(const Node * preceedingIdentifier);
-    const Node* ident();
-	const Node* number();
+    std::shared_ptr<Node> module();
+    Node* declarations();
+    Node* const_declarations();
+    Node* type_declarations();
+    Node* var_declarations();
+    Node* procedure_declaration();
+    Node* expression();
+    Node* simple_expression();
+    Node* term();
+    Node* factor();
+    Node* type();
+    Node* array_type();
+    Node* record_type();
+    Node* field_list();
+    Node* ident_list();
+    Node* procedure_heading();
+    Node* procedure_body();
+    Node* formal_parameters();
+    Node* fp_section();
+    Node* statement_sequence();
+    Node* statement();
+    Node* if_statement();
+    Node* while_statement();
+    Node* actual_parameters();
+    std::shared_ptr<std::vector<Node*>> selector(Node * preceedingIdentifier);
+    Node* ident();
+	Node* number();
 
 	// Added non-terminals
-	const Node* binary_op();
-	const Node* A();
-	const Node* B();
+	Node* binary_op();
+	Node* A();
+	Node* B();
 
 	//Terminals
 	void module_t();
@@ -94,66 +94,66 @@ private:
 	// Generic error handler
 	void failToken(std::string &msg);
 	void failSymbol(std::string &msg);
-	void failUndeclaredSymbol(Symbol * undeclaredSymbol, const Node *identifier);
-	void failUndeclaredSymbol(const Node *identifier);
+	void failUndeclaredSymbol(Symbol * undeclaredSymbol, Node *identifier);
+	void failUndeclaredSymbol(Node *identifier);
 	void failIfNotAType(Symbol *identifier);
 	void failSymbolExists(Symbol * symbol);
-	void failIfNotASomething(const Node * identifier, SymbolType symbolType);
-	void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType, std::shared_ptr<SymbolTable> symbolTable);
-	void failIfNotARecord(const Node * identifier);
-	void failIfNotARecord(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable);
-	void failIfNotAArray(const Node * identifier);
-	void failIfNotAArray(const Node * identifier, std::shared_ptr<SymbolTable> symbolTable);
-	void failNetiherRecordNorArray(const Node * identifier);
-	void failIfNotProcedure(const Node * identifier);
+	void failIfNotASomething(Node * identifier, SymbolType symbolType);
+	void Parser::failIfNotASomething(Node * identifier, SymbolType symbolType, std::shared_ptr<SymbolTable> symbolTable);
+	void failIfNotARecord(Node * identifier);
+	void failIfNotARecord(Node * identifier, std::shared_ptr<SymbolTable> symbolTable);
+	void failIfNotAArray(Node * identifier);
+	void failIfNotAArray(Node * identifier, std::shared_ptr<SymbolTable> symbolTable);
+	void failNetiherRecordNorArray(Node * identifier);
+	void failIfNotProcedure(Node * identifier);
 	void failIfNotAVariable(Symbol * variable);
-	void failIfNotAVariable(const Node* identifier);
-	void failTypeCheckBinary(Symbol* a, Symbol* b, const Node* op);
-	void failConstType(const Node* identifier, const Node* expression);
-	void failLeftHandNotVariable(const Node* identifier);
-	void failTypeCheckAssignment(const Node* var, const Node* expression);
-	void failWrongParamCount(const Node* calledFunction, size_t formalCount, size_t actualCount);
-	void wrongActualParams(const Node* calledFunction, Symbol* formalParam, Symbol* actualParam);
+	void failIfNotAVariable(Node* identifier);
+	void failTypeCheckBinary(Symbol* a, Symbol* b, Node* op);
+	void failConstType(Node* identifier, Node* expression);
+	void failLeftHandNotVariable(Node* identifier);
+	void failTypeCheckAssignment(Node* var, Node* expression);
+	void failWrongParamCount(Node* calledFunction, size_t formalCount, size_t actualCount);
+	void wrongActualParams(Node* calledFunction, Symbol* formalParam, Symbol* actualParam);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
-	void addType(const Node* identifier, const Node* typeDef, bool asVariable);
-	void addArray(const Node* identifier, const Node* typeDef, bool asVariable);
-	void addRecord(Node* node, const Node* identifier, const Node* typeDef, bool asVariable);
+	void addType(Node* identifier, Node* typeDef, bool asVariable);
+	void addArray(Node* identifier, Node* typeDef, bool asVariable);
+	void addRecord(Node* node, Node* identifier, Node* typeDef, bool asVariable);
 
-	void postParserTypeCheck(const Node* module);
-	Symbol* typeOfExpression(const Node* expression);
-	Symbol* typeOfSimpleExpression(const Node* simpleExpression);
-	Symbol* typeOfTerm(const Node* term);
-	Symbol* typeOfFactor(const Node* factor);
-	Symbol* typeOfSelector(const Node* selector);
-	Symbol* typeOfIdentifier(const Node* identifier);
-	Symbol* binaryTypeChecker(const Node* expSexpFact, NodeType sub, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB);
+	Symbol* typeOfExpression(Node* expression);
+	Symbol* typeOfSimpleExpression(Node* simpleExpression);
+	Symbol* typeOfTerm(Node* term);
+	Symbol* typeOfFactor(Node* factor);
+	Symbol* typeOfSelector(Node* selector);
+	Symbol* typeOfIdentifier(Node* identifier);
+	Symbol* binaryTypeChecker(Node* expSexpFact, NodeType sub, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB);
 
-	void checkConstDeclType(const Node* node);
-	void checkAssignmentType(const Node* node);
-	//void checkSelectorType(const Node* node);
-	void checkProcedureCallTypes(const Node* node);
-	void checkIfStatementType(const Node* node);
-	void checkElseIfStatementType(const Node* node);
-	void checkWhileStatementType(const Node* node);
-	void checkArrayType(const Node* node);
+	void postParserTypeCheck(Node* module);
+	void checkConstDeclType(Node* node);
+	void checkAssignmentType(Node* node);
+	//void checkSelectorType(Node* node);
+	void checkProcedureCallTypes(Node* node);
+	void checkIfStatementType(Node* node);
+	void checkElseIfStatementType(Node* node);
+	void checkWhileStatementType(Node* node);
+	void checkArrayType(Node* node);
 
-	int evaluateExpression(const Node* node);
-	int evaluateSimpleExpression(const Node* node);
-	int evaluateTerm(const Node* node);
-	int evaluateFactor(const Node* node);
-	int evaluateSelector(const Node* node);
-	int evaluateIdentifier(const Node* node);
-	int evaluateNumber(const Node* node);
+	int evaluateExpression(Node* node);
+	int evaluateSimpleExpression(Node* node);
+	int evaluateTerm(Node* node);
+	int evaluateFactor(Node* node);
+	int evaluateSelector(Node* node);
+	int evaluateIdentifier(Node* node);
+	int evaluateNumber(Node* node);
 	// TODO generic evaluator with function pointers
 
-	const Node* lastSelectorVariable(std::vector<const Node*>* children);
+	Node* lastSelectorVariable(std::vector<Node*>* children, std::shared_ptr<SymbolTable>* table);
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);
     ~Parser();
-    const std::unique_ptr<const Node> parse();
+    const std::unique_ptr<Node> parse();
 };
 
 

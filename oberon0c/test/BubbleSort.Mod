@@ -12,7 +12,7 @@ TYPE Point2D = RECORD x, y: INTEGER END;
      Point4D = RECORD w, x, y, z: INTEGER END;
      Point5D = Point4D;
      Point6D = ARRAY 6 OF Point5D;
-     Point7D = RECORD l,k,m: Point6D END;
+     Point7D = RECORD l,k,m: INTEGER END;
      Point8D = RECORD x,y,z: Point7D END;
      Point9D = INTEGER;
      Point10D = ARRAY 10 OF Point9D;
@@ -76,6 +76,6 @@ BEGIN
     Init;
     Bubble();
     (* Testing sophisticated selectors *)
-    g.x.l[2] := 1;
-    e.l[2] := e.l[2];
+    g.x.l := 1;
+    e.l := e.l;
 END BubbleSort.
