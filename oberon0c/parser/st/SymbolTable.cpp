@@ -130,7 +130,7 @@ void SymbolTable::printTree(std::ostream & stream) const
 	printTreeRec(stream, 0);
 }
 
-std::ostream & operator<<(std::ostream & stream, const SymbolTable & node)
+std::ostream & operator<<(std::ostream & stream, SymbolTable & node)
 {
 	node.printTree(stream);
 

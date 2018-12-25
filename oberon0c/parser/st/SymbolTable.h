@@ -37,6 +37,6 @@ public:
 	std::shared_ptr<SymbolTable> deepCopy(std::string name);
 
 	virtual void printTree(std::ostream &stream) const;
-	friend std::ostream& operator<<(std::ostream &stream, const SymbolTable &node);
+	friend std::ostream& operator<<(std::ostream &stream, SymbolTable &node);
 };
 #endif
