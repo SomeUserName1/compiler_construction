@@ -22,11 +22,12 @@ private:
 	std::vector<std::shared_ptr<SymbolTable>> symbolTables_;
 	std::shared_ptr<SymbolTable> currentTable_;
 	std::unordered_map<Symbol*, std::shared_ptr<SymbolTable>> recordsSymbolTables_;
+	std::shared_ptr<Node> moduleNode;
 
 
 
 	// None-Terminals
-    const Node* module();
+    const std::shared_ptr<Node> module();
     const Node* declarations();
     const Node* const_declarations();
     const Node* type_declarations();
@@ -109,6 +110,10 @@ private:
 	void failIfNotAVariable(const Node* identifier);
 	void failTypeCheckBinary(Symbol* a, Symbol* b, const Node* op);
 	void failConstType(const Node* identifier, const Node* expression);
+	void failLeftHandNotVariable(const Node* identifier);
+	void failTypeCheckAssignment(const Node* var, const Node* expression);
+	void failWrongParamCount(const Node* calledFunction, size_t formalCount, size_t actualCount);
+	void wrongActualParams(const Node* calledFunction, Symbol* formalParam, Symbol* actualParam);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
@@ -127,7 +132,7 @@ private:
 
 	void checkConstDeclType(const Node* node);
 	void checkAssignmentType(const Node* node);
-	void checkSelectorType(const Node* node);
+	//void checkSelectorType(const Node* node);
 	void checkProcedureCallTypes(const Node* node);
 	void checkIfStatementType(const Node* node);
 	void checkElseIfStatementType(const Node* node);
@@ -140,7 +145,10 @@ private:
 	int evaluateFactor(const Node* node);
 	int evaluateSelector(const Node* node);
 	int evaluateIdentifier(const Node* node);
+	int evaluateNumber(const Node* node);
+	// TODO generic evaluator with function pointers
 
+	const Node* lastSelectorVariable(std::vector<const Node*>* children);
 
 public:
     explicit Parser(Scanner *scanner, Logger *logger);

@@ -42,11 +42,12 @@ const Node* Parser::ident() {
 	return node;
 }
 
-const Node* Parser::module() {
+const std::shared_ptr<Node> Parser::module() {
 
 	// Module declaration
 	module_t();
-	Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
+	//Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
+	moduleNode = std::make_shared<Node>(NodeType::module, word->getPosition(), currentTable_);
 	const Node* identifier = ident();
 
 	//Adding the first scope SymbolTable 
@@ -1023,6 +1024,39 @@ void Parser::failConstType(const Node * identifier, const Node * expression)
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
+void Parser::failLeftHandNotVariable(const Node * identifier)
+{
+	std::stringstream ss;
+	ss << identifier->getValue() << " is not a variable";
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
+void Parser::failTypeCheckAssignment(const Node * var, const Node * expression)
+{
+	std::stringstream ss;
+	ss << var->getValue() + " and " << expression->getValue() << " are not of the same type";
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
+void Parser::failWrongParamCount(const Node * calledFunction, size_t formalCount, size_t actualCount)
+{
+	std::stringstream ss;
+	ss << calledFunction->getValue() << " takes " << formalCount << " Arguments but " << actualCount << " were given.";
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
+void Parser::wrongActualParams(const Node * calledFunction, Symbol * formalParam, Symbol * actualParam)
+{
+	std::stringstream ss;
+	ss << "Parameter incompatibility: Was: " << *actualParam << " but should have been " << *formalParam;
+}
+
 void Parser::newSymbolTable(std::string name)
 {
 	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_, name);
@@ -1256,6 +1290,7 @@ Symbol * Parser::typeOfExpression(const Node * expression)
 
 Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
 {
+	// TODO throw one operator away.
 	auto nodeTypesA = std::vector<NodeType>();
 	nodeTypesA[0] = NodeType::plus;
 	nodeTypesA[1] = NodeType::minus;
@@ -1299,6 +1334,10 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 		}
 	}
 
+	if (operators.size() == typesOfFactors.size()) {
+		operators.pop_front();
+	}
+
 	while (typesOfFactors.size() > 1) {
 		Symbol* typeA = typesOfFactors.front();
 		typesOfFactors.pop_front();
@@ -1325,7 +1364,13 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 				failTypeCheckBinary(typeA, typeB, op);
 			}
 			else {
-				auto temp17 = std::string("INTEGER");
+				std::string temp17;
+				if (*typeA->getName() == "INTEGER" || *typeB->getName() == "INTEGER") {
+					temp17 = std::string("INTEGER");
+				}
+				else {
+					temp17 = std::string("CONSTANT");
+				}
 				typesOfFactors.push_front(symbolTables_.at(0)->getSymbol(&temp17));
 			}
 		}
@@ -1354,25 +1399,75 @@ void Parser::checkConstDeclType(const Node * node)
 		failConstType(identifier, expression);
 	}
 
-	// Check wether the expression evaluates to a number.
+	// Check wether the expression evaluates to a constant.
 	std::string* typeName = types->at(0)->getName();
-	if (*typeName != "INTEGER" && *typeName != "CONSTANT") {
+	if (*typeName != "CONSTANT") {
 		failConstType(identifier, expression);
 	}
 
-
+	// Save the constants value for later use.
+	int expVal = evaluateExpression(expression);
+	Symbol* nodeSymbol = node->getSymbolTable()->getSymbol(&node->getValue());
+	nodeSymbol->setValue(expVal);
 }
 
 void Parser::checkAssignmentType(const Node * node)
 {
+	std::vector<const Node*> children = node->getChildren();
+	const Node* var = lastSelectorVariable(&children);
+
+	Symbol* varSymb = var->getSymbolTable()->getSymbol(&var->getValue());
+
+	if (!varSymb->isVariable()) {
+		failLeftHandNotVariable(var);
+	}
+
+	const Node* expression = children.back();
+	Symbol* expressionType = typeOfExpression(expression);
+
+	if (varSymb != expressionType) {
+		failTypeCheckAssignment(var, expression);
+	}
 }
 
-void Parser::checkSelectorType(const Node * node)
+/*void Parser::checkSelectorType(const Node * node)
 {
-}
+	std::vector<const Node*> children = node->getChildren();
+	const Node* expression = children.at(0);
+
+	if (expression->getNodeType() != NodeType::expression) {
+		return;
+	}
+
+	if (typeOfExpression(expression)->getTypes()->at(0)->getName() != "CONSTANT") {
+		failConstType
+	}
+}*/
 
 void Parser::checkProcedureCallTypes(const Node * node)
 {
+	std::vector<const Node*> callChildren = node->getChildren();
+	const Node* procedureIdentifier = callChildren.at(0);
+
+	std::vector<Symbol*> actParamTypes;
+	for (size_t i = 1; i < callChildren.size(); i++) {
+		actParamTypes.push_back(typeOfExpression(callChildren[i]));
+	}
+
+	Symbol* procedureDecl = node->getSymbolTable()->getSymbol(&procedureIdentifier->getValue());
+	std::vector<Symbol*> formParamTypes = *procedureDecl->getTypes();
+
+	size_t formalCount = formParamTypes.size();
+	size_t actualCount = actParamTypes.size();
+	if (formalCount != actualCount) {
+		failWrongParamCount(procedureIdentifier, formalCount, actualCount);
+	}
+
+	for (size_t i = 0; i < formalCount; i++) {
+		if (*formParamTypes[i] != *actParamTypes[i]) {
+			wrongActualParams(procedureIdentifier, formParamTypes[i], actParamTypes[i]);
+		}
+	}
 }
 
 void Parser::checkIfStatementType(const Node * node)
@@ -1440,27 +1535,148 @@ int Parser::evaluateExpression(const Node * node)
 
 int Parser::evaluateSimpleExpression(const Node * node)
 {
-	return 0;
+	// TODO Code duplication
+	std::vector<const Node*> children = node->getChildren();
+	std::list<const Node*> operators;
+	std::list<const Node*> simpleExpressions;
+
+	for (const Node* child : children) {
+		if (child->getNodeType() == NodeType::term) {
+			simpleExpressions.push_back(child);
+		}
+		else if (child->isBinaryOp()) {
+			operators.push_back(child);
+		}
+		else {
+			throw std::invalid_argument("Something failed horrible");
+		}
+	}
+
+	int returnVal = evaluateSimpleExpression(simpleExpressions.front());
+	simpleExpressions.pop_front();
+	// Check if there were a leading sign.
+	if (simpleExpressions.size() + 1 == operators.size()) {
+		if (operators.front()->getNodeType() == NodeType::minus) {
+			returnVal *= -1;
+		}
+		operators.pop_front();
+	}
+	while (simpleExpressions.size() > 0) {
+		const Node* op = operators.front();
+		const Node* se = simpleExpressions.front;
+		operators.pop_front();
+		simpleExpressions.pop_front();
+		int seValue = evaluateSimpleExpression(se);
+
+		switch (op->getNodeType()) {
+		case NodeType::plus:
+			returnVal += seValue;
+		case NodeType::minus:
+			returnVal -= seValue;
+		case NodeType::or:
+			returnVal |= seValue;
+		}
+	}
+
+	return returnVal;
 }
 
 int Parser::evaluateTerm(const Node * node)
 {
-	return 0;
+	// TODO Code duplication
+	std::vector<const Node*> children = node->getChildren();
+	std::list<const Node*> operators;
+	std::list<const Node*> simpleExpressions;
+
+	for (const Node* child : children) {
+		if (child->getNodeType() == NodeType::factor) {
+			simpleExpressions.push_back(child);
+		}
+		else if (child->isBinaryOp()) {
+			operators.push_back(child);
+		}
+		else {
+			throw std::invalid_argument("Something failed horrible");
+		}
+	}
+
+	int returnVal = evaluateSimpleExpression(simpleExpressions.front());
+	simpleExpressions.pop_front();
+	while (simpleExpressions.size() > 0) {
+		const Node* op = operators.front();
+		const Node* se = simpleExpressions.front;
+		operators.pop_front();
+		simpleExpressions.pop_front();
+		int seValue = evaluateSimpleExpression(se);
+
+		switch (op->getNodeType()) {
+		case NodeType::times:
+			returnVal *= seValue;
+		case NodeType::div:
+			returnVal /= seValue;
+		case NodeType::mod:
+			returnVal %= seValue;
+		case NodeType::and:
+			returnVal &= seValue;
+		}
+	}
+
+	return returnVal;
 }
 
 int Parser::evaluateFactor(const Node * node)
 {
-	return 0;
+	std::vector<const Node*> children = node->getChildren();
+
+	const Node* child = children.at(0);
+	switch (child->getNodeType()) {
+	case NodeType::identifier: {
+		return evaluateSelector(lastSelector(&children));
+	}
+		break;
+	case NodeType::number: 
+		return evaluateNumber(child);
+		break;
+	case NodeType::expression:
+		return evaluateExpression(child);
+		break;
+	case NodeType::factor:
+		return evaluateExpression(child);
+		break;
+	default:
+		throw std::exception();
+		break;
+	}
 }
 
 int Parser::evaluateSelector(const Node * node)
 {
-	return 0;
+	throw std::invalid_argument("Selectors may not be evaluated at compile time");
 }
 
 int Parser::evaluateIdentifier(const Node * node)
 {
-	return 0;
+	auto symbolTable = node->getSymbolTable();
+	Symbol* symbol = symbolTable->getSymbol(&node->getValue());
+	return symbol->getValue();
+}
+
+int Parser::evaluateNumber(const Node * node)
+{
+	return atoi(node->getValue().c_str());
+}
+
+const Node * Parser::lastSelectorVariable(std::vector<const Node*>* children)
+{
+	const Node* lastSelector = children->at(0);
+	for (auto possibleSelector : *children) {
+		if (possibleSelector->getNodeType() == NodeType::selector
+			&& possibleSelector->getChildren().at(0)->getNodeType() == NodeType::identifier) {
+			lastSelector = possibleSelector;
+		}
+	}
+
+	return lastSelector;
 }
 
 Symbol * Parser::typeOfFactor(const Node * factor)
@@ -1504,7 +1720,6 @@ Symbol * Parser::typeOfSelector(const Node * selector)
 		return nullptr;
 	}
 
-	// TODO: Check for further selectors
 	const Node* child = children.at(0);
 	switch (child->getNodeType()) {
 	case NodeType::identifier:

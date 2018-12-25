@@ -99,6 +99,16 @@ bool Symbol::operator!=(Symbol other)
 	return !((*this) == other);
 }
 
+int Symbol::getValue()
+{
+	return value_;
+}
+
+void Symbol::setValue(int value)
+{
+	value_ = value;
+}
+
 std::ostream & operator<<(std::ostream & stream, const Symbol & symbol)
 {
 	symbol.print(stream);

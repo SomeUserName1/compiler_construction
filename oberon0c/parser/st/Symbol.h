@@ -17,6 +17,7 @@ private:
 	std::vector<Symbol *> types_;
 	SymbolType symbolType_;
 	bool isVariable_;
+	int value_;
 
 public:
 	explicit Symbol();
@@ -36,4 +37,7 @@ public:
 
 	bool operator==(Symbol other);
 	bool operator!=(Symbol other);
+
+	void setValue(int value);
+	int getValue();
 };
