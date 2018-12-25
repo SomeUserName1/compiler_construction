@@ -18,9 +18,9 @@ Parser::Parser(Scanner *scanner, Logger *logger) :
 Parser::~Parser() = default;
 
 const std::unique_ptr<const Node> Parser::parse() {
-	const Node* tree = module();
+	std::shared_ptr<Node> tree = module();
 
-    std::unique_ptr<const Node> parse_tree(tree);
+    std::unique_ptr<const Node> parse_tree(tree.get());
 	tree = nullptr;
 	   
     std::cout << *parse_tree << std::endl;
@@ -1054,7 +1054,7 @@ void Parser::failWrongParamCount(const Node * calledFunction, size_t formalCount
 void Parser::wrongActualParams(const Node * calledFunction, Symbol * formalParam, Symbol * actualParam)
 {
 	std::stringstream ss;
-	ss << "Parameter incompatibility: Was: " << *actualParam << " but should have been " << *formalParam;
+	ss << "Call to: " << calledFunction->getValue() << ". Parameter incompatibility: Was: " << *actualParam << " but should have been " << *formalParam;
 }
 
 void Parser::newSymbolTable(std::string name)
@@ -1183,7 +1183,7 @@ void Parser::addRecord(Node* node, const Node * identifier, const Node * typeDef
 void Parser::postParserTypeCheck(const Node * module)
 {
 	for (auto child : module->getChildren()) {
-		switch (child->getNodeType) {
+		switch (child->getNodeType()) {
 		case NodeType::const_declarations:
 			// Check that all referenced identifiers evaluate to integers or constants.
 			break;
@@ -1285,7 +1285,7 @@ Symbol * Parser::typeOfExpression(const Node * expression)
 
 	auto nodeTypesB = std::vector<NodeType>();
 
-	return binaryTypeChecker(expression, nodeTypesA, nodeTypesB);
+	return binaryTypeChecker(expression, NodeType::simple_expression, nodeTypesA, nodeTypesB);
 }
 
 Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
@@ -1298,7 +1298,7 @@ Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
 	auto nodeTypesB = std::vector<NodeType>();
 	nodeTypesB[0] = NodeType::or;
 
-	return binaryTypeChecker(simpleExpression, nodeTypesA, nodeTypesB);
+	return binaryTypeChecker(simpleExpression, NodeType::term, nodeTypesA, nodeTypesB);
 }
 
 Symbol * Parser::typeOfTerm(const Node * term)
@@ -1311,7 +1311,7 @@ Symbol * Parser::typeOfTerm(const Node * term)
 	auto nodeTypesB = std::vector<NodeType>();
 	nodeTypesB[0] = NodeType::and;
 
-	return binaryTypeChecker(term, nodeTypesA, nodeTypesB);
+	return binaryTypeChecker(term, NodeType::factor, nodeTypesA, nodeTypesB);
 }
 
 
@@ -1407,7 +1407,8 @@ void Parser::checkConstDeclType(const Node * node)
 
 	// Save the constants value for later use.
 	int expVal = evaluateExpression(expression);
-	Symbol* nodeSymbol = node->getSymbolTable()->getSymbol(&node->getValue());
+	auto temp = node->getValue();
+	Symbol* nodeSymbol = node->getSymbolTable()->getSymbol(&temp);
 	nodeSymbol->setValue(expVal);
 }
 
@@ -1416,7 +1417,8 @@ void Parser::checkAssignmentType(const Node * node)
 	std::vector<const Node*> children = node->getChildren();
 	const Node* var = lastSelectorVariable(&children);
 
-	Symbol* varSymb = var->getSymbolTable()->getSymbol(&var->getValue());
+	auto temp = var->getValue();
+	Symbol* varSymb = var->getSymbolTable()->getSymbol(&temp);
 
 	if (!varSymb->isVariable()) {
 		failLeftHandNotVariable(var);
@@ -1454,7 +1456,8 @@ void Parser::checkProcedureCallTypes(const Node * node)
 		actParamTypes.push_back(typeOfExpression(callChildren[i]));
 	}
 
-	Symbol* procedureDecl = node->getSymbolTable()->getSymbol(&procedureIdentifier->getValue());
+	auto temp = procedureIdentifier->getValue();
+	Symbol* procedureDecl = node->getSymbolTable()->getSymbol(&temp);
 	std::vector<Symbol*> formParamTypes = *procedureDecl->getTypes();
 
 	size_t formalCount = formParamTypes.size();
@@ -1509,7 +1512,7 @@ int Parser::evaluateExpression(const Node * node)
 	simpleExpressions.pop_front();
 	while (simpleExpressions.size() > 0) {
 		const Node* op = operators.front();
-		const Node* se = simpleExpressions.front;
+		const Node* se = simpleExpressions.front();
 		operators.pop_front();
 		simpleExpressions.pop_front();
 		int seValue = evaluateSimpleExpression(se);
@@ -1563,7 +1566,7 @@ int Parser::evaluateSimpleExpression(const Node * node)
 	}
 	while (simpleExpressions.size() > 0) {
 		const Node* op = operators.front();
-		const Node* se = simpleExpressions.front;
+		const Node* se = simpleExpressions.front();
 		operators.pop_front();
 		simpleExpressions.pop_front();
 		int seValue = evaluateSimpleExpression(se);
@@ -1604,7 +1607,7 @@ int Parser::evaluateTerm(const Node * node)
 	simpleExpressions.pop_front();
 	while (simpleExpressions.size() > 0) {
 		const Node* op = operators.front();
-		const Node* se = simpleExpressions.front;
+		const Node* se = simpleExpressions.front();
 		operators.pop_front();
 		simpleExpressions.pop_front();
 		int seValue = evaluateSimpleExpression(se);
@@ -1631,7 +1634,7 @@ int Parser::evaluateFactor(const Node * node)
 	const Node* child = children.at(0);
 	switch (child->getNodeType()) {
 	case NodeType::identifier: {
-		return evaluateSelector(lastSelector(&children));
+		return evaluateSelector(lastSelectorVariable(&children));
 	}
 		break;
 	case NodeType::number: 
@@ -1657,7 +1660,8 @@ int Parser::evaluateSelector(const Node * node)
 int Parser::evaluateIdentifier(const Node * node)
 {
 	auto symbolTable = node->getSymbolTable();
-	Symbol* symbol = symbolTable->getSymbol(&node->getValue());
+	auto temp = node->getValue();
+	Symbol* symbol = symbolTable->getSymbol(&temp);
 	return symbol->getValue();
 }
 
