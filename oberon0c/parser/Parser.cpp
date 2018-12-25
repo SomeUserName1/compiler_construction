@@ -19,7 +19,7 @@ Parser::~Parser() = default;
 
 const std::unique_ptr<Node> Parser::parse() {
 	std::shared_ptr<Node> tree = module();
-	postParserTypeCheck(moduleNode.get());
+	postParserTypeCheck(moduleNode.get(), std::string());
 
     std::unique_ptr<Node> parse_tree(tree.get());
 	tree = nullptr;
@@ -1071,6 +1071,16 @@ void Parser::failWrongArrayDimensions(const Node * expression, int dimension)
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
+void Parser::failArrayDimensionIsNotAConstant(const Node * expression)
+{
+	std::stringstream ss;
+	ss << "Array Dimension is not a constant:" << std::endl;
+	ss << *expression;
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
 void Parser::newSymbolTable(std::string name)
 {
 	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_, name);
@@ -1203,8 +1213,12 @@ Symbol* Parser::addRecord(const Node* node, const Node * identifier, const Node 
 	return currentTable_->getSymbol(&temp);
 }
 
-void Parser::postParserTypeCheck(const Node * module)
+std::string Parser::postParserTypeCheck(const Node * module, std::string lastIdent)
 {
+	if (module->getNodeType() == NodeType::identifier) {
+		lastIdent = module->getValue();
+	}
+
 	auto oldTable = currentTable_;
 	if (module->getNodeType() == NodeType::procedure_declaration) {
 		auto next = currentTable_->getChild(module->getChildren().at(0)->getChildren().at(0)->getValue());
@@ -1238,13 +1252,17 @@ void Parser::postParserTypeCheck(const Node * module)
 			break;
 		case NodeType::array_type:
 			// Check wether expression evaluates to a non-negative constant.
-			checkArrayType(child);
+			int arrayDimension = checkArrayType(child);
+			Symbol* arraySymbol = currentTable_->getSymbol(&lastIdent);
+			arraySymbol->setValue(arrayDimension);
 			break;
 		}
-		postParserTypeCheck(child);
+		lastIdent = postParserTypeCheck(child, lastIdent);
 	}
 
 	currentTable_ = oldTable;
+
+	return lastIdent;
 }
 
 Symbol * Parser::typeOfExpression(const Node * expression)
@@ -1493,15 +1511,20 @@ void Parser::checkWhileStatementType(const Node * node)
 	}
 }
 
-void Parser::checkArrayType(const Node * node)
+int Parser::checkArrayType(const Node * node)
 {
 	const Node* expression = node->getChildren().at(0);
+
+	if (*typeOfExpression(expression)->getName() != "CONSTANT") {
+		failArrayDimensionIsNotAConstant(expression);
+	}
 	
 	int dimensions = evaluateExpression(expression);
-
 	if (dimensions < 1) {
 		failWrongArrayDimensions(expression, dimensions);
 	}
+
+	return dimensions;
 }
 
 int Parser::evaluateExpression(const Node * node)

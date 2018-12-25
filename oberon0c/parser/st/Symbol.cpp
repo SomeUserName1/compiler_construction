@@ -72,6 +72,8 @@ void Symbol::print(std::ostream & stream) const
 	else {
 		stream << " as TypeDef";
 	}
+
+	stream << " Value: " << value_;
 }
 
 bool Symbol::operator==(Symbol other)

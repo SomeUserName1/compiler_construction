@@ -116,6 +116,7 @@ private:
 	void wrongActualParams(const Node* calledFunction, Symbol* formalParam, Symbol* actualParam);
 	void failNotABoolean(const Node* expression);
 	void failWrongArrayDimensions(const Node* expression, int dimension);
+	void failArrayDimensionIsNotAConstant(const Node* expression);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
@@ -131,14 +132,14 @@ private:
 	Symbol* typeOfIdentifier(const Node* identifier);
 	Symbol* binaryTypeChecker(const Node* expSexpFact, NodeType sub, std::vector<NodeType> nodeTypesA, std::vector<NodeType> nodeTypesB);
 
-	void postParserTypeCheck(const Node* module);
+	std::string postParserTypeCheck(const Node* module, std::string lastIdent);
 	void checkConstDeclType(const Node* node);
 	void checkAssignmentType(const Node* node);
 	//void checkSelectorType(const Node* node);
 	void checkProcedureCallTypes(const Node* node);
 	void checkIfStatementType(const Node* node);
 	void checkWhileStatementType(const Node* node);
-	void checkArrayType(const Node* node);
+	int checkArrayType(const Node* node);
 
 	int evaluateExpression(const Node* node);
 	int evaluateSimpleExpression(const Node* node);
