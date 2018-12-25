@@ -19,6 +19,7 @@ Parser::~Parser() = default;
 
 const std::unique_ptr<const Node> Parser::parse() {
 	std::shared_ptr<Node> tree = module();
+	postParserTypeCheck(moduleNode.get());
 
     std::unique_ptr<const Node> parse_tree(tree.get());
 	tree = nullptr;
@@ -209,19 +210,7 @@ const Node* Parser::var_declarations() {
 					auto temp3 = identifier->getValue();
 					Symbol* newSymbolsNewLocation = currentTable_->getSymbol(&temp3);
 					recordsSymbolTables_.insert(std::unordered_map<Symbol*, std::shared_ptr<SymbolTable>>::value_type(newSymbolsNewLocation, alias));
-
-
-					/*addRecord(node, identifier, typeDef, true);
-					Symbol* identifiersSymbol = currentTable_->getSymbol(&identifier->getValue());
-					Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef->getValue());
-					std::shared_ptr<SymbolTable> identifiersTable = recordsSymbolTables_[identifiersSymbol];
-					std::shared_ptr<SymbolTable> typeDefTable = recordsSymbolTables_[typeDefSymbol];
-					identifiersTable->addChild(typeDefTable);
-
-					Symbol* identifierSymbol = currentTable_->getSymbol(&identifier->getValue());
-					//Symbol* typeDefSymbol = currentTable_->getSymbol(&typeDef->getValue());
-					recordsSymbolTables_[identifierSymbol] = recordsSymbolTables_[typeDefSymbol];*/
-
+				
 					break;
 				}
 				case SymbolType::type:
@@ -1018,7 +1007,7 @@ void Parser::failConstType(const Node * identifier, const Node * expression)
 	std::stringstream ss;
 	ss << "Failed to assign constant on " << identifier->getValue() << ". ";
 	ss << "Expression must evaluate to constant:" << std::endl;
-	ss << expression;
+	ss << *expression;
 
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed! " + ss.str());
@@ -1185,7 +1174,7 @@ void Parser::postParserTypeCheck(const Node * module)
 	for (auto child : module->getChildren()) {
 		switch (child->getNodeType()) {
 		case NodeType::const_declarations:
-			// Check that all referenced identifiers evaluate to integers or constants.
+			checkConstDeclType(child);
 			break;
 		case NodeType::assignment:
 			// Check if identifier of l is of same type as result of expression on r.
@@ -1209,79 +1198,19 @@ void Parser::postParserTypeCheck(const Node * module)
 			// Check wether expression evaluates to a non-negative constant.
 			break;
 		}
-	}
-
-
-	switch (module->getNodeType()) {
-	case (NodeType::module):
-	case (NodeType::declarations):
-	case (NodeType::type_declarations):
-	case (NodeType::var_declarations):
-		break;
-	case (NodeType::const_declarations):
-		break;
-	case (NodeType::procedure_declaration):
-		break;
-	case (NodeType::identifier):
-		break;
-	case (NodeType::number):
-		break;
-	case (NodeType::binary_op):
-		break;
-	case (NodeType::expression):
-		break;
-	case (NodeType::simple_expression):
-		break;
-	case (NodeType::term):
-		break;
-	case (NodeType::factor):
-		break;
-	case (NodeType::type):
-		break;
-	case (NodeType::record_type):
-		break;
-	case (NodeType::array_type):
-		break;
-	case (NodeType::field_list):
-		break;
-	case (NodeType::ident_list):
-		break;
-	case (NodeType::procedure_heading):
-		break;
-	case (NodeType::procedure_body):
-		break;
-	case (NodeType::formal_parameters):
-		break;
-	case (NodeType::fp_section):
-		break;
-	case (NodeType::statement_sequence):
-		break;
-	case (NodeType::statement):
-		break;
-	case (NodeType::if_statement):
-		break;
-	case (NodeType::while_statement):
-		break;
-	case (NodeType::acutal_parameters):
-		break;
-	case (NodeType::selector):
-		break;
-	case (NodeType::assignment):
-		break;
-	case (NodeType::procedure_call):
-		break;
+		postParserTypeCheck(child);
 	}
 }
 
 Symbol * Parser::typeOfExpression(const Node * expression)
 {
 	auto nodeTypesA = std::vector<NodeType>();
-	nodeTypesA[0] = NodeType::eq;
-	nodeTypesA[1] = NodeType::neq;
-	nodeTypesA[2] = NodeType::lt;
-	nodeTypesA[3] = NodeType::leq;
-	nodeTypesA[4] = NodeType::gt;
-	nodeTypesA[5] = NodeType::geq;
+	nodeTypesA.push_back(NodeType::eq);
+	nodeTypesA.push_back(NodeType::neq);
+	nodeTypesA.push_back(NodeType::lt);
+	nodeTypesA.push_back(NodeType::leq);
+	nodeTypesA.push_back(NodeType::gt);
+	nodeTypesA.push_back(NodeType::geq);
 
 	auto nodeTypesB = std::vector<NodeType>();
 
@@ -1292,11 +1221,11 @@ Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
 {
 	// TODO throw one operator away.
 	auto nodeTypesA = std::vector<NodeType>();
-	nodeTypesA[0] = NodeType::plus;
-	nodeTypesA[1] = NodeType::minus;
+	nodeTypesA.push_back(NodeType::plus);
+	nodeTypesA.push_back(NodeType::minus);
 
 	auto nodeTypesB = std::vector<NodeType>();
-	nodeTypesB[0] = NodeType::or;
+	nodeTypesB.push_back(NodeType::or);
 
 	return binaryTypeChecker(simpleExpression, NodeType::term, nodeTypesA, nodeTypesB);
 }
@@ -1304,12 +1233,12 @@ Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
 Symbol * Parser::typeOfTerm(const Node * term)
 {
 	auto nodeTypesA = std::vector<NodeType>();
-	nodeTypesA[0] = NodeType::times;
-	nodeTypesA[1] = NodeType::div;
-	nodeTypesA[2] = NodeType::mod;
+	nodeTypesA.push_back(NodeType::times);
+	nodeTypesA.push_back(NodeType::div);
+	nodeTypesA.push_back(NodeType::mod);
 
 	auto nodeTypesB = std::vector<NodeType>();
-	nodeTypesB[0] = NodeType::and;
+	nodeTypesB.push_back(NodeType::and);
 
 	return binaryTypeChecker(term, NodeType::factor, nodeTypesA, nodeTypesB);
 }
@@ -1320,11 +1249,21 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 {
 	std::vector<const Node*> children = expSexpFact->getChildren();
 	std::list<const Node*> operators;
-	std::list<Symbol* > typesOfFactors;
+	std::list<Symbol* > typesOfSubs;
 
 	for (const Node* child : children) {
 		if (child->getNodeType() == sub) {
-			typesOfFactors.push_back(typeOfFactor(child));
+			switch (sub) {
+			case NodeType::simple_expression:
+				typesOfSubs.push_back(typeOfSimpleExpression(child));
+				break;
+			case NodeType::factor:
+				typesOfSubs.push_back(typeOfFactor(child));
+				break;
+			case NodeType::term:
+				typesOfSubs.push_back(typeOfTerm(child));
+			}
+			
 		}
 		else if (child->isBinaryOp()) {
 			operators.push_back(child);
@@ -1334,15 +1273,15 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 		}
 	}
 
-	if (operators.size() == typesOfFactors.size()) {
+	if (operators.size() == typesOfSubs.size()) {
 		operators.pop_front();
 	}
 
-	while (typesOfFactors.size() > 1) {
-		Symbol* typeA = typesOfFactors.front();
-		typesOfFactors.pop_front();
-		Symbol* typeB = typesOfFactors.front();
-		typesOfFactors.pop_front();
+	while (typesOfSubs.size() > 1) {
+		Symbol* typeA = typesOfSubs.front();
+		typesOfSubs.pop_front();
+		Symbol* typeB = typesOfSubs.front();
+		typesOfSubs.pop_front();
 		const Node* op = operators.front();
 		operators.pop_front();
 
@@ -1371,7 +1310,7 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 				else {
 					temp17 = std::string("CONSTANT");
 				}
-				typesOfFactors.push_front(symbolTables_.at(0)->getSymbol(&temp17));
+				typesOfSubs.push_front(symbolTables_.at(0)->getSymbol(&temp17));
 			}
 		}
 		else {
@@ -1380,35 +1319,30 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 			}
 			else {
 				auto temp18 = std::string("BOOLEAN");
-				typesOfFactors.push_front(symbolTables_.at(0)->getSymbol(&temp18));
+				typesOfSubs.push_front(symbolTables_.at(0)->getSymbol(&temp18));
 			}
 		}
 	}
 
-	return typesOfFactors.front();
+	return typesOfSubs.front();
 }
 
 void Parser::checkConstDeclType(const Node * node)
 {
 	const Node* identifier = node->getChildren().at(0);
 	const Node* expression = node->getChildren().at(1);
-	std::vector<Symbol*>* types = typeOfExpression(expression)->getTypes();
-
-	// If more than one type this is a record and therefore not a constant.
-	if (types->size() != 1) {
-		failConstType(identifier, expression);
-	}
+	Symbol* type = typeOfExpression(expression);
 
 	// Check wether the expression evaluates to a constant.
-	std::string* typeName = types->at(0)->getName();
+	std::string* typeName = type->getName();
 	if (*typeName != "CONSTANT") {
 		failConstType(identifier, expression);
 	}
 
 	// Save the constants value for later use.
 	int expVal = evaluateExpression(expression);
-	auto temp = node->getValue();
-	Symbol* nodeSymbol = node->getSymbolTable()->getSymbol(&temp);
+	auto temp = identifier->getValue();
+	Symbol* nodeSymbol = identifier->getSymbolTable()->getSymbol(&temp);
 	nodeSymbol->setValue(expVal);
 }
 
@@ -1541,11 +1475,11 @@ int Parser::evaluateSimpleExpression(const Node * node)
 	// TODO Code duplication
 	std::vector<const Node*> children = node->getChildren();
 	std::list<const Node*> operators;
-	std::list<const Node*> simpleExpressions;
+	std::list<const Node*> terms;
 
 	for (const Node* child : children) {
 		if (child->getNodeType() == NodeType::term) {
-			simpleExpressions.push_back(child);
+			terms.push_back(child);
 		}
 		else if (child->isBinaryOp()) {
 			operators.push_back(child);
@@ -1555,21 +1489,21 @@ int Parser::evaluateSimpleExpression(const Node * node)
 		}
 	}
 
-	int returnVal = evaluateSimpleExpression(simpleExpressions.front());
-	simpleExpressions.pop_front();
+	int returnVal = evaluateTerm(terms.front());
+	terms.pop_front();
 	// Check if there were a leading sign.
-	if (simpleExpressions.size() + 1 == operators.size()) {
+	if (terms.size() + 1 == operators.size()) {
 		if (operators.front()->getNodeType() == NodeType::minus) {
 			returnVal *= -1;
 		}
 		operators.pop_front();
 	}
-	while (simpleExpressions.size() > 0) {
+	while (terms.size() > 0) {
 		const Node* op = operators.front();
-		const Node* se = simpleExpressions.front();
+		const Node* se = terms.front();
 		operators.pop_front();
-		simpleExpressions.pop_front();
-		int seValue = evaluateSimpleExpression(se);
+		terms.pop_front();
+		int seValue = evaluateTerm(se);
 
 		switch (op->getNodeType()) {
 		case NodeType::plus:
@@ -1589,11 +1523,11 @@ int Parser::evaluateTerm(const Node * node)
 	// TODO Code duplication
 	std::vector<const Node*> children = node->getChildren();
 	std::list<const Node*> operators;
-	std::list<const Node*> simpleExpressions;
+	std::list<const Node*> factors;
 
 	for (const Node* child : children) {
 		if (child->getNodeType() == NodeType::factor) {
-			simpleExpressions.push_back(child);
+			factors.push_back(child);
 		}
 		else if (child->isBinaryOp()) {
 			operators.push_back(child);
@@ -1603,24 +1537,28 @@ int Parser::evaluateTerm(const Node * node)
 		}
 	}
 
-	int returnVal = evaluateSimpleExpression(simpleExpressions.front());
-	simpleExpressions.pop_front();
-	while (simpleExpressions.size() > 0) {
+	int returnVal = evaluateFactor(factors.front());
+	factors.pop_front();
+	while (factors.size() > 0) {
 		const Node* op = operators.front();
-		const Node* se = simpleExpressions.front();
+		const Node* se = factors.front();
 		operators.pop_front();
-		simpleExpressions.pop_front();
-		int seValue = evaluateSimpleExpression(se);
+		factors.pop_front();
+		int seValue = evaluateFactor(se);
 
 		switch (op->getNodeType()) {
 		case NodeType::times:
 			returnVal *= seValue;
+			break;
 		case NodeType::div:
 			returnVal /= seValue;
+			break;
 		case NodeType::mod:
 			returnVal %= seValue;
+			break;
 		case NodeType::and:
 			returnVal &= seValue;
+			break;
 		}
 	}
 
@@ -1700,7 +1638,7 @@ Symbol * Parser::typeOfFactor(const Node * factor)
 	}
 		break;
 	case NodeType::number: {
-		auto temp19 = std::string("INTEGER");
+		auto temp19 = std::string("CONSTANT");
 		return symbolTables_.front()->getSymbol(&temp19);
 	}
 		break;
