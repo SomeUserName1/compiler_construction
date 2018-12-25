@@ -40,7 +40,6 @@ ADD_LIBRARY(lex ${lexer})
 set(ast
 		parser/ast/AssignmentNode.cpp
 		parser/ast/ControlFlowNode.cpp
-		parser/ast/BuiltInOpNode.cpp
 		parser/ast/CallNode.cpp)
 
 # The symbol table nodes: Declarations, scoping i.e. the data types that are checked for collisions
@@ -64,7 +63,7 @@ set(parser
 		${symbol_table}
 		parser/Parser.cpp
 		parser/TypeChecker.cpp
-		)
+        parser/ast/ArithmeticOpNode.cpp parser/ast/ArithmeticOpNode.h parser/ast/BooleanOpNode.cpp parser/ast/BooleanOpNode.h parser/ast/ComparatorNode.cpp parser/ast/ComparatorNode.h parser/symbol_table/BooleanNode.cpp parser/symbol_table/BooleanNode.h)
 ADD_LIBRARY(parse ${parser})
 
 # Main executable

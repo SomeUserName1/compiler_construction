@@ -9,7 +9,7 @@
 
 class NumberNode : public DeclarationNode{
   private:
-    std::string _type;
+    const std::string _type = "INTEGER";
     int _value;
     bool _isConst;
 

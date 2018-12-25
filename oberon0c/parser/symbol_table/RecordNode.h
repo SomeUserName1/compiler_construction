@@ -6,7 +6,7 @@
 #define OBERON0C_RECORDNODE_H
 
 #include "DeclarationNode.h"
-class RecordNode : DeclarationNode {
+class RecordNode : public DeclarationNode {
   private:
     int _no_fields;
     // fields are stored as children

@@ -14,6 +14,7 @@
 #include <IdentToken.h>
 #include <NumberToken.h>
 #include <utility>
+#include <type_traits>
 
 #include <Lexer.h>
 #include <parse_tree/ParserNode.h>
@@ -26,6 +27,7 @@ private:
     std::shared_ptr<Lexer> scanner_;
     std::shared_ptr<Logger> logger_;
 	std::unique_ptr<const Token> word;
+	bool _state = true;
 
 	// Non-Terminals
     const std::unique_ptr<ParserNode> module();
@@ -57,9 +59,9 @@ private:
 	const std::shared_ptr<ParserNode> number();
 
 	const std::shared_ptr<ParserNode> binary_op();
-	const std::shared_ptr<ParserNode> IdSel();
+	const std::shared_ptr<ParserNode> id_sel();
 
-	void decideToken(TokenType type);
+	const std::shared_ptr<ParserNode> decideToken(TokenType type);
 
 	void fail(std::string &msg);
 

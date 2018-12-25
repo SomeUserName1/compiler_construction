@@ -28,10 +28,15 @@ BEGIN
     END
 END Init;
 
+(* should yield procedure error or end*)
+
+(* NOPROCEDURE *)
+
 (* Swaps the two values passed as var-parameters. *)
 PROCEDURE Swap(VAR a, b: INTEGER);
 VAR t: INTEGER;
 BEGIN
+    WHILE 1 > 2 DO END;
     t := a;
     a := b; 
     b := t

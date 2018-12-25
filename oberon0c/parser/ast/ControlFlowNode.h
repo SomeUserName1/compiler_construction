@@ -5,7 +5,8 @@
 #ifndef OBERON0C_CONTROLFLOWNODE_H
 #define OBERON0C_CONTROLFLOWNODE_H
 
-class ControlFlowNode {
+#include <Node.h>
+class ControlFlowNode : public Node {
 
 };
 

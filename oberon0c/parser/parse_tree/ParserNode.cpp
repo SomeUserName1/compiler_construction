@@ -46,6 +46,8 @@ std::ostream& operator<<(std::ostream &stream, const ParserNodeType &type) {
 		case ParserNodeType::selector: result = "selector"; break;
 		case ParserNodeType::assignment: result = "assignment"; break;
 		case ParserNodeType::procedure_call: result = "procedure_call"; break;
+		case ParserNodeType::syntax_error: result = "(E!!) SYNTAX ERROR"; break;
+		case ParserNodeType::terminal_token: result = ""; break;
 	}
 	stream << result;
 	return stream;

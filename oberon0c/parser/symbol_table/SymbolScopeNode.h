@@ -11,7 +11,7 @@
 
 #include <vector>
 #include <Node.h>
-class SymbolScopeNode : Node {
+class SymbolScopeNode : public Node {
 
 };
 

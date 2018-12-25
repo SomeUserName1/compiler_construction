@@ -1,7 +1,9 @@
 #include "ArrayNode.h"
 
 ArrayNode::ArrayNode(std::string name, int size, std::string type) : DeclarationNode(std::move(name)), _size(size),
-  _type(std::move(type)) {}
+  _type(std::move(type)) {
+  // TODO handle children here? how to handle type? switch case over primitive (INTEGER) then look up for record and typedef?
+}
 
 const int ArrayNode::getSize() {
   return this->_size;

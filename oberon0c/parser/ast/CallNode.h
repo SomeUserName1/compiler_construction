@@ -5,7 +5,8 @@
 #ifndef OBERON0C_CALLNODE_H
 #define OBERON0C_CALLNODE_H
 
-class CallNode {
+#include <Node.h>
+class CallNode : public Node {
 
 };
 

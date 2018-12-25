@@ -1,7 +1,7 @@
 #include "NumberNode.h"
 
-NumberNode::NumberNode(std::string name, int value, bool isConst) : DeclarationNode(std::move(name)),
-  _type("INTEGER"), _value(value), _isConst(isConst){}
+NumberNode::NumberNode(std::string name, int value, bool isConst) : DeclarationNode(std::move(name)), _value(value),
+_isConst(isConst){}
 
 const std::string NumberNode::getType() const {
   return this->_type;

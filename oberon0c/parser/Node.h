@@ -9,6 +9,7 @@
 #include <memory>
 #include <ostream>
 #include <utility>
+#include <string>
 
 /**
  * Common super class for all nodes in the AST. Provides generic print function and getter/setter for child and parent
@@ -20,7 +21,7 @@ class Node {
 
   public:
     virtual ~Node();
-    void addChildren(std::vector<std::shared_ptr<Node>> newChildren);
+    void addChild(std::initializer_list<std::shared_ptr<Node>> newChild);
     void addChild(std::shared_ptr<Node> newChild);
     const std::vector<std::shared_ptr<Node>> getChildren() const;
     //virtual const std::ostream& operator<<(std::ostream &stream) const;
