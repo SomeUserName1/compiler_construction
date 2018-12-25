@@ -999,7 +999,7 @@ void Parser::failIfNotAVariable(const Node * identifier)
 void Parser::failTypeCheckBinary(Symbol * a, Symbol * b, const Node * op)
 {
 	std::stringstream ss;
-	ss << "Types are not appropriate for " << a->getName() << ", " << b->getName() << ": " << op->getValue();
+	ss << "Types are not appropriate for " << *a->getName() << ", " << *b->getName() << ": " << op->getValue();
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed!: " + ss.str());
 }
@@ -1046,6 +1046,16 @@ void Parser::wrongActualParams(const Node * calledFunction, Symbol * formalParam
 {
 	std::stringstream ss;
 	ss << "Call to: " << calledFunction->getValue() << ". Parameter incompatibility: Was: " << *actualParam << " but should have been " << *formalParam;
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
+void Parser::failNotABoolean(const Node * expression)
+{
+	std::stringstream ss;
+	ss << "Expression does not evaluate to a boolean:" << std::endl;
+	ss << *expression;
 
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed! " + ss.str());
@@ -1210,6 +1220,7 @@ void Parser::postParserTypeCheck(const Node * module)
 			break;
 		case NodeType::if_statement:
 			// Check wether the expression evaluates to a boolean
+			checkIfStatementType(child);
 			break;
 		case NodeType::else_if:
 			// Check wether the expression evaluates to a boolean
@@ -1329,7 +1340,10 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 			}
 			else {
 				std::string temp17;
-				if (*typeA->getName() == "INTEGER" || *typeB->getName() == "INTEGER") {
+				if (sub == NodeType::simple_expression) {
+					temp17 = std::string("BOOLEAN");
+				}
+				else if (*typeA->getName() == "INTEGER" || *typeB->getName() == "INTEGER") {
 					temp17 = std::string("INTEGER");
 				}
 				else {
@@ -1448,6 +1462,12 @@ void Parser::checkProcedureCallTypes(const Node * node)
 
 void Parser::checkIfStatementType(const Node * node)
 {
+	const Node* expression = node->getChildren().at(0);
+	Symbol* type = typeOfExpression(expression);
+
+	if (*type->getName() != "BOOLEAN") {
+		failNotABoolean(expression);
+	}
 }
 
 void Parser::checkElseIfStatementType(const Node * node)

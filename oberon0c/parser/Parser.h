@@ -114,6 +114,7 @@ private:
 	void failTypeCheckAssignment(const Node* var, const Node* expression);
 	void failWrongParamCount(const Node* calledFunction, size_t formalCount, size_t actualCount);
 	void wrongActualParams(const Node* calledFunction, Symbol* formalParam, Symbol* actualParam);
+	void failNotABoolean(const Node* expression);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
