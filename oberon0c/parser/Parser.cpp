@@ -1061,6 +1061,16 @@ void Parser::failNotABoolean(const Node * expression)
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
+void Parser::failWrongArrayDimensions(const Node * expression, int dimension)
+{
+	std::stringstream ss;
+	ss << "Array dimensions cannot be smaller than 1, but was: " << dimension << std::endl;
+	ss << *expression;
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
 void Parser::newSymbolTable(std::string name)
 {
 	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_, name);
@@ -1224,9 +1234,11 @@ void Parser::postParserTypeCheck(const Node * module)
 			break;
 		case NodeType::while_statement:
 			// Check wether the expression evaluates to a boolean
+			checkWhileStatementType(child);
 			break;
 		case NodeType::array_type:
 			// Check wether expression evaluates to a non-negative constant.
+			checkArrayType(child);
 			break;
 		}
 		postParserTypeCheck(child);
@@ -1473,10 +1485,23 @@ void Parser::checkIfStatementType(const Node * node)
 
 void Parser::checkWhileStatementType(const Node * node)
 {
+	const Node* expression = node->getChildren().at(0);
+	Symbol* type = typeOfExpression(expression);
+
+	if (*type->getName() != "BOOLEAN") {
+		failNotABoolean(expression);
+	}
 }
 
 void Parser::checkArrayType(const Node * node)
 {
+	const Node* expression = node->getChildren().at(0);
+	
+	int dimensions = evaluateExpression(expression);
+
+	if (dimensions < 1) {
+		failWrongArrayDimensions(expression, dimensions);
+	}
 }
 
 int Parser::evaluateExpression(const Node * node)
@@ -1629,7 +1654,10 @@ int Parser::evaluateFactor(const Node * node)
 	switch (child->getNodeType()) {
 	case NodeType::identifier: {
 		auto table = currentTable_;
-		return evaluateSelector(lastSelectorVariable(&children, &table));
+		auto ident = lastSelectorVariable(&children, &table);
+		auto identValue = ident->getValue();
+		Symbol* identSymbol = table->getSymbol(&identValue);
+		return identSymbol->getValue();
 	}
 		break;
 	case NodeType::number: 

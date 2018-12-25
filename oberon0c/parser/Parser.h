@@ -115,6 +115,7 @@ private:
 	void failWrongParamCount(const Node* calledFunction, size_t formalCount, size_t actualCount);
 	void wrongActualParams(const Node* calledFunction, Symbol* formalParam, Symbol* actualParam);
 	void failNotABoolean(const Node* expression);
+	void failWrongArrayDimensions(const Node* expression, int dimension);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
