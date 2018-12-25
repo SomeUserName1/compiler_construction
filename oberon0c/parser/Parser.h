@@ -136,7 +136,6 @@ private:
 	//void checkSelectorType(const Node* node);
 	void checkProcedureCallTypes(const Node* node);
 	void checkIfStatementType(const Node* node);
-	void checkElseIfStatementType(const Node* node);
 	void checkWhileStatementType(const Node* node);
 	void checkArrayType(const Node* node);
 

@@ -1222,9 +1222,6 @@ void Parser::postParserTypeCheck(const Node * module)
 			// Check wether the expression evaluates to a boolean
 			checkIfStatementType(child);
 			break;
-		case NodeType::else_if:
-			// Check wether the expression evaluates to a boolean
-			break;
 		case NodeType::while_statement:
 			// Check wether the expression evaluates to a boolean
 			break;
@@ -1462,17 +1459,17 @@ void Parser::checkProcedureCallTypes(const Node * node)
 
 void Parser::checkIfStatementType(const Node * node)
 {
-	const Node* expression = node->getChildren().at(0);
-	Symbol* type = typeOfExpression(expression);
+	for (auto child : node->getChildren()) {
+		if (child->getNodeType() == NodeType::expression) {
+			Symbol* type = typeOfExpression(child);
 
-	if (*type->getName() != "BOOLEAN") {
-		failNotABoolean(expression);
+			if (*type->getName() != "BOOLEAN") {
+				failNotABoolean(child);
+			}
+		}
 	}
 }
 
-void Parser::checkElseIfStatementType(const Node * node)
-{
-}
 
 void Parser::checkWhileStatementType(const Node * node)
 {

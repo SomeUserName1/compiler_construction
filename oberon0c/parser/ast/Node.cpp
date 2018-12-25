@@ -65,6 +65,19 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 		case NodeType::selector: result = "selector"; break;
 		case NodeType::assignment: result = "assignment"; break;
 		case NodeType::procedure_call: result = "procedure_call"; break;
+		case NodeType::plus: result = "+"; break;
+		case NodeType::minus: result = "-"; break;
+		case NodeType::div: result = "DIV"; break;
+		case NodeType::times: result = "*"; break;
+		case NodeType::or : result = "|"; break;
+		case NodeType::and: result = "&"; break;
+		case NodeType::leq: result = "<="; break;
+		case NodeType::lt: result = "<"; break;
+		case NodeType::geq: result = ">="; break;
+		case NodeType::gt: result = ">"; break;
+		case NodeType::eq: result = "="; break;
+		case NodeType::neq: result = "#"; break;
+		case NodeType::mod: result = "MOD"; break;
 	}
 	stream << result;
 	return stream;

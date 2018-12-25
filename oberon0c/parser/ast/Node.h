@@ -21,7 +21,7 @@ enum class NodeType : char {
 	expression, simple_expression, term, factor, type, record_type,
 	array_type, field_list, ident_list, procedure_heading,
 	procedure_body, formal_parameters, fp_section, statement_sequence,
-	statement, if_statement, else_if, else_, while_statement, acutal_parameters,
+	statement, if_statement, while_statement, acutal_parameters,
 	selector, assignment, procedure_call,
 	plus, minus, div, times, or, and, leq, lt, geq, gt, eq, neq, mod
 };
