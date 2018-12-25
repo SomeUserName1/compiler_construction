@@ -244,7 +244,6 @@ const Node* Parser::procedure_declaration() {
 	semicolon_t();
 	node->addChild(procedure_body());
 
-	// TODO currentTable_ to parent
 	currentTable_ = node->getSymbolTable();
 
 	return node;
@@ -474,14 +473,10 @@ const Node* Parser::procedure_heading() {
 	const Node* procIdent = ident();
 	node->addChild(procIdent);
 
-	// Add symbol for procedure.
-	Symbol procSymbol = Symbol(procIdent->getValue(), std::vector<Symbol*>(), SymbolType::procedure, true);
-	if (currentTable_->insert(procSymbol)) {
-		failSymbolExists(&procSymbol);
-	}
-
 	// Creating symbolTable for the new lexicalScope in the new procedure.
 	newSymbolTable(procIdent->getValue());
+	std::vector<Symbol*> procTypes;
+
 
 	// Parse formal parameters
 	if (scanner_->peekToken()->getType() == TokenType::lparen) {
@@ -499,24 +494,31 @@ const Node* Parser::procedure_heading() {
 			switch (typeDef->getNodeType()) {
 			case (NodeType::identifier): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
-					addType(identifier, typeDef, true);
+					procTypes.push_back(addType(identifier, typeDef, true));
+					
 				}
 			}
 					break;
 			case (NodeType::array_type): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
-					addArray(identifier, typeDef, true);
+					procTypes.push_back(addArray(identifier, typeDef, true));
 				}
 			}
 				break;
 			case (NodeType::record_type): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
-					addRecord(node, identifier, typeDef, true);
+					procTypes.push_back(addRecord(node, identifier, typeDef, true));
 				}
 			}
 				break;
 			}
 		}
+	}
+
+	// Add symbol for procedure.
+	Symbol procSymbol = Symbol(procIdent->getValue(), procTypes, SymbolType::procedure, true);
+	if (currentTable_->getParent()->insert(procSymbol)) {
+		failSymbolExists(&procSymbol);
 	}
 
 	return node;
@@ -1044,6 +1046,9 @@ void Parser::wrongActualParams(const Node * calledFunction, Symbol * formalParam
 {
 	std::stringstream ss;
 	ss << "Call to: " << calledFunction->getValue() << ". Parameter incompatibility: Was: " << *actualParam << " but should have been " << *formalParam;
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
 }
 
 void Parser::newSymbolTable(std::string name)
@@ -1053,7 +1058,7 @@ void Parser::newSymbolTable(std::string name)
 	currentTable_ = newTable;
 }
 
-void Parser::addType(const Node * identifier, const Node * typeDef, bool asVariable)
+Symbol* Parser::addType(const Node * identifier, const Node * typeDef, bool asVariable)
 {		
 	// New type is an "alias" of an existing type. Check if that existing type exists
 	auto temp12 = typeDef->getValue();
@@ -1066,9 +1071,12 @@ void Parser::addType(const Node * identifier, const Node * typeDef, bool asVaria
 	if (currentTable_->insert(newAlias)) {
 		failSymbolExists(&newAlias);
 	}
+
+	auto temp = identifier->getValue();
+	return currentTable_->getSymbol(&temp);
 }
 
-void Parser::addArray(const Node * identifier, const Node * typeDef, bool asVariable)
+Symbol* Parser::addArray(const Node * identifier, const Node * typeDef, bool asVariable)
 {
 	// New type is an array. Check if the specified array type exists.
 	const Node* typeDef2 = typeDef->getChildren().at(1)->getChildren().at(0);
@@ -1084,9 +1092,12 @@ void Parser::addArray(const Node * identifier, const Node * typeDef, bool asVari
 	if (currentTable_->insert(newArray)) {
 		failSymbolExists(&newArray);
 	}
+
+	auto temp = identifier->getValue();
+	return currentTable_->getSymbol(&temp);
 }
 
-void Parser::addRecord(const Node* node, const Node * identifier, const Node * typeDef, bool asVariable)
+Symbol* Parser::addRecord(const Node* node, const Node * identifier, const Node * typeDef, bool asVariable)
 {
 	// New lexical scope
 	newSymbolTable(identifier->getValue());
@@ -1167,6 +1178,9 @@ void Parser::addRecord(const Node* node, const Node * identifier, const Node * t
 	// Add the records symbol table to the map.
 	Symbol* recordsSymbol = currentTable_->getSymbol(newRecord.getName());
 	recordsSymbolTables_.insert(std::unordered_map<Symbol*, std::shared_ptr<SymbolTable>>::value_type(recordsSymbol, recordsSymbolTable));
+
+	auto temp = identifier->getValue();
+	return currentTable_->getSymbol(&temp);
 }
 
 void Parser::postParserTypeCheck(const Node * module)
@@ -1192,6 +1206,7 @@ void Parser::postParserTypeCheck(const Node * module)
 			break;
 		case NodeType::procedure_call:
 			// Check wether the given parameters are of an appropriate type for the referenced procedure.
+			checkProcedureCallTypes(child);
 			break;
 		case NodeType::if_statement:
 			// Check wether the expression evaluates to a boolean
@@ -1403,9 +1418,13 @@ void Parser::checkProcedureCallTypes(const Node * node)
 	std::vector<const Node*> callChildren = node->getChildren();
 	const Node* procedureIdentifier = callChildren.at(0);
 
+	std::vector<const Node*> actParamExpressions;
 	std::vector<Symbol*> actParamTypes;
-	for (size_t i = 1; i < callChildren.size(); i++) {
-		actParamTypes.push_back(typeOfExpression(callChildren[i]));
+	if (callChildren.size() > 1) {
+		actParamExpressions = callChildren.at(1)->getChildren();
+		for (size_t i = 0; i < actParamExpressions.size(); i++) {
+			actParamTypes.push_back(typeOfExpression(actParamExpressions.at(i)));
+		}
 	}
 
 	auto temp = procedureIdentifier->getValue();
@@ -1419,8 +1438,10 @@ void Parser::checkProcedureCallTypes(const Node * node)
 	}
 
 	for (size_t i = 0; i < formalCount; i++) {
-		if (*formParamTypes[i] != *actParamTypes[i]) {
-			wrongActualParams(procedureIdentifier, formParamTypes[i], actParamTypes[i]);
+		if (*formParamTypes[i]->getTypes()->at(0) != *actParamTypes[i]) {
+			if (*formParamTypes[i]->getTypes()->at(0)->getName() != "INTEGER" && *actParamTypes[i]->getName() != "CONSTANT") {
+				wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
+			}
 		}
 	}
 }

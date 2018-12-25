@@ -117,9 +117,9 @@ private:
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
-	void addType(const Node* identifier, const Node* typeDef, bool asVariable);
-	void addArray(const Node* identifier, const Node* typeDef, bool asVariable);
-	void addRecord(const Node* node, const Node* identifier, const Node* typeDef, bool asVariable);
+	Symbol* addType(const Node* identifier, const Node* typeDef, bool asVariable);
+	Symbol* addArray(const Node* identifier, const Node* typeDef, bool asVariable);
+	Symbol* addRecord(const Node* node, const Node* identifier, const Node* typeDef, bool asVariable);
 
 	Symbol* typeOfExpression(const Node* expression);
 	Symbol* typeOfSimpleExpression(const Node* simpleExpression);

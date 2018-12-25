@@ -38,5 +38,7 @@ public:
 
 	virtual void printTree(std::ostream &stream) const;
 	friend std::ostream& operator<<(std::ostream &stream, SymbolTable &node);
+
+	std::shared_ptr<SymbolTable> getParent();
 };
 #endif

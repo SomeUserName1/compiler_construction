@@ -57,7 +57,7 @@ BEGIN
         WHILE j > 0 DO
             IF (a[i] > a[j]) & (2 > 1)
             THEN
-                Swap(a[i], a[j])
+                Swap(a[i], a[j] , -1)
             ELSIF 1 > 2
             THEN
                 WHILE 1 > 2 DO END;
