@@ -133,7 +133,7 @@ const Node* Parser::const_declarations() {
 	semicolon_t();
 
 	// Add processed constant to the symbol table
-	std::string integer = std::string("INTEGER");
+	std::string integer = std::string("CONSTANT");
 	Symbol * symbol = currentTable_->getSymbol(&integer);
 	std::vector<Symbol*> types;
 	types.push_back(symbol);
