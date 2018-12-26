@@ -19,13 +19,14 @@ TYPE Point2D = RECORD x, y: INTEGER END;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;
-    p: lala;
+    p: Point2D;
     c: ARRAY Dim1 OF INTEGER;
     d: Point3D;
     o,r,q : INTEGER;
     e: Point7D;
     f: RECORD a,b,c: INTEGER END;
     g: Point8D;
+    z: INTEGER;
 
 (* Initializes the array. *)
 PROCEDURE Init();
@@ -57,7 +58,7 @@ BEGIN
         WHILE j > 0 DO
             IF (a[i] > a[j]) & (2 > 1)
             THEN
-                Swap(a[i], a[j] , -1)
+                Swap(a[i], a[j] , -1) (* Is the -1, which is a constant, possible? *)
             ELSIF 1 > 2
             THEN
                 WHILE 1 > 2 DO END;
@@ -78,4 +79,14 @@ BEGIN
     (* Testing sophisticated selectors *)
     g.x.l := 1;
     e.l := e.l;
+    
+    Dim := 4;
+    z := 2;
+    
+    (*g.k.l := 1; *)
+    
+    (*IF ((1 < 5) < (1 < 5))
+    THEN
+        e.l := e.l;
+    END;*)
 END BubbleSort.

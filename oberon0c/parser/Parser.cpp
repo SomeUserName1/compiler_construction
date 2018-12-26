@@ -660,6 +660,9 @@ const Node* Parser::A()
 		// Note: Actually in the latter case we'd have to check if the procedure hangs behind modules but as we do not have a linker
 		// we cannot do that.
 		const Node* procedure = (select->size() > 0) ? select->back()->getChildren().at(0) : identifier;
+		if (procedure->getNodeType() == NodeType::expression) {
+			failProcCallReferencedAsArray(identifier);
+		}
 		failIfNotProcedure(procedure);
 
 		node = new Node(NodeType::procedure_call, word->getPosition(), currentTable_);
@@ -1080,6 +1083,15 @@ void Parser::failArrayDimensionIsNotAConstant(const Node * expression)
 	std::stringstream ss;
 	ss << "Array Dimension is not a constant:" << std::endl;
 	ss << *expression;
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
+void Parser::failProcCallReferencedAsArray(const Node * identifier)
+{
+	std::stringstream ss;
+	ss << "Procedure referenced as array: " << identifier->getValue();
 
 	logger_->error(word->getPosition(), ss.str());
 	throw std::invalid_argument("You failed! " + ss.str());

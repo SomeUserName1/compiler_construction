@@ -117,6 +117,7 @@ private:
 	void failNotABoolean(const Node* expression);
 	void failWrongArrayDimensions(const Node* expression, int dimension);
 	void failArrayDimensionIsNotAConstant(const Node* expression);
+	void failProcCallReferencedAsArray(const Node* identifier);
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);
