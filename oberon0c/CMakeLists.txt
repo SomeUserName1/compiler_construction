@@ -49,7 +49,7 @@ set(symbol_table
 		parser/symbol_table/NumberNode.cpp
 		parser/symbol_table/ArrayNode.cpp
 		parser/symbol_table/RecordNode.cpp
-		parser/symbol_table/TypeDefNode.cpp
+		parser/symbol_table/TypeNode.cpp
 		parser/symbol_table/ProcedureNode.cpp)
 
 
@@ -62,7 +62,7 @@ set(parser
 		${ast}
 		${symbol_table}
 		parser/Parser.cpp
-		parser/TypeChecker.cpp
+        parser/SemanticAnalysis.cpp
         parser/ast/ArithmeticOpNode.cpp parser/ast/ArithmeticOpNode.h parser/ast/BooleanOpNode.cpp parser/ast/BooleanOpNode.h parser/ast/ComparatorNode.cpp parser/ast/ComparatorNode.h parser/symbol_table/BooleanNode.cpp parser/symbol_table/BooleanNode.h)
 ADD_LIBRARY(parse ${parser})
 

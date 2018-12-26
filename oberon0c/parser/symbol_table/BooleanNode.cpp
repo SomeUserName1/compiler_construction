@@ -1,6 +1,6 @@
 #include "BooleanNode.h"
 
-BooleanNode::BooleanNode(std::string name, int value) : DeclarationNode(std::move(name)) {
+BooleanNode::BooleanNode(std::string name, int value) : DeclarationNode(std::move(name), DeclarationType::VAR) {
   this->setValue(value);
 }
 

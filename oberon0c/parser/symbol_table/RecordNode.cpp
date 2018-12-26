@@ -1,12 +1,11 @@
+#include <utility>
+
 #include "RecordNode.h"
 #include <utility>
 
-RecordNode::RecordNode(std::string name, int no_fields): DeclarationNode(std::move(name)), _no_fields(no_fields) {
+RecordNode::RecordNode(std::string name, DeclarationType decl_type, std::vector<std::shared_ptr<Node>> fields)
+  : DeclarationNode(std::move(name), decl_type, std::move(fields)) {
   // TODO new Symbol Table
-}
-
-const int RecordNode::getNoFields() {
-	return this->_no_fields;
 }
 
 const std::shared_ptr<DeclarationNode> RecordNode::getField(const std::string &name) {

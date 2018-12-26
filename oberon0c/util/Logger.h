@@ -32,6 +32,7 @@ public:
     explicit Logger(LogLevel level, std::ostream *out, std::ostream *err);
     ~Logger();
 
+    void error(std::string &msg) const;
     void error(FilePos pos, const std::string &msg) const;
     void error(const std::string &fileName, const std::string &msg) const;
     void info(const std::string &fileName, const std::string &msg) const;

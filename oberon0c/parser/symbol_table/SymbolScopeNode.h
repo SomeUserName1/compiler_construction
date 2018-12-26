@@ -9,10 +9,22 @@
 #ifndef OBERON0C_SYMBOLTABLE_H
 #define OBERON0C_SYMBOLTABLE_H
 
-#include <vector>
 #include <Node.h>
-class SymbolScopeNode : public Node {
+#include "DeclarationNode.h"
 
+class SymbolScopeNode : public Node {
+private:
+  std::shared_ptr<SymbolScopeNode> _parent;
+  std::shared_ptr<Logger> _logger;
+
+public:
+  SymbolScopeNode(std::shared_ptr<SymbolScopeNode> parent, std::shared_ptr<Logger> logger);
+  std::shared_ptr<SymbolScopeNode> getContainingScope();
+  void addChild(std::initializer_list<std::shared_ptr<Node>> newChild) override;
+  void addChild(std::shared_ptr<Node> newChild) override;
+  bool checkCollision(std::shared_ptr<Node> new_child);
+  void symbolCollision(std::shared_ptr<DeclarationNode> new_child, std::shared_ptr<DeclarationNode> element);
+  // TODO Symbol Table
 };
 
 

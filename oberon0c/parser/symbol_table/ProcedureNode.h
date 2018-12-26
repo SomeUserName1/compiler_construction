@@ -10,14 +10,16 @@
 #define OBERON0C_PROCEDURENODE_H
 
 #include "DeclarationNode.h"
-class ProcedureNode : DeclarationNode {
+#include "SymbolScopeNode.h"
+class ProcedureNode : public DeclarationNode {
 private:
-  int _no_params;
+  // HEADING
   // params are stored as children
+  std::shared_ptr<SymbolScopeNode> _scope;
 
 public:
-  ProcedureNode(std::string name, int no_params);
-  const int getNoParams();
+  ProcedureNode(std::string name, std::vector<std::shared_ptr<Node>> parameters, std::shared_ptr<SymbolScopeNode> scope);
+
 };
 
 #endif //OBERON0C_PROCEDURENODE_H

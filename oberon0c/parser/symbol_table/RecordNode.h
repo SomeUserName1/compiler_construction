@@ -8,12 +8,10 @@
 #include "DeclarationNode.h"
 class RecordNode : public DeclarationNode {
   private:
-    int _no_fields;
     // fields are stored as children
 
   public:
-    RecordNode(std::string name, int no_fields);
-    const int getNoFields();
+    RecordNode(std::string name, DeclarationType decl_type, std::vector<std::shared_ptr<Node>> fields);
     const std::shared_ptr<DeclarationNode> getField(const std::string &name);
 	const std::vector<std::shared_ptr<DeclarationNode>> getFields();
 };

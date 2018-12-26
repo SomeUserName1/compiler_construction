@@ -30,11 +30,11 @@ private:
 	bool _state = true;
 
 	// Non-Terminals
-    const std::unique_ptr<ParserNode> module();
+    const std::shared_ptr<ParserNode> module();
     const std::shared_ptr<ParserNode> declarations();
-    const std::shared_ptr<ParserNode> const_declarations();
-    const std::shared_ptr<ParserNode> type_declarations();
-    const std::shared_ptr<ParserNode> var_declarations();
+    const std::shared_ptr<ParserNode> const_declaration();
+    const std::shared_ptr<ParserNode> type_declaration();
+    const std::shared_ptr<ParserNode> var_declaration();
     const std::shared_ptr<ParserNode> procedure_declaration();
     const std::shared_ptr<ParserNode> expression();
     const std::shared_ptr<ParserNode> simple_expression();
@@ -68,7 +68,7 @@ private:
 public:
     explicit Parser(Lexer* scanner, Logger* logger);
     ~Parser();
-    const std::unique_ptr<const ParserNode> parse();
+    const std::shared_ptr<const ParserNode> parse();
 };
 
 

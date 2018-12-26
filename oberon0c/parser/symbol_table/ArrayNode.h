@@ -16,7 +16,7 @@ class ArrayNode : public DeclarationNode {
     // Elements are stored as children
 
   public:
-    ArrayNode(std::string name, int size, std::string type);
+    ArrayNode(std::string name, DeclarationType decl_type, std::vector<std::shared_ptr<Node>> elements, int size, std::string array_type);
     const int getSize();
     const std::string getType();
   const std::vector<std::shared_ptr<DeclarationNode>> getValues();

@@ -5,11 +5,14 @@ MODULE BubbleSort;
 CONST Dim = 2 * 10;
       Dim1 = 3 * 10;
       Dim2 = 4 * 10;
+      Ugly = - 1 + (- 5 + 9);
 
 (* Record definition for a two-dimensional point. *)
 TYPE Point2D = RECORD x, y: INTEGER END;
      Point3D = RECORD x, y, z: INTEGER END;
      Point4D = RECORD w, x, y, z: INTEGER END;
+     IntArray = ARRAY 10 OF INTEGER;
+     typedef = IntArray;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;

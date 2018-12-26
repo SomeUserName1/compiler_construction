@@ -11,18 +11,19 @@ Parser::Parser(Lexer *scanner, Logger *logger) :
 
 Parser::~Parser() = default;
 
-const std::unique_ptr<const ParserNode> Parser::parse() {
+const std::shared_ptr<const ParserNode> Parser::parse() {
   auto parse_tree(module());
 
-  if (!this->_state)
-    throw std::invalid_argument("Found errors, see ");
-  std::cout << *parse_tree << std::endl;
+  if (!this->_state) {
+    std::cout << *parse_tree << std::endl;
+    throw std::invalid_argument("Found sytnax errors, see ");
+  }
 
   return parse_tree;
 }
 
-const std::unique_ptr<ParserNode> Parser::module() {
-  auto moduleParserNode = std::make_unique<ParserNode>(ParserNodeType::module, this->scanner_->peekToken()->getPosition());
+const std::shared_ptr<ParserNode> Parser::module() {
+  auto moduleParserNode = std::make_shared<ParserNode>(ParserNodeType::module, this->scanner_->peekToken()->getPosition());
 
   // Module declaration
   moduleParserNode->addChild(decideToken(TokenType::kw_module));
@@ -74,21 +75,21 @@ const std::shared_ptr<ParserNode> Parser::declarations() {
     node->addChild(decideToken(TokenType::kw_const));
 
     while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-      node->addChild(const_declarations());
+      node->addChild(const_declaration());
     }
   }
   // TYPEs
   if (scanner_->peekToken()->getType() == TokenType::kw_type) {
     node->addChild(decideToken(TokenType::kw_type));
     while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-      node->addChild(type_declarations());
+      node->addChild(type_declaration());
     }
   }
   // VARs
   if (scanner_->peekToken()->getType() == TokenType::kw_var) {
     node->addChild(decideToken(TokenType::kw_var));
     while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-      node->addChild(var_declarations());
+      node->addChild(var_declaration());
     }
   }
   // Optional Procedures
@@ -99,24 +100,24 @@ const std::shared_ptr<ParserNode> Parser::declarations() {
   return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::const_declarations() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::const_declarations, word->getPosition());
+const std::shared_ptr<ParserNode> Parser::const_declaration() {
+  auto node = std::make_shared<ParserNode>(ParserNodeType::const_declaration, word->getPosition());
 
   node->addChild({identifier(), decideToken(TokenType::op_eq), expression(), decideToken(TokenType::semicolon)});
 
   return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::type_declarations() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::type_declarations, word->getPosition());
+const std::shared_ptr<ParserNode> Parser::type_declaration() {
+  auto node = std::make_shared<ParserNode>(ParserNodeType::type_declaration, word->getPosition());
 
   node->addChild({identifier(), decideToken(TokenType::op_eq), type(), decideToken(TokenType::semicolon)});
 
   return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::var_declarations() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::var_declarations, word->getPosition());
+const std::shared_ptr<ParserNode> Parser::var_declaration() {
+  auto node = std::make_shared<ParserNode>(ParserNodeType::var_declaration, word->getPosition());
 
   node->addChild({ident_list(), decideToken(TokenType::colon), type(), decideToken(TokenType::semicolon)});
 
@@ -216,7 +217,7 @@ const std::shared_ptr<ParserNode> Parser::factor() {
       break;
     }
     case TokenType::op_not: {
-      node->addChild({decideToken(TokenType::op_not), factor()});
+      node->addChild({binary_op(), factor()});
       break;
     }
     default: {
@@ -229,7 +230,7 @@ const std::shared_ptr<ParserNode> Parser::factor() {
 }
 
 const std::shared_ptr<ParserNode> Parser::type() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::factor, word->getPosition());
+  auto node = std::make_shared<ParserNode>(ParserNodeType::type, word->getPosition());
 
   TokenType type = scanner_->peekToken()->getType();
   switch (type) {
@@ -481,6 +482,7 @@ const std::shared_ptr<ParserNode> Parser::binary_op() {
   TokenType type = word->getType();
   switch (type) {
     // Boolean Ops
+  case TokenType::op_not:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "~");
   case TokenType::op_and:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "AND");
   case TokenType::op_or:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "OR");
     // Comparators
@@ -494,8 +496,8 @@ const std::shared_ptr<ParserNode> Parser::binary_op() {
   case TokenType::op_plus:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "+");
   case TokenType::op_minus:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "-");
   case TokenType::op_times:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "*");
-  case TokenType::op_div:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "DIV");
-  case TokenType::op_mod:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "MOD");
+  case TokenType::op_div:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "/");
+  case TokenType::op_mod:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "%");
     // No match, degrade
   default:
     std::string s = std::string("Expected binary operator in method binary op");
@@ -505,8 +507,6 @@ const std::shared_ptr<ParserNode> Parser::binary_op() {
 }
 
 void Parser::fail(std::string &msg) {
-  // TODO degrade gently
-  // TODO print all relevant tokens (all containing "" in the grammar that arent already stored as a value)
   std::stringstream ss;
   ss << "\"" << *word << "\"" << std::endl;
   msg = msg + " expected but got " + ss.str();
@@ -518,7 +518,7 @@ const std::shared_ptr<ParserNode> Parser::decideToken(TokenType type) {
   std::shared_ptr<ParserNode> node;
   word = scanner_->nextToken();
   std::stringstream ss;
-  ss << "Token " << type;
+  ss << type;
   std::string c = ss.str();
 
   if (word->getType() != type) {

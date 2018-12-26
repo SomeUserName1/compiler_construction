@@ -1,6 +1,8 @@
-//
-// Created by fabian on 24.12.18.
-//
+/**
+ * @author fabian.klopfer@uni-konstanz.de
+ *
+ * Helper class to evaluate conditions
+ */
 
 #ifndef OBERON0C_BOOLEANNODE_H
 #define OBERON0C_BOOLEANNODE_H

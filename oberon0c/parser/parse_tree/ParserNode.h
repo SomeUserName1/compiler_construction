@@ -6,18 +6,12 @@
 #ifndef OBERON0C_AST_H
 #define OBERON0C_AST_H
 
-#include <vector>
-#include <string>
-#include <ostream>
-#include <utility>
 #include <Node.h>
-#include "../../util/Logger.h"
-
 
 enum class ParserNodeType : char {
-	module, declarations, const_declarations,
-	type_declarations, var_declarations,
-	procedure_declaration, identifier, number, binary_op,
+	module, declarations, const_declaration,
+	type_declaration, var_declaration,
+	procedure_declaration, identifier, number, type, binary_op,
 	expression, simple_expression, term, factor, record_type,
 	array_type, field_list, ident_list, procedure_heading,
 	procedure_body, formal_parameters, fp_section, statement_sequence,

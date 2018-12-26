@@ -1,7 +1,8 @@
 #include "ArrayNode.h"
 
-ArrayNode::ArrayNode(std::string name, int size, std::string type) : DeclarationNode(std::move(name)), _size(size),
-  _type(std::move(type)) {
+ArrayNode::ArrayNode(std::string name, DeclarationType decl_type, std::vector<std::shared_ptr<Node>> elements, int size, std::string array_type)
+  : DeclarationNode(std::move(name), decl_type, elements), _size(size),
+  _type(std::move(array_type)) {
   // TODO handle children here? how to handle type? switch case over primitive (INTEGER) then look up for record and typedef?
 }
 

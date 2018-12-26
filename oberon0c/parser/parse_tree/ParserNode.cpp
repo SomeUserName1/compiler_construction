@@ -19,12 +19,13 @@ std::ostream& operator<<(std::ostream &stream, const ParserNodeType &type) {
 	switch(type) {
 		case ParserNodeType::module: result = "MODULE"; break;
 		case ParserNodeType::declarations: result = "Declarations"; break;
-		case ParserNodeType::const_declarations: result = "CONST declarations"; break;
-		case ParserNodeType::type_declarations: result = "TYPE declarations"; break;
-		case ParserNodeType::var_declarations: result = "var_declarations"; break;
+		case ParserNodeType::const_declaration: result = "CONST declarations"; break;
+		case ParserNodeType::type_declaration: result = "TYPE declarations"; break;
+		case ParserNodeType::var_declaration: result = "var_declarations"; break;
 		case ParserNodeType::procedure_declaration: result = "procedure_declaration"; break;
 		case ParserNodeType::identifier: result = "identifier"; break;
 		case ParserNodeType::number: result = "number"; break;
+        case ParserNodeType::type: result = "type"; break;
 		case ParserNodeType::binary_op: result = "binary_op"; break;
 		case ParserNodeType::expression: result = "expression"; break;
 		case ParserNodeType::simple_expression: result = "simple_expression"; break;
@@ -47,7 +48,7 @@ std::ostream& operator<<(std::ostream &stream, const ParserNodeType &type) {
 		case ParserNodeType::assignment: result = "assignment"; break;
 		case ParserNodeType::procedure_call: result = "procedure_call"; break;
 		case ParserNodeType::syntax_error: result = "(E!!) SYNTAX ERROR"; break;
-		case ParserNodeType::terminal_token: result = ""; break;
+		case ParserNodeType::terminal_token: result = "Token"; break;
 	}
 	stream << result;
 	return stream;

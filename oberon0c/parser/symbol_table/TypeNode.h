@@ -6,13 +6,9 @@
 #define OBERON0C_HIGHERORDERTYPENODE_H
 
 #include "DeclarationNode.h"
-class TypeDefNode : public DeclarationNode{
-private:
-  std::string _type;
-
+class TypeNode : public DeclarationNode{
 public:
-  explicit TypeDefNode(std::string name);
-  const std::string getType();
+  explicit TypeNode(std::string name, std::shared_ptr<Node> type);
 
 };
 

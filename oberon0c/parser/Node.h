@@ -10,6 +10,9 @@
 #include <ostream>
 #include <utility>
 #include <string>
+#include <ostream>
+
+#include <Logger.h>
 
 /**
  * Common super class for all nodes in the AST. Provides generic print function and getter/setter for child and parent
@@ -19,15 +22,20 @@ class Node {
   private:
     std::vector<std::shared_ptr<Node>> _children;
 
+  protected:
+  Node();
+  explicit Node(std::vector<std::shared_ptr<Node>> children);
+
   public:
     virtual ~Node();
-    void addChild(std::initializer_list<std::shared_ptr<Node>> newChild);
-    void addChild(std::shared_ptr<Node> newChild);
+    virtual void addChild(std::initializer_list<std::shared_ptr<Node>> newChild);
+    virtual void addChild(std::shared_ptr<Node> newChild);
     const std::vector<std::shared_ptr<Node>> getChildren() const;
     //virtual const std::ostream& operator<<(std::ostream &stream) const;
     //virtual const void print() const;
 };
 
+// bluntly plagiarized from SO
 template <class T> constexpr std::string_view type_name() {
   using namespace std;
 #ifdef __clang__
