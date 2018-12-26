@@ -11,6 +11,7 @@ Symbol::Symbol(std::string name, std::vector<Symbol *> types, SymbolType symbolT
 	types_ = types;
 	symbolType_ = symbolType;
 	isVariable_ = isVariable;
+	value_ = 0;
 }
 
 std::string * Symbol::getName() {

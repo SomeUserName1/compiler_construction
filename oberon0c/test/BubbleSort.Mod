@@ -19,7 +19,7 @@ TYPE Point2D = RECORD x, y: INTEGER END;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;
-    p: Point2D;
+    p: lala;
     c: ARRAY Dim1 OF INTEGER;
     d: Point3D;
     o,r,q : INTEGER;

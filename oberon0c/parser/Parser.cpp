@@ -192,7 +192,11 @@ const Node* Parser::var_declarations() {
 		case (NodeType::identifier): {
 			for (const Node* identifier : identifiers) {
 				auto temp = typeDef->getValue();
-				switch (currentTable_->getSymbol(&temp)->getSymbolType()) {
+				Symbol* symbol = currentTable_->getSymbol(&temp);
+				if (symbol == nullptr) {
+					failUndeclaredSymbol(typeDef);
+				}
+				switch (symbol->getSymbolType()) {
 				case SymbolType::array:
 					addArray(identifier, typeDef, true);
 					break;
