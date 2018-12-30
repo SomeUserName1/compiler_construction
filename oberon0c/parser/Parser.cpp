@@ -9,8 +9,6 @@ Parser::Parser(Lexer *scanner, Logger *logger) :
     scanner_(scanner), logger_(logger) {
 }
 
-Parser::~Parser() = default;
-
 const std::shared_ptr<const ParserNode> Parser::parse() {
   auto parse_tree(module());
 
@@ -55,6 +53,7 @@ const std::shared_ptr<ParserNode> Parser::module() {
 
 const std::shared_ptr<ParserNode> Parser::identifier() {
   std::shared_ptr<ParserNode> node;
+  auto prev_token = *word;
   word = scanner_->nextToken();
 
   if (word->getType() != TokenType::const_ident) {
@@ -64,6 +63,11 @@ const std::shared_ptr<ParserNode> Parser::identifier() {
   } else {
     auto identifier = dynamic_cast<const IdentToken &>(*word);
     node = std::make_shared<ParserNode>(ParserNodeType::identifier, word->getPosition(), identifier.getValue());
+  }
+  auto next_word = scanner_->peekToken();
+  if (!(prev_token.getType() == TokenType::kw_end) && (next_word->getType() == TokenType::period
+      || next_word->getType() == TokenType::lbrack)) {
+    node->addChild(selector());
   }
   return node;
 }
@@ -205,7 +209,7 @@ const std::shared_ptr<ParserNode> Parser::factor() {
   switch(type) {
     case TokenType::const_ident: {
 
-      node->addChild({identifier(), selector()});
+      node->addChild(identifier());
       break;
     }
     case TokenType::const_number: {
@@ -392,14 +396,13 @@ const std::shared_ptr<ParserNode> Parser::id_sel() {
   std::shared_ptr<ParserNode> node;
 
   const auto ident = identifier();
-  const auto select = selector();
 
   if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
     node = std::make_shared<ParserNode>(ParserNodeType::assignment, word->getPosition());
-    node->addChild({ident, select, decideToken(TokenType::op_becomes), expression()});
+    node->addChild({ident, decideToken(TokenType::op_becomes), expression()});
   } else {
     node = std::make_shared<ParserNode>(ParserNodeType::procedure_call, word->getPosition());
-    node->addChild({ident, select});
+    node->addChild(ident);
 
     if (scanner_->peekToken()->getType() == TokenType::lparen) {
       node->addChild(actual_parameters());
@@ -469,7 +472,8 @@ const std::shared_ptr<ParserNode> Parser::selector() {
     }
   }
 
-  if (scanner_->peekToken()->getType() == TokenType::period || scanner_->peekToken()->getType() == TokenType::lbrack) {
+  TokenType next_token_type = scanner_->peekToken()->getType();
+  if (next_token_type == TokenType::period || next_token_type == TokenType::lbrack) {
     node->addChild(selector());
   }
 

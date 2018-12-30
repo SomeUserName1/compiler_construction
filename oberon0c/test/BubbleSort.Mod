@@ -8,7 +8,12 @@ CONST Dim = 2 * 10;
       Ugly = - 1 + (- 5 + 9);
 
 (* Record definition for a two-dimensional point. *)
-TYPE Point2D = RECORD x, y: INTEGER END;
+TYPE Test = RECORD
+        x, y: INTEGER;
+        a: ARRAY 3 OF INTEGER;
+        r: RECORD w,s,d: INTEGER END;
+     END;
+     Point2D = RECORD x, y: INTEGER END;
      Point3D = RECORD x, y, z: INTEGER END;
      Point4D = RECORD w, x, y, z: INTEGER END;
      IntArray = ARRAY 10 OF INTEGER;
@@ -17,7 +22,7 @@ TYPE Point2D = RECORD x, y: INTEGER END;
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;
     p: Point2D;
-    c: ARRAY Dim1 OF INTEGER;
+    c: ARRAY 2 OF ARRAY Dim OF INTEGER;
     d: Point3D;
 
 (* Initializes the array. *)
@@ -28,7 +33,8 @@ BEGIN
     WHILE i < Dim DO
         a[i] := Dim-i;
         i := i + 1
-    END
+    END;
+    c[1] := a
 END Init;
 
 (* should yield procedure error or end*)
@@ -42,7 +48,8 @@ BEGIN
     WHILE 1 > 2 DO END;
     t := a;
     a := b; 
-    b := t
+    b := t;
+    c[0][0] := b
 END Swap;
     
 (* Applies the bubble sort algorithm to the array. *)

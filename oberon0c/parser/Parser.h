@@ -67,7 +67,6 @@ private:
 
 public:
     explicit Parser(Lexer* scanner, Logger* logger);
-    ~Parser();
     const std::shared_ptr<const ParserNode> parse();
 };
 

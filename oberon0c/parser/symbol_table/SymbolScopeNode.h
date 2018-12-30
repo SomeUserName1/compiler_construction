@@ -1,9 +1,7 @@
 /**
  * @author fabian.klopfer@uni-konstanz.de
  *
- * 1. Symbols
- *      1.1 Modules, Procedures, Records define new scopes
- *      1.2 all names in the same scope must be unique
+ * 1. Symbols: all names in the same scope must be unique
  */
 
 #ifndef OBERON0C_SYMBOLTABLE_H
@@ -12,7 +10,7 @@
 #include <Node.h>
 #include "DeclarationNode.h"
 
-class SymbolScopeNode : public Node {
+class SymbolScopeNode : public DeclarationNode {
 private:
   std::shared_ptr<SymbolScopeNode> _parent;
   std::shared_ptr<Logger> _logger;

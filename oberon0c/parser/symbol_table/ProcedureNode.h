@@ -13,9 +13,11 @@
 #include "SymbolScopeNode.h"
 class ProcedureNode : public DeclarationNode {
 private:
-  // HEADING
+  // HEAD
   // params are stored as children
+  // BODY
   std::shared_ptr<SymbolScopeNode> _scope;
+  std::shared_ptr<Node> _ast;
 
 public:
   ProcedureNode(std::string name, std::vector<std::shared_ptr<Node>> parameters, std::shared_ptr<SymbolScopeNode> scope);

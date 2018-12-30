@@ -8,7 +8,7 @@
 #include "DeclarationNode.h"
 class TypeNode : public DeclarationNode{
 public:
-  explicit TypeNode(std::string name, std::shared_ptr<Node> type);
+  explicit TypeNode(std::string name, std::shared_ptr<Node> aliased, DeclarationType type);
 
 };
 

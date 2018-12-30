@@ -1,9 +1,7 @@
-#include <utility>
-
 #include "SymbolScopeNode.h"
 
 SymbolScopeNode::SymbolScopeNode(std::shared_ptr<SymbolScopeNode> parent, std::shared_ptr<Logger> logger)
-  : _parent(std::move(parent)), _logger(std::move(logger)) {}
+  : DeclarationNode(std::string("SCOPE"), DeclarationType::SCOPE), _parent(std::move(parent)), _logger(std::move(logger)) {}
 
 void SymbolScopeNode::addChild(std::shared_ptr<Node> new_child) {
   checkCollision(new_child);

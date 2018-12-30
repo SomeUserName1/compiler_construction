@@ -26,6 +26,8 @@ std::ostream& operator<<(std::ostream &ostr, DeclarationType type) {
     break;
   case DeclarationType::PROCEDURE: result = "PROCEDURE";
     break;
+  case DeclarationType ::SCOPE: result = "SCOPE";
+    break;
   }
   ostr << result;
   return ostr;

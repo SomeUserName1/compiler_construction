@@ -6,7 +6,7 @@
 #define OBERON0C_DECLARATIONNODE_H
 
 #include <Node.h>
-enum class DeclarationType {CONST, VAR, TYPE, PROCEDURE};
+enum class DeclarationType {CONST, VAR, TYPE, PROCEDURE, SCOPE};
 
 std::ostream& operator<<(std::ostream &ostr, DeclarationType type);
 
