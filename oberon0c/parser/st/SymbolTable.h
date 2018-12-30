@@ -40,5 +40,7 @@ public:
 	friend std::ostream& operator<<(std::ostream &stream, SymbolTable &node);
 
 	std::shared_ptr<SymbolTable> getParent();
+
+	std::unordered_map<std::string, Symbol> getMap();
 };
 #endif

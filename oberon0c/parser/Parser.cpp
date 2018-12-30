@@ -37,6 +37,14 @@ const std::unique_ptr<Node> Parser::parse() {
 	std::cout << *symbolTables_.front() << std::endl;
 	// Print the AST(s)
 	auto mainSymbolTable = parse_tree->getSymbolTable();
+	auto map = mainSymbolTable->getMap();
+	for (auto item : map) {
+		if (item.second.getSymbolType() == SymbolType::module
+			|| item.second.getSymbolType() == SymbolType::procedure) {
+			std::cout << *item.second.getName() << std::endl;
+			std::cout << *item.second.getAst() << std::endl;
+		}
+	}
 
     return parse_tree;
 }

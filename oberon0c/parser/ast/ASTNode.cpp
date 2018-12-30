@@ -12,6 +12,8 @@ void ASTNode::printTreeRec(std::ostream & stream, int depth) const
 		stream << " " << *symbol_;
 	}
 
+	stream << std::endl;
+
 	for (auto child : children_) {
 		child->printTreeRec(stream, depth + 1);
 	}

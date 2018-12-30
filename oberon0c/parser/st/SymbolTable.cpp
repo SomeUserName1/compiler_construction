@@ -135,6 +135,11 @@ std::shared_ptr<SymbolTable> SymbolTable::getParent()
 	return parent_;
 }
 
+std::unordered_map<std::string, Symbol> SymbolTable::getMap()
+{
+	return symbolTable_;
+}
+
 std::ostream & operator<<(std::ostream & stream, SymbolTable & node)
 {
 	node.printTree(stream);
