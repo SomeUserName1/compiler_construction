@@ -513,7 +513,7 @@ const Node* Parser::procedure_heading() {
 		for (const Node* fpSection : fParams->getChildren()) {
 			bool isVarParam = fpSection->getValue() == "true";
 			std::vector<const Node*> children = fpSection->getChildren();
-			size_t identPosition = 0;// children.at(0).getNodeType() != NodeType::var_declarations;
+			size_t identPosition = 0;
 			const Node* varIdentifiers = children.at(identPosition);
 			const Node* typeDef = children.at(++identPosition)->getChildren().at(0);
 
