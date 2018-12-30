@@ -6,7 +6,7 @@
 
 enum class ASTNodeType : char {
 	statement_sequence, statement, if_statement, while_statement, assignment, procedure_call,
-	plus, minus, div, times, or, and, leq, lt, geq, gt, eq, neq, mod
+	plus, minus, div, times, or, and, leq, lt, geq, gt, eq, neq, mod, symbol
 };
 
 class ASTNode {
@@ -19,6 +19,7 @@ private:
 
 public:
 	explicit ASTNode(ASTNodeType nodeType);
+	explicit ASTNode(ASTNodeType nodeType, Symbol* symbol);
 
 	const ASTNodeType getNodeType() const;
 	std::vector<const ASTNode*> getChildren() const;

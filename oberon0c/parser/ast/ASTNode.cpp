@@ -9,6 +9,12 @@ ASTNode::ASTNode(ASTNodeType nodeType)
 	nodeType_ = nodeType;
 }
 
+ASTNode::ASTNode(ASTNodeType nodeType, Symbol * symbol)
+{
+	nodeType_ = nodeType;
+	symbol_ = symbol;
+}
+
 const ASTNodeType ASTNode::getNodeType() const
 {
 	return nodeType_;

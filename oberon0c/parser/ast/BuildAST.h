@@ -23,6 +23,11 @@ public:
 	const ASTNode* procedureCall(const Node* procedureCallNode);
 	const ASTNode* ifStatement(const Node* ifStatementNode);
 	const ASTNode* whileStatement(const Node* whileStatementNode);
+	const ASTNode* expression(const Node* expressionNode);
+	const ASTNode* simpleExpression(const Node* simpleExpressionNode);
+
+
+	const Node* lastSelectorVariable(std::vector<const Node*>* children, std::shared_ptr<SymbolTable>* table);
 };
 
 
