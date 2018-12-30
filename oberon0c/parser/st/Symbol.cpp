@@ -117,6 +117,16 @@ const ASTNode * Symbol::getAst()
 	return ast_;
 }
 
+void Symbol::setIsVarParam(bool val)
+{
+	isVarParam_ = val;
+}
+
+bool Symbol::getIsVarParam()
+{
+	return isVarParam_;
+}
+
 void Symbol::setValue(int value)
 {
 	value_ = value;

@@ -24,6 +24,7 @@ private:
 	bool isVariable_;
 	int value_;
 	const ASTNode* ast_;
+	bool isVarParam_;
 
 public:
 	explicit Symbol();
@@ -49,5 +50,8 @@ public:
 
 	void setAst(const ASTNode* node);
 	const ASTNode* getAst();
+
+	void setIsVarParam(bool val);
+	bool getIsVarParam();
 };
 #endif
