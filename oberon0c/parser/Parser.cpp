@@ -511,6 +511,7 @@ const Node* Parser::procedure_heading() {
 
 		// Adding identifiers of procedure parameters
 		for (const Node* fpSection : fParams->getChildren()) {
+			bool isVarParam = fpSection->getValue() == "true";
 			std::vector<const Node*> children = fpSection->getChildren();
 			size_t identPosition = 0;// children.at(0).getNodeType() != NodeType::var_declarations;
 			const Node* varIdentifiers = children.at(identPosition);
@@ -519,20 +520,25 @@ const Node* Parser::procedure_heading() {
 			switch (typeDef->getNodeType()) {
 			case (NodeType::identifier): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
-					procTypes.push_back(addType(identifier, typeDef, true));
-					
+					Symbol* newType = addType(identifier, typeDef, true);
+					procTypes.push_back(newType);
+					newType->setIsVarParam(isVarParam);
 				}
 			}
 					break;
 			case (NodeType::array_type): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
-					procTypes.push_back(addArray(identifier, typeDef, true));
+					Symbol* newArray = addArray(identifier, typeDef, true);
+					procTypes.push_back(newArray);
+					newArray->setIsVarParam(isVarParam);
 				}
 			}
 				break;
 			case (NodeType::record_type): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
-					procTypes.push_back(addRecord(node, identifier, typeDef, true));
+					Symbol* newRecord = addRecord(node, identifier, typeDef, true);
+					procTypes.push_back(newRecord);
+					newRecord->setIsVarParam(isVarParam);
 				}
 			}
 				break;
@@ -1519,9 +1525,7 @@ void Parser::checkProcedureCallTypes(const Node * node)
 
 	for (size_t i = 0; i < formalCount; i++) {
 		if (*formParamTypes[i]->getTypes()->at(0) != *actParamTypes[i]) {
-			//if (*formParamTypes[i]->getTypes()->at(0)->getName() != "INTEGER" && *actParamTypes[i]->getName() != "CONSTANT") {
-				wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
-			//}
+			wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
 		}
 	}
 }
