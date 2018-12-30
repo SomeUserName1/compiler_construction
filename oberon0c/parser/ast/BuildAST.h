@@ -28,6 +28,9 @@ public:
 	const ASTNode* simpleExpression(const Node* simpleExpressionNode);
 	const ASTNode* term(const Node* termNode);
 	const ASTNode* factor(const Node* factorNode);
+	const ASTNode* identifier(std::vector<const Node*>* children);
+	const ASTNode* number(const Node* numberNode);
+	const ASTNode* not(const Node* factorNode);
 
 
 	const Node* lastSelectorVariable(std::vector<const Node*>* children, std::shared_ptr<SymbolTable>* table);

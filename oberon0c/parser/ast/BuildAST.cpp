@@ -13,7 +13,12 @@ void BuildAST::build()
 {
 	std::vector<const Node*> children = parseTree_->getChildren();
 	declarations(children.at(1));
-	statementSequence(children.at(2));
+	const ASTNode* node = statementSequence(children.at(2));
+
+	std::string moduleIdent = children.at(0)->getValue();
+	Symbol* moduleSymbol = currentTable_->getSymbol(&moduleIdent);
+
+	moduleSymbol->setAst(node);
 }
 
 void BuildAST::declarations(const Node * declarationsNode)
@@ -212,6 +217,8 @@ const ASTNode * BuildAST::expression(const Node * expressionNode)
 		case NodeType::geq:
 			astType = ASTNodeType::geq;
 			break;
+		default:
+			throw std::invalid_argument("You failed!");
 		}
 
 		ASTNode* node = new ASTNode(astType);
@@ -269,6 +276,8 @@ const ASTNode * BuildAST::simpleExpression(const Node * simpleExpressionNode)
 		case NodeType::or:
 			astType = ASTNodeType:: or;
 			break;
+		default:
+			throw std::invalid_argument("You failed!");
 		}
 
 		ASTNode* node = new ASTNode(astType);
@@ -331,6 +340,8 @@ const ASTNode * BuildAST::term(const Node * termNode)
 		case NodeType::and:
 			astType = ASTNodeType::and;
 			break;
+		default:
+			throw std::invalid_argument("You failed!");
 		}
 
 		ASTNode* node = new ASTNode(astType);
@@ -350,23 +361,46 @@ const ASTNode * BuildAST::factor(const Node * factorNode)
 {
 	std::vector<const Node*> children = factorNode->getChildren();
 	switch (children.at(0)->getNodeType()) {
-	case NodeType::identifier:
-		break;
+	case NodeType::identifier: {
+		return identifier(&children);
+	}
 	case NodeType::number: {
-		Symbol* anonymousSymbol = createAnonymousSymbol(children.at(0));
-		ASTNode* node = new ASTNode(ASTNodeType::symbol, anonymousSymbol);
-		return node;
+		return number(children.at(0));
 	}
 	case NodeType::expression:
 		return expression(children.at(0));
 	case NodeType::factor: {
-		ASTNode* node = new ASTNode(ASTNodeType::not);
-		node->addChild(factor(children.at(0)));
-		return node;
+		return not(children.at(0));
 	}
 	default:
 		throw std::invalid_argument("You failed!");
 	}
+}
+
+const ASTNode * BuildAST::identifier(std::vector<const Node*>* children)
+{
+	std::shared_ptr<SymbolTable> oldTable = currentTable_;
+	const Node* ident = lastSelectorVariable(children, &currentTable_);
+	std::string identName = ident->getValue();
+	Symbol* identSymbol = currentTable_->getSymbol(&identName);
+
+	ASTNode* node = new ASTNode(ASTNodeType::symbol, identSymbol);
+	currentTable_ = oldTable;
+	return node;
+}
+
+const ASTNode * BuildAST::number(const Node * numberNode)
+{
+	Symbol* anonymousSymbol = createAnonymousSymbol(numberNode);
+	ASTNode* node = new ASTNode(ASTNodeType::symbol, anonymousSymbol);
+	return node;
+}
+
+const ASTNode * BuildAST::not(const Node * factorNode)
+{
+	ASTNode* node = new ASTNode(ASTNodeType::not);
+	node->addChild(factor(factorNode));
+	return node;
 }
 
 
