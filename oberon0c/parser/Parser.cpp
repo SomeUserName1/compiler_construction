@@ -1485,20 +1485,6 @@ void Parser::checkAssignmentType(const Node * node)
 	}
 }
 
-/*void Parser::checkSelectorType(const Node * node)
-{
-	std::vector<const Node*> children = node->getChildren();
-	const Node* expression = children.at(0);
-
-	if (expression->getNodeType() != NodeType::expression) {
-		return;
-	}
-
-	if (typeOfExpression(expression)->getTypes()->at(0)->getName() != "CONSTANT") {
-		failConstType
-	}
-}*/
-
 void Parser::checkProcedureCallTypes(const Node * node)
 {
 	std::vector<const Node*> callChildren = node->getChildren();
