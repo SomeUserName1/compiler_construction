@@ -25,7 +25,6 @@ private:
 	std::shared_ptr<Node> moduleNode;
 
 
-
 	// None-Terminals
     const std::shared_ptr<Node> module();
 	const Node* declarations();

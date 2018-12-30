@@ -587,9 +587,11 @@ const Node* Parser::formal_parameters()
 
 const Node* Parser::fp_section()
 {
-	Node* node = new Node(NodeType::fp_section, word->getPosition(), currentTable_);
+	bool nextIsVar = scanner_->peekToken()->getType() == TokenType::kw_var;
+	Node* node = nextIsVar ? new Node(NodeType::fp_section, word->getPosition(), "true", currentTable_)
+		                   : new Node(NodeType::fp_section, word->getPosition(), "false", currentTable_);
 
-	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
+	if (nextIsVar) {
 		var_t();
 	}
 	node->addChild(ident_list());
