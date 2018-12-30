@@ -19,16 +19,24 @@ Parser::Parser(Scanner *scanner, Logger *logger) :
 Parser::~Parser() = default;
 
 const std::unique_ptr<Node> Parser::parse() {
+	// Parse the source file
 	std::shared_ptr<Node> tree = module();
+	// Post parser typechecking (additional to in-parser-typechecking)
 	postParserTypeCheck(moduleNode.get(), std::string());
+	// Building abstract syntax trees
 	std::unique_ptr<BuildAST> ast = std::make_unique<BuildAST>(currentTable_, tree);
 	ast->build();
 
+	// Making the parse tree a unique pointer and throwing away the old one.
     std::unique_ptr<Node> parse_tree(tree.get());
 	tree = nullptr;
 	   
+	// Print the parse tree.
     std::cout << *parse_tree << std::endl;
+	// Print the symbol tables.
 	std::cout << *symbolTables_.front() << std::endl;
+	// Print the AST(s)
+	auto mainSymbolTable = parse_tree->getSymbolTable();
 
     return parse_tree;
 }
@@ -50,14 +58,16 @@ const std::shared_ptr<Node> Parser::module() {
 
 	// Module declaration
 	module_t();
-	//const Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
-	moduleNode = std::make_shared<Node>(NodeType::module, word->getPosition(), currentTable_);
 	const Node* identifier = ident();
 
 	//Adding the first scope SymbolTable 
 	std::shared_ptr<SymbolTable> newTable = std::make_shared<SymbolTable>(identifier->getValue());
 	symbolTables_.push_back(newTable);
 	currentTable_ = newTable;
+
+	//const Node* moduleNode = new Node(NodeType::module, word->getPosition(), currentTable_);
+	moduleNode = std::make_shared<Node>(NodeType::module, word->getPosition(), currentTable_);
+
 
 
 	moduleNode->addChild(identifier);
