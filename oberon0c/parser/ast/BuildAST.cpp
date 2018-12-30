@@ -6,6 +6,7 @@ BuildAST::BuildAST(std::shared_ptr<SymbolTable> symbolTable, std::shared_ptr<Nod
 {
 	currentTable_ = symbolTable;
 	parseTree_ = parseTree;
+	anonymousCounter_ = 0;
 }
 
 void BuildAST::build()
@@ -221,13 +222,151 @@ const ASTNode * BuildAST::expression(const Node * expressionNode)
 	for (size_t i = 0; i < nodes.size() - 1; i++) {
 		nodes.at(i)->addChild(nodes.at(i + 1));
 	}
+	nodes.back()->addChild(simpleExpression(simpleExpressions.back()));
 
 	return nodes.front();
 }
 
 const ASTNode * BuildAST::simpleExpression(const Node * simpleExpressionNode)
 {
-	return nullptr;
+	std::vector<const Node*> children = simpleExpressionNode->getChildren();
+
+	if (children.size() == 1) {
+		return term(children.at(0));
+	}
+
+	std::list<const Node*> operators;
+	std::list<const Node*> terms;
+
+
+	for (const Node* child : children) {
+		if (child->getNodeType() == NodeType::term) {
+			terms.push_back(child);
+		}
+		else if (child->isBinaryOp()) {
+			operators.push_back(child);
+		}
+		else {
+			throw std::invalid_argument("Something failed horrible");
+		}
+	}
+
+	std::vector<ASTNode*> nodes;
+	while (terms.size() > 1) {
+		const Node* op = operators.front();
+		const Node* se = terms.front();
+		operators.pop_front();
+		terms.pop_front();
+
+		ASTNodeType astType;
+		switch (op->getNodeType()) {
+		case NodeType::plus:
+			astType = ASTNodeType::plus;
+			break;
+		case NodeType::minus:
+			astType = ASTNodeType::minus;
+			break;
+		case NodeType::or:
+			astType = ASTNodeType:: or;
+			break;
+		}
+
+		ASTNode* node = new ASTNode(astType);
+		node->addChild(term(se));
+		nodes.push_back(node);
+	}
+
+	for (size_t i = 0; i < nodes.size() - 1; i++) {
+		nodes.at(i)->addChild(nodes.at(i + 1));
+	}
+	nodes.back()->addChild(term(terms.back()));
+
+	return nodes.front();
+}
+
+const ASTNode * BuildAST::term(const Node * termNode)
+{
+	std::vector<const Node*> children = termNode->getChildren();
+
+
+
+	if (children.size() == 1) {
+		return factor(children.at(0));
+	}
+
+	std::list<const Node*> operators;
+	std::list<const Node*> factors;
+
+
+	for (const Node* child : children) {
+		if (child->getNodeType() == NodeType::factor) {
+			factors.push_back(child);
+		}
+		else if (child->isBinaryOp()) {
+			operators.push_back(child);
+		}
+		else {
+			throw std::invalid_argument("Something failed horrible");
+		}
+	}
+
+	std::vector<ASTNode*> nodes;
+	while (factors.size() > 1) {
+		const Node* op = operators.front();
+		const Node* se = factors.front();
+		operators.pop_front();
+		factors.pop_front();
+
+		ASTNodeType astType;
+		switch (op->getNodeType()) {
+		case NodeType::times:
+			astType = ASTNodeType::times;
+			break;
+		case NodeType::div:
+			astType = ASTNodeType::div;
+			break;
+		case NodeType:: mod:
+			astType = ASTNodeType:: mod ;
+			break;
+		case NodeType::and:
+			astType = ASTNodeType::and;
+			break;
+		}
+
+		ASTNode* node = new ASTNode(astType);
+		node->addChild(factor(se));
+		nodes.push_back(node);
+	}
+
+	for (size_t i = 0; i < nodes.size() - 1; i++) {
+		nodes.at(i)->addChild(nodes.at(i + 1));
+	}
+	nodes.back()->addChild(factor(factors.back()));
+
+	return nodes.front();
+}
+
+const ASTNode * BuildAST::factor(const Node * factorNode)
+{
+	std::vector<const Node*> children = factorNode->getChildren();
+	switch (children.at(0)->getNodeType()) {
+	case NodeType::identifier:
+		break;
+	case NodeType::number: {
+		Symbol* anonymousSymbol = createAnonymousSymbol(children.at(0));
+		ASTNode* node = new ASTNode(ASTNodeType::symbol, anonymousSymbol);
+		return node;
+	}
+	case NodeType::expression:
+		return expression(children.at(0));
+	case NodeType::factor: {
+		ASTNode* node = new ASTNode(ASTNodeType::not);
+		node->addChild(factor(children.at(0)));
+		return node;
+	}
+	default:
+		throw std::invalid_argument("You failed!");
+	}
 }
 
 
@@ -254,4 +393,24 @@ const Node * BuildAST::lastSelectorVariable(std::vector<const Node*>* children, 
 	}
 
 	return lastSelector;
+}
+
+Symbol * BuildAST::createAnonymousSymbol(const Node* numberNode)
+{
+	std::string constIdent = std::string("CONSTANT");
+	Symbol* constant = currentTable_->getSymbol(&constIdent);
+	std::vector<Symbol*> types;
+	types.push_back(constant);
+
+	std::stringstream ss;
+	ss << "const" << std::to_string(anonymousCounter_++);
+	std::string str = ss.str();
+	Symbol newSymbol(str, types, SymbolType::constant, true);
+	newSymbol.setValue(stoi(numberNode->getValue()));
+
+	if (currentTable_->insert(newSymbol)) {
+		throw std::invalid_argument("Symbol does already exist.");
+	}
+
+	return currentTable_->getSymbol(&str);
 }

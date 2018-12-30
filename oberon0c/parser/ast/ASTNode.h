@@ -5,8 +5,8 @@
 #include "../st/Symbol.h"
 
 enum class ASTNodeType : char {
-	statement_sequence, statement, if_statement, while_statement, assignment, procedure_call,
-	plus, minus, div, times, or, and, leq, lt, geq, gt, eq, neq, mod, symbol
+	statement_sequence, statement, if_statement, while_statement, assignment, procedure_call, symbol,
+	plus, minus, div, times, or, and, leq, lt, geq, gt, eq, neq, mod, not
 };
 
 class ASTNode {

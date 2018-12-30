@@ -10,6 +10,7 @@ class BuildAST {
 private:
 	std::shared_ptr<SymbolTable> currentTable_;
 	std::shared_ptr<Node> parseTree_;
+	size_t anonymousCounter_;
 
 public:
 	BuildAST(std::shared_ptr<SymbolTable> symbolTable, std::shared_ptr<Node> parseTree);
@@ -25,9 +26,12 @@ public:
 	const ASTNode* whileStatement(const Node* whileStatementNode);
 	const ASTNode* expression(const Node* expressionNode);
 	const ASTNode* simpleExpression(const Node* simpleExpressionNode);
+	const ASTNode* term(const Node* termNode);
+	const ASTNode* factor(const Node* factorNode);
 
 
 	const Node* lastSelectorVariable(std::vector<const Node*>* children, std::shared_ptr<SymbolTable>* table);
+	Symbol* createAnonymousSymbol(const Node* numberNode);
 };
 
 
