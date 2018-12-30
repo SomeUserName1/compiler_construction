@@ -229,7 +229,10 @@ const Node* Parser::var_declarations() {
 					std::shared_ptr<SymbolTable> alias = typeDefTable->deepCopy(identifier->getValue());
 					symbolTables_.push_back(alias);
 
-					Symbol newSymbol = Symbol(identifier->getValue(), *typeDefSymbol->getTypes(), SymbolType::record, true);
+					// TODO this next two statements are experimental
+					std::vector<Symbol*> types;
+					types.push_back(typeDefSymbol);
+					Symbol newSymbol = Symbol(identifier->getValue(), types, SymbolType::record, true);
 					currentTable_->insert(newSymbol);
 					currentTable_->addChild(alias);
 					auto temp3 = identifier->getValue();
@@ -377,12 +380,15 @@ const Node* Parser::factor() {
 			case TokenType::op_plus:
 			case TokenType::rbrack:
 			case TokenType::semicolon:
-			case TokenType::kw_end: {
+			case TokenType::kw_end:
+			case TokenType::rparen:{
 				auto temp4 = identifier->getValue();
 				Symbol* symbol = currentTable_->getSymbol(&temp4);
 				SymbolType symType = symbol->getSymbolType();
 				if (symType != SymbolType::constant
-					&& symType != SymbolType::type) {
+					&& symType != SymbolType::type
+					&& symType != SymbolType::record // TODO Check if this was a good idea!
+					&& symType != SymbolType::array) {
 					std::string msg = std::string(identifier->getValue() + " is not an appropriate type");
 					failSymbol(msg);
 				}
@@ -1126,6 +1132,15 @@ void Parser::failProcCallReferencedAsArray(const Node * identifier)
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
+void Parser::failPassedArrayOrRecordWithVarFlag(Symbol * failedSymbol)
+{
+	std::stringstream ss;
+	ss << "Formal Parameter was flagge with var although it included Array or Record";
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
 void Parser::newSymbolTable(std::string name)
 {
 	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_, name);
@@ -1513,6 +1528,12 @@ void Parser::checkProcedureCallTypes(const Node * node)
 		if (*formParamTypes[i]->getTypes()->at(0) != *actParamTypes[i]) {
 			wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
 		}
+		if (actParamTypes[i]->getIsVarParam()) {
+			SymbolType st = actParamTypes[i]->getSymbolType();
+			if (st == SymbolType::array || st == SymbolType::record) {
+				failPassedArrayOrRecordWithVarFlag(actParamTypes[i]);
+			}
+		}
 	}
 }
 
@@ -1836,16 +1857,15 @@ Symbol * Parser::typeOfIdentifier(const Node * identifier)
 	auto temp20 = identifier->getValue();
 	Symbol* symbol = currentTable_->getSymbol(&temp20);
 	std::vector<Symbol*>* types = symbol->getTypes();
-	if (types->size() > 1) {
-		// It's a record. Irrelevant to return a type.
+	/*if (types->size() > 1) {
+		// It's a record. Irrelevant to return a type. // TODO: Check if it was a good idea to comment this out.
 		return nullptr;
 	}
-	else if (types->size() == 0) {
+	else*/ if (types->size() == 0) {
 		throw std::invalid_argument("Tried to infer a type of something that is not a type");
 	}
-	else {
-		return types->at(0);
-	}
+	
+	return types->at(0);
 }
 
 void Parser::module_t()
