@@ -25,6 +25,8 @@ set(parser
 		parser/ast/Node.cpp
 		parser/st/SymbolTable.cpp
 		parser/st/Symbol.cpp
+		parser/ast/BuildAST.cpp
+		parser/ast/ASTNode.cpp
 		)
 
 add_executable(oberon0c

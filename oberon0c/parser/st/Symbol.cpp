@@ -107,6 +107,16 @@ int Symbol::getValue()
 	return value_;
 }
 
+void Symbol::setAst(const ASTNode * node)
+{
+	ast_ = node;
+}
+
+const ASTNode * Symbol::getAst()
+{
+	return ast_;
+}
+
 void Symbol::setValue(int value)
 {
 	value_ = value;

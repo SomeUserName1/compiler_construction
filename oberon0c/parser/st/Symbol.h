@@ -1,3 +1,6 @@
+#ifndef OBERON0C_SYMBOLOL_H
+#define OBERON0C_SYMBOLOL_H
+
 #include <vector>
 #include <ostream>
 #include <string>
@@ -10,6 +13,8 @@ enum class SymbolType : char {
 	module, procedure, constant, record, array, type
 };
 
+class ASTNode;
+
 class Symbol {
 
 private:
@@ -18,6 +23,7 @@ private:
 	SymbolType symbolType_;
 	bool isVariable_;
 	int value_;
+	const ASTNode* ast_;
 
 public:
 	explicit Symbol();
@@ -40,4 +46,8 @@ public:
 
 	void setValue(int value);
 	int getValue();
+
+	void setAst(const ASTNode* node);
+	const ASTNode* getAst();
 };
+#endif

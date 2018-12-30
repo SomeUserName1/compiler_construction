@@ -9,6 +9,7 @@
 #include <IdentToken.h>
 #include <NumberToken.h>
 #include <utility>
+#include "ast/BuildAST.h"
 #include "Parser.h"
 
 Parser::Parser(Scanner *scanner, Logger *logger) :
@@ -20,6 +21,8 @@ Parser::~Parser() = default;
 const std::unique_ptr<Node> Parser::parse() {
 	std::shared_ptr<Node> tree = module();
 	postParserTypeCheck(moduleNode.get(), std::string());
+	std::unique_ptr<BuildAST> ast = std::make_unique<BuildAST>(currentTable_, tree);
+	ast->build();
 
     std::unique_ptr<Node> parse_tree(tree.get());
 	tree = nullptr;
@@ -1716,7 +1719,7 @@ int Parser::evaluateFactor(const Node * node)
 
 int Parser::evaluateSelector(const Node * node)
 {
-	throw std::invalid_argument("Selectors may not be evaluated at compile time");
+	throw std::invalid_argument("Selectors may not be evaluated at compile time " + node->getValue());
 }
 
 int Parser::evaluateIdentifier(const Node * node)
