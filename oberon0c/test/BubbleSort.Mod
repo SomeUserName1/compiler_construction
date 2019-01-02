@@ -40,8 +40,9 @@ BEGIN
 END Init;
 
 (* Swaps the two values passed as var-parameters. *)
-PROCEDURE Swap(VAR a, b: INTEGER; VAR c: Point2D);
+PROCEDURE Swap(VAR a, b: INTEGER; c: Point2D);
 VAR t: INTEGER;
+   (* a: INTEGER; *)
 BEGIN
     t := a;
     a := b; 
