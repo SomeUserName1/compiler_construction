@@ -1546,8 +1546,9 @@ void Parser::checkProcedureCallTypes(const Node * node)
 
 	for (size_t i = 0; i < formalCount; i++) {
 		if (*formParamTypes[i]->getTypes()->at(0) != *actParamTypes[i]) {
-			//if (*formParamTypes[i]->getName() != "INTEGER" && *actParamTypes->getName() != "CONSTANT")
-			wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
+			if (*formParamTypes[i]->getName() != "INTEGER" && *actParamTypes[i]->getName() != "CONSTANT") {
+				wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
+			}
 		}
 		if (formParamTypes[i]->getIsVarParam()) {
 			SymbolType st = formParamTypes[i]->getSymbolType();
