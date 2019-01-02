@@ -245,7 +245,6 @@ std::vector<std::shared_ptr<Node>> SemanticAnalysis::parse_params(std::shared_pt
 
 std::shared_ptr<Node> SemanticAnalysis::parse_type(std::shared_ptr<ParserNode> type_, bool var, std::shared_ptr<SymbolScopeNode> current_scope) {
   auto pt_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*type_->getChildren()[0]));
-  std::shared_ptr<DeclarationNode> node;
 
   switch (pt_child->getParserNodeType()) {
   case ParserNodeType::identifier: {
@@ -253,28 +252,27 @@ std::shared_ptr<Node> SemanticAnalysis::parse_type(std::shared_ptr<ParserNode> t
       return var ? std::make_shared<NumberNode>("TOBESET", -999999, DeclarationType::VAR)
           : std::make_shared<NumberNode>("TYPE", 0, DeclarationType::TYPE);
     }
-    node = look_up(parse_identifier(pt_child, std::move(current_scope)), std::move(current_scope));
+    auto node = look_up(parse_identifier(pt_child, std::move(current_scope)), std::move(current_scope));
     auto type = std::make_shared<TypeNode>(dynamic_cast<TypeNode &>(*node));
     if (!type)  {
       std::string msg = "no type declaration found with such a name" + pt_child->getValue();
       _logger->error(msg);
       return nullptr;
     }
-    break;
+    return var ? std::make_shared<TypeNode>("TOBESET", type->getAliased(), DeclarationType::VAR, type->getAliasedString()) : type;
   }
   case ParserNodeType::array_type: {
     // TODO remember to set var or type
-    node = parse_array(pt_child);
+    auto node = parse_array(pt_child);
     break;
   }
   case ParserNodeType::record_type: {
     // TODO remember to set var or type
-    node = parse_record(pt_child, current_scope);
+    auto node = parse_record(pt_child, current_scope);
     break;
   }
   default:return nullptr; //unreachable
   }
-  return node;
 }
 
 std::vector<std::string> SemanticAnalysis::parse_identifier(std::shared_ptr<ParserNode> identifer,

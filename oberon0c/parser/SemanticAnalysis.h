@@ -56,7 +56,7 @@ private:
   std::shared_ptr<Node> build_ast(std::shared_ptr<const ParserNode> statement_sequence);
 
 public:
-  explicit SemanticAnalysis(std::shared_ptr<const ParserNode> parse_tree, std::shared_ptr<Logger> logger);
+  SemanticAnalysis(std::shared_ptr<const ParserNode> parse_tree, std::shared_ptr<Logger> logger);
   std::shared_ptr<Node> check();
 };
 
