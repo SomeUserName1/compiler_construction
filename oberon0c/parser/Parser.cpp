@@ -522,9 +522,12 @@ const Node* Parser::procedure_heading() {
 			size_t identPosition = 0;
 			const Node* varIdentifiers = children.at(identPosition);
 			const Node* typeDef = children.at(++identPosition)->getChildren().at(0);
+			auto typeDefIdentifier = typeDef->getValue();
+			auto typeDefSymbol = currentTable_->getSymbol(&typeDefIdentifier);
+			failUndeclaredSymbol(typeDefSymbol, typeDef);
 
-			switch (typeDef->getNodeType()) {
-			case (NodeType::identifier): {
+			switch (typeDefSymbol->getSymbolType()) {
+			case (SymbolType::type): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
 					Symbol* newType = addType(identifier, typeDef, true);
 					procTypes.push_back(newType);
@@ -532,7 +535,7 @@ const Node* Parser::procedure_heading() {
 				}
 			}
 					break;
-			case (NodeType::array_type): {
+			case (SymbolType::array): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
 					Symbol* newArray = addArray(identifier, typeDef, true);
 					procTypes.push_back(newArray);
@@ -540,14 +543,16 @@ const Node* Parser::procedure_heading() {
 				}
 			}
 				break;
-			case (NodeType::record_type): {
+			case (SymbolType::record): {
 				for (const Node* identifier : varIdentifiers->getChildren()) {
 					Symbol* newRecord = addRecord(node, identifier, typeDef, true);
 					procTypes.push_back(newRecord);
 					newRecord->setIsVarParam(isVarParam);
 				}
 			}
-				break;
+									   break;
+			default:
+				throw std::invalid_argument("This is not something that should exist...");
 			}
 		}
 	}
@@ -1528,10 +1533,10 @@ void Parser::checkProcedureCallTypes(const Node * node)
 		if (*formParamTypes[i]->getTypes()->at(0) != *actParamTypes[i]) {
 			wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
 		}
-		if (actParamTypes[i]->getIsVarParam()) {
-			SymbolType st = actParamTypes[i]->getSymbolType();
+		if (formParamTypes[i]->getIsVarParam()) {
+			SymbolType st = formParamTypes[i]->getSymbolType();
 			if (st == SymbolType::array || st == SymbolType::record) {
-				failPassedArrayOrRecordWithVarFlag(actParamTypes[i]);
+				failPassedArrayOrRecordWithVarFlag(formParamTypes[i]);
 			}
 		}
 	}
