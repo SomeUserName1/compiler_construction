@@ -14,6 +14,7 @@ enum class SymbolType : char {
 };
 
 class ASTNode;
+class SymbolTable;
 
 class Symbol {
 
@@ -25,10 +26,12 @@ private:
 	int value_;
 	const ASTNode* ast_;
 	bool isVarParam_;
+	std::shared_ptr<SymbolTable> symbolTable_; //The table this symbol is standing in.
 
 public:
 	explicit Symbol();
 	explicit Symbol(std::string name, std::vector<Symbol *> types, SymbolType symbolType, bool isVariable);
+	explicit Symbol(std::string name, std::vector<Symbol *> types, SymbolType symbolType, bool isVariable, std::shared_ptr<SymbolTable> symbolTable);
 
 	std::string * getName();
 	SymbolType getSymbolType() const;
@@ -53,5 +56,7 @@ public:
 
 	void setIsVarParam(bool val);
 	bool getIsVarParam();
+
+	std::shared_ptr<SymbolTable> getSymbolTable();
 };
 #endif

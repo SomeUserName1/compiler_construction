@@ -124,6 +124,7 @@ private:
 	Symbol* addType(const Node* identifier, const Node* typeDef, bool asVariable);
 	Symbol* addArray(const Node* identifier, const Node* typeDef, bool asVariable);
 	Symbol* addRecord(const Node* node, const Node* identifier, const Node* typeDef, bool asVariable);
+	Symbol* addRecordAsVariable(const Node* typeDef, const Node* identifier);
 
 	Symbol* typeOfExpression(const Node* expression);
 	Symbol* typeOfSimpleExpression(const Node* simpleExpression);

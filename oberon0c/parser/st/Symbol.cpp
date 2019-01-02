@@ -6,12 +6,22 @@ Symbol::Symbol()
 	throw  std::runtime_error("This constructor is only for the compiler not to whine.");
 }
 
-Symbol::Symbol(std::string name, std::vector<Symbol *> types, SymbolType symbolType, bool isVariable) {
+Symbol::Symbol(std::string name, std::vector<Symbol*> types, SymbolType symbolType, bool isVariable)
+{
 	name_ = name;
 	types_ = types;
 	symbolType_ = symbolType;
 	isVariable_ = isVariable;
 	value_ = 0;
+}
+
+Symbol::Symbol(std::string name, std::vector<Symbol *> types, SymbolType symbolType, bool isVariable, std::shared_ptr<SymbolTable> symbolTable) {
+	name_ = name;
+	types_ = types;
+	symbolType_ = symbolType;
+	isVariable_ = isVariable;
+	value_ = 0;
+	symbolTable_ = symbolTable;
 }
 
 std::string * Symbol::getName() {
@@ -40,7 +50,7 @@ bool Symbol::isVariable() const
 
 Symbol Symbol::copy(std::string name)
 {
-	return Symbol(name, types_, symbolType_, isVariable_);
+	return Symbol(name, types_, symbolType_, isVariable_, symbolTable_);
 }
 
 void Symbol::print(std::ostream & stream) const
@@ -125,6 +135,11 @@ void Symbol::setIsVarParam(bool val)
 bool Symbol::getIsVarParam()
 {
 	return isVarParam_;
+}
+
+std::shared_ptr<SymbolTable> Symbol::getSymbolTable()
+{
+	return symbolTable_;
 }
 
 void Symbol::setValue(int value)

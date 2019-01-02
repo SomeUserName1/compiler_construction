@@ -439,7 +439,7 @@ Symbol * BuildAST::createAnonymousSymbol(const Node* numberNode)
 	std::stringstream ss;
 	ss << "const" << std::to_string(anonymousCounter_++);
 	std::string str = ss.str();
-	Symbol newSymbol(str, types, SymbolType::constant, true);
+	Symbol newSymbol(str, types, SymbolType::constant, true, currentTable_);
 	newSymbol.setValue(stoi(numberNode->getValue()));
 
 	if (currentTable_->insert(newSymbol)) {
