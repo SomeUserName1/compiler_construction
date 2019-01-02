@@ -118,6 +118,8 @@ private:
 	void failArrayDimensionIsNotAConstant(const Node* expression);
 	void failProcCallReferencedAsArray(const Node* identifier);
 	void failPassedArrayOrRecordWithVarFlag(Symbol* failedSymbol);
+	void failConstantPassedByReference(Symbol* actual, Symbol* formal);
+	
 
 	// Helper methods for building the SymbolTables
 	void newSymbolTable(std::string name);

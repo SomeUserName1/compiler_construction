@@ -40,7 +40,7 @@ BEGIN
 END Init;
 
 (* Swaps the two values passed as var-parameters. *)
-PROCEDURE Swap(VAR a, b: INTEGER; c: Point2D);
+PROCEDURE Swap(VAR a, b: INTEGER; c: Point2D; d: CONSTANT);
 VAR t: INTEGER;
 BEGIN
     t := a;
@@ -58,7 +58,7 @@ BEGIN
         WHILE j > 0 DO
             IF (a[i] > a[j]) & (2 > 1)
             THEN
-                Swap(a[i], a[j], p)
+                Swap(a[i], a[j], p, 3)
             ELSIF 1 > 2
             THEN
                 WHILE 1 > 2 DO END;

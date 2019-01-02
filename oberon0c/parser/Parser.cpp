@@ -365,7 +365,8 @@ const Node* Parser::factor() {
 			case TokenType::rbrack:
 			case TokenType::semicolon:
 			case TokenType::kw_end:
-			case TokenType::rparen:{
+			case TokenType::rparen:
+			case TokenType::comma:{
 				auto temp4 = identifier->getValue();
 				Symbol* symbol = currentTable_->getSymbol(&temp4);
 				SymbolType symType = symbol->getSymbolType();
@@ -1130,6 +1131,15 @@ void Parser::failPassedArrayOrRecordWithVarFlag(Symbol * failedSymbol)
 	throw std::invalid_argument("You failed! " + ss.str());
 }
 
+void Parser::failConstantPassedByReference(Symbol * actual, Symbol * formal)
+{
+	std::stringstream ss;
+	ss << *formal->getName() << " is a reference parameter filled with a constant " << *actual->getName();
+
+	logger_->error(word->getPosition(), ss.str());
+	throw std::invalid_argument("You failed! " + ss.str());
+}
+
 void Parser::newSymbolTable(std::string name)
 {
 	std::shared_ptr<SymbolTable> newTable = currentTable_->nestedTable(currentTable_, name);
@@ -1536,6 +1546,7 @@ void Parser::checkProcedureCallTypes(const Node * node)
 
 	for (size_t i = 0; i < formalCount; i++) {
 		if (*formParamTypes[i]->getTypes()->at(0) != *actParamTypes[i]) {
+			//if (*formParamTypes[i]->getName() != "INTEGER" && *actParamTypes->getName() != "CONSTANT")
 			wrongActualParams(procedureIdentifier, formParamTypes[i]->getTypes()->at(0), actParamTypes[i]);
 		}
 		if (formParamTypes[i]->getIsVarParam()) {
@@ -1543,6 +1554,9 @@ void Parser::checkProcedureCallTypes(const Node * node)
 			if (st == SymbolType::array || st == SymbolType::record) {
 				failPassedArrayOrRecordWithVarFlag(formParamTypes[i]);
 			}
+		}
+		if (*actParamTypes[i]->getName() == "CONSTANT" && formParamTypes[i]->getIsVarParam()) {
+			failConstantPassedByReference(actParamTypes[i], formParamTypes[i]);
 		}
 	}
 }
