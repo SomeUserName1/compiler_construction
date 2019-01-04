@@ -15,12 +15,18 @@ class ProcedureNode : public DeclarationNode {
 private:
   // HEAD
   // params are stored as children
+
   // BODY
   std::shared_ptr<SymbolScopeNode> _scope;
   std::shared_ptr<Node> _ast;
 
 public:
-  ProcedureNode(std::string name, std::vector<std::shared_ptr<Node>> parameters, std::shared_ptr<SymbolScopeNode> scope);
+  ProcedureNode(std::string name, std::vector<std::shared_ptr<DeclarationNode>> parameters,
+      std::shared_ptr<SymbolScopeNode> scope, std::shared_ptr<Node> ast);
+  void setParams(std::vector<std::shared_ptr<DeclarationNode>> parameters);
+  void print(std::ostream & stream) const override;
+  void printTree(std::ostream & stream) const override;
+  void printTreeRec(std::ostream & stream, int depth) const override;
 
 };
 

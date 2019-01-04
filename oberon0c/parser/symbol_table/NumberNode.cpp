@@ -1,11 +1,8 @@
 #include "NumberNode.h"
 
 NumberNode::NumberNode(std::string name, int value, DeclarationType declarationType)
-  : DeclarationNode(std::move(name), declarationType), _value(value) {}
+  : DeclarationNode(std::move(name), declarationType, "NumberNode"), _value(value) {}
 
-const std::string NumberNode::getType() const {
-  return this->_type;
-}
 const int NumberNode::getValue() const {
   return this->_value;
 }

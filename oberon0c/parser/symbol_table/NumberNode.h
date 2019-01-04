@@ -11,12 +11,10 @@
 
 class NumberNode : public DeclarationNode{
   private:
-    const std::string _type = "INTEGER";
     int _value;
 
   public:
     NumberNode(std::string name, int value, DeclarationType declarationType);
-    const std::string getType() const;
     const int getValue() const;
     void setValue(int new_val);
 };

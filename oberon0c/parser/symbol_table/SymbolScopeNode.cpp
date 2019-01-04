@@ -1,7 +1,7 @@
 #include "SymbolScopeNode.h"
 
 SymbolScopeNode::SymbolScopeNode(std::shared_ptr<SymbolScopeNode> parent, std::shared_ptr<Logger> logger)
-  : DeclarationNode(std::string("SCOPE"), DeclarationType::SCOPE), _parent(std::move(parent)), _logger(std::move(logger)) {}
+  : DeclarationNode(std::string("SCOPE"), DeclarationType::SCOPE, "SymbolScopeNode"), _parent(std::move(parent)), _logger(std::move(logger)) {}
 
 void SymbolScopeNode::addChild(std::shared_ptr<Node> new_child) {
   checkCollision(new_child);
@@ -41,3 +41,30 @@ void SymbolScopeNode::symbolCollision(std::shared_ptr<DeclarationNode> new_child
     this->_logger->error(msg);
 }
 
+void SymbolScopeNode::print(std::ostream & stream) const {
+  stream << this->getName() << ", " << this->getDeclType() << ", " << this->getType();
+}
+
+void SymbolScopeNode::printTree(std::ostream & stream) const {
+  printTreeRec(stream, 0);
+}
+
+void SymbolScopeNode::printTreeRec(std::ostream & stream, int depth) const
+{
+  for (int i = 0; i < depth; i++) {
+    stream << "|-";
+  }
+
+  this->print(stream);
+  stream << std::endl;
+
+  for (const auto &child : this->getChildren()) {
+    dynamic_cast<DeclarationNode &>(*child).printTreeRec(stream, depth + 1);
+  }
+}
+
+std::ostream & operator<<(std::ostream & stream, const SymbolScopeNode & node) {
+  node.printTree(stream);
+
+  return stream;
+}

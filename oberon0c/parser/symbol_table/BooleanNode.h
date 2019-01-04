@@ -10,12 +10,10 @@
 #include "DeclarationNode.h"
 class BooleanNode : public DeclarationNode{
 private:
-  const std::string _type = "BOOLEAN";
   bool _value;
 
 public:
   BooleanNode(std::string name, int value);
-  const std::string getType() const;
   const int getValue() const;
   void setValue(int new_val);
 };

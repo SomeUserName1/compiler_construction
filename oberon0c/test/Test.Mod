@@ -8,8 +8,7 @@ TYPE Point2D = RECORD x, y: INTEGER END;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;
-    p: Point2D;
-    d: ARRAY Dim OF Point2D;
+     p: Point2D;
 
 
 END HelloWorld.

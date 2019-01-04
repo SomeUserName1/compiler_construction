@@ -1,21 +1,42 @@
-#include <utility>
-
+#include <assert.h>
 #include "ArrayNode.h"
+#include "NumberNode.h"
+#include "RecordNode.h"
+#include "TypeNode.h"
 
-ArrayNode::ArrayNode(std::string name, DeclarationType decl_type, std::vector<std::shared_ptr<Node>> elements, int size, std::string array_type)
-  : DeclarationNode(std::move(name), decl_type, std::move(elements)), _size(size),
-  _type(std::move(array_type)) {
-  // TODO handle children here? how to handle type? switch case over primitive (INTEGER) then look up for record and typedef?
+ArrayNode::ArrayNode(std::string name, DeclarationType decl_type, int size, std::shared_ptr<DeclarationNode> type)
+  : DeclarationNode(std::move(name), decl_type, "ArrayNode"), _size(size), _array_type(type) {
+  std::string type_name = type->getType();
+  if (type_name == "NumberNode") {
+    for (int i = 0; i < _size; ++i) {
+      this->addChild(std::make_shared<NumberNode>(name + to_string(i), 0, this->getDeclType()));
+    }
+  } else if (type_name == "RecordNode") {
+    for (int i = 0; i < _size; ++i) {
+      auto record_type = dynamic_cast<RecordNode &>(*type);
+      auto record_scope = std::make_shared<SymbolScopeNode>(dynamic_cast<SymbolScopeNode &>(*record_type.getChildren()[0]));
+      this->addChild(std::make_shared<RecordNode>(name + to_string(i), this->getDeclType(), record_scope));
+    }
+  } else if (type_name == "ArrayNode") {
+    for (int i = 0; i < _size; ++i) {
+      auto array_type = dynamic_cast<ArrayNode &>(*type);
+      this->addChild(std::make_shared<ArrayNode>(name + to_string(i), this->getDeclType(), array_type.getSize(),
+          array_type.getArrayType()));
+    }
+  } else if (type_name == "TypeNode") {
+    for (int i = 0; i < _size; ++i) {
+      auto type_type = dynamic_cast<TypeNode &>(*type);
+      this->addChild(std::make_shared<TypeNode>(name + to_string(i), type_type.getAliased(), this->getDeclType()));
+    }
+  }
 }
-
-// TODO set value
 
 const int ArrayNode::getSize() {
   return this->_size;
 }
 
-const std::string ArrayNode::getType() {
-  return this->_type;
+const std::shared_ptr<DeclarationNode> ArrayNode::getArrayType() {
+  return _array_type;
 }
 
 const std::vector<std::shared_ptr<DeclarationNode>> ArrayNode::getValues() {
@@ -29,6 +50,17 @@ const std::vector<std::shared_ptr<DeclarationNode>> ArrayNode::getValues() {
 }
 
 const std::shared_ptr<DeclarationNode> ArrayNode::getValue(int position) {
+  if (position < 0 || position > this->getChildren().size()-1)
+    throw ("arrays out of bounds" + this->getName() + " actual size " + to_string(this->getChildren().size()) +
+     " but tried to access " + to_string(position +1) + " element");
   auto *result = dynamic_cast<DeclarationNode *>(&*this->getChildren()[position]);
   return std::shared_ptr<DeclarationNode>(result);
+}
+
+void ArrayNode::setValue(int position, std::shared_ptr<DeclarationNode> node) {
+  if (node->getType() == this->_array_type->getType()) {
+    this->setChild(position, node);
+  } else {
+    throw "Nope, invalid types";
+  }
 }

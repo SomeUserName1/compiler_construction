@@ -1,15 +1,12 @@
-#include <utility>
-
 #include "RecordNode.h"
-#include <utility>
+#include "SymbolScopeNode.h"
 
-RecordNode::RecordNode(std::string name, DeclarationType decl_type, std::vector<std::shared_ptr<Node>> fields)
-  : DeclarationNode(std::move(name), decl_type, std::move(fields)) {
-  // TODO new Symbol Table
+RecordNode::RecordNode(std::string name, DeclarationType decl_type, std::shared_ptr<SymbolScopeNode> scope)
+  : DeclarationNode(std::move(name), decl_type, "RecordNode", {scope}) {
 }
 
 const std::shared_ptr<DeclarationNode> RecordNode::getField(const std::string &name) {
-	std::vector<std::shared_ptr<Node>> fields = this->getChildren();
+	std::vector<std::shared_ptr<Node>> fields = this->getChildren()[0]->getChildren();
 	for (const auto &node : fields) {
 		auto decl_node = dynamic_cast<DeclarationNode &>(*node);
 		if (decl_node.getName() == name)
@@ -18,14 +15,26 @@ const std::shared_ptr<DeclarationNode> RecordNode::getField(const std::string &n
 	throw "Field not present in the record. Invalid field name!";
 }
 
-const std::vector<std::shared_ptr<DeclarationNode>> RecordNode::getFields() {
-  std::vector<std::shared_ptr<DeclarationNode>> res;
-  res.reserve(this->getChildren().size());
+const std::shared_ptr<SymbolScopeNode> RecordNode::getScope() const {
+  return std::make_shared<SymbolScopeNode>(dynamic_cast<SymbolScopeNode &>(*this->getChildren()[0]));
+}
 
-  for (const auto &node : this->getChildren()) {
-    res.push_back(std::shared_ptr<DeclarationNode>(&dynamic_cast<DeclarationNode &>(*node)));
-  }
-  return res;
+const int RecordNode::getFieldPos(const std::string &name) {
+	std::vector<std::shared_ptr<Node>> fields = this->getChildren()[0]->getChildren();
+	for (int i = 0; i < fields.size(); ++i) {
+		auto decl_node = dynamic_cast<DeclarationNode &>(*fields[i]);
+		if (decl_node.getName() == name)
+			return i;
+	}
+	throw "Field not present in the record. Invalid field name!";
+}
+
+void RecordNode::setValue(const std::string &name, std::shared_ptr<DeclarationNode> node) {
+	if (node->getType() == this->getField(name)->getType()) {
+		this->getChildren()[0]->setChild(this->getFieldPos(name), node);
+	} else {
+		throw "Nope, invalid types";
+	}
 }
 
 

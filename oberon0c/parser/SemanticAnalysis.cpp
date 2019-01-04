@@ -1,13 +1,26 @@
-#include <utility>
-
 #include "SemanticAnalysis.h"
 
 SemanticAnalysis::SemanticAnalysis(std::shared_ptr<const ParserNode> parse_tree, std::shared_ptr<Logger> logger)
     : _parse_tree(std::move(parse_tree)), _logger(std::move(logger)) {}
 
 std::shared_ptr<Node> SemanticAnalysis::check() {
+  std::cout << "\n\n\n\n \t\t\tDISCLAIMER: \n"
+               "\tThe following code is designed in an extremely ill-formed, if not systematically chaotic way \n"
+               "\tThis leads especially to the overuse of for loops, switch statements and worst and foremost dynamic casts\n"
+               "\tThe author obviously didnt proppely inform oneself about inheritance in Cpp thus tought polymorphism works\n"
+               "\tsimilar to javas but that is obviously not the case \n"
+               "BE CAREFUL WHEN YOU READ THE FOLLOWING, IT MIGHT DYNAMICALLY CAST YOUR BRAIN AT READ TIME\n"
+               "INTO AN UNDEFINED PROTEIN-BASED GLIBBERISH LIQUID BEFORE BEEING ABLE TO\n"
+               "SWITCH TO A DIFFERENT STUDENTs PROJECT\n"
+               "Maybe the lacking structure in terms of programming interfaces motivated the author to apply anti-patterns when possible\n"
+               "Maybe a good intermediate assignment for the next years would be to submit interfaces which a random HiWi named after a strange"
+               " platypus has to review and fix the best one so that students are forces not to use anti-patterns and may cry and shit arround less"
+               " in the form of spaghetti code and mimimi\n"
+               "\tThanks for your attention\n\n\n" << std::endl;
+
   // build symbol table, report if a symbol collision occurs
   this->_symbol_tree = build_symbol_table(nullptr, _parse_tree);
+  std::cout << *_symbol_tree << std::endl;
 
   // take ops out of parse tree and link them to symbol table entries or temp results, report on type error
   this->_ast = build_ast(_parse_tree);
@@ -20,30 +33,39 @@ std::shared_ptr<Node> SemanticAnalysis::check() {
 std::shared_ptr<SymbolScopeNode> SemanticAnalysis::build_symbol_table(std::shared_ptr<SymbolScopeNode> current_scope,
                                                                       std::shared_ptr<const ParserNode> &sub_tree) {
   std::shared_ptr<SymbolScopeNode> scope = std::make_shared<SymbolScopeNode>(current_scope, _logger);
-
   for (auto &node : sub_tree->getChildren()) {
     auto parser_node = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*node));
 
-    switch (parser_node->getParserNodeType()) {
-    case ParserNodeType::const_declaration: {
-      scope->addChild(const_declaration(parser_node, scope));
-      continue;
-    }
-    case ParserNodeType::type_declaration: {
-      scope->addChild(type_declaration(parser_node, scope));
-      continue;
-    }
-    case ParserNodeType::var_declaration: {
-      scope->addChild(var_declaration(parser_node, scope));
-      continue;
-    }
-    case ParserNodeType::procedure_declaration: {
-      scope->addChild(procedure_declaration(parser_node, scope));
-      continue;
-    }
-    default: {
-      continue;
-    }
+    if (parser_node->getParserNodeType() == ParserNodeType::declarations) {
+
+      for (auto &d_node : parser_node->getChildren()) {
+        auto d_parser_node = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*d_node));
+
+        switch (d_parser_node->getParserNodeType()) {
+        case ParserNodeType::const_declaration: {
+          scope->addChild(const_declaration(d_parser_node, scope));
+          continue;
+        }
+        case ParserNodeType::type_declaration: {
+          scope->addChild(type_declaration(d_parser_node, scope));
+          continue;
+        }
+        case ParserNodeType::var_declaration: {
+          auto vars = var_declaration(d_parser_node, scope, true);
+          for (const auto &var : vars) {
+            scope->addChild(var);
+          }
+          continue;
+        }
+        case ParserNodeType::procedure_declaration: {
+          scope->addChild(procedure_declaration(d_parser_node, scope));
+          continue;
+        }
+        default: {
+          continue;
+        }
+        }
+      }
     }
   }
   return scope;
@@ -57,9 +79,8 @@ std::shared_ptr<Node> SemanticAnalysis::build_ast(std::shared_ptr<const ParserNo
   return std::shared_ptr<Node>();
 }
 
-
 std::shared_ptr<NumberNode> SemanticAnalysis::const_declaration(std::shared_ptr<const ParserNode> const_decl,
-    std::shared_ptr<SymbolScopeNode> current_scope) {
+                                                                std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<std::string> identifier;
   int expr;
 
@@ -76,7 +97,7 @@ std::shared_ptr<NumberNode> SemanticAnalysis::const_declaration(std::shared_ptr<
       continue;
     }
     case ParserNodeType::expression: {
-      expr = eval_expr(parser_child, std::move(current_scope));
+      expr = eval_expr(parser_child, current_scope);
       continue;
     }
     default: {
@@ -84,16 +105,13 @@ std::shared_ptr<NumberNode> SemanticAnalysis::const_declaration(std::shared_ptr<
     }
     }
   }
-  auto decl = std::make_shared<NumberNode>(identifier[0], expr, DeclarationType::CONST);
-
-  return decl;
+  return std::make_shared<NumberNode>(identifier[0], expr, DeclarationType::CONST);
 }
 
-
-
-std::shared_ptr<TypeNode> SemanticAnalysis::type_declaration(std::shared_ptr<const ParserNode> type_decl, std::shared_ptr<SymbolScopeNode> current_scope) {
+std::shared_ptr<DeclarationNode> SemanticAnalysis::type_declaration(std::shared_ptr<const ParserNode> type_decl,
+                                                                    std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<std::string> identifier;
-  std::shared_ptr<Node> type;
+  std::shared_ptr<DeclarationNode> type;
 
   for (auto &child : type_decl->getChildren()) {
     auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
@@ -101,8 +119,8 @@ std::shared_ptr<TypeNode> SemanticAnalysis::type_declaration(std::shared_ptr<con
     switch (parser_child->getParserNodeType()) {
     case ParserNodeType::identifier: {
       identifier = parse_identifier(parser_child, current_scope);
-      if (identifier.size() > 1) {
-        std::string s = "Const declaration identifiers must not be within arrays or records";
+      if (identifier.size() > 1 || identifier.empty()) {
+        std::string s = "expected exactly one identifier in type declaration, found 0 or more than 1";
         _logger->error(s);
       }
       continue;
@@ -112,6 +130,7 @@ std::shared_ptr<TypeNode> SemanticAnalysis::type_declaration(std::shared_ptr<con
       if (!type) {
         return nullptr;
       }
+      type->setName(identifier[0]);
       continue;
     }
     default: {
@@ -119,92 +138,127 @@ std::shared_ptr<TypeNode> SemanticAnalysis::type_declaration(std::shared_ptr<con
     }
     }
   }
-  auto decl = std::make_shared<TypeNode>(identifier[0], type, DeclarationType::TYPE);
-  return decl;
+  return type;
 }
 
-std::shared_ptr<DeclarationNode> SemanticAnalysis::var_declaration(std::shared_ptr<const ParserNode> var_decl, std::shared_ptr<SymbolScopeNode> scope) {
+std::vector<std::shared_ptr<DeclarationNode>> SemanticAnalysis::var_declaration(std::shared_ptr<const ParserNode> var_decl,
+                                                                                std::shared_ptr<SymbolScopeNode> scope,
+                                                                                bool var_) {
   std::vector<std::string> identifier;
-  std::shared_ptr<Node> var;
+  std::vector<std::string> id_list;
+  std::vector<std::shared_ptr<DeclarationNode>> var_declarations; // of one type
+  std::shared_ptr<DeclarationNode> var;
 
   for (auto &child : var_decl->getChildren()) {
     auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
 
     switch (parser_child->getParserNodeType()) {
-    case ParserNodeType::identifier: {
-      identifier = parse_identifier(parser_child, scope);
-      if (identifier.size() > 1) {
-        std::string s = "Const declaration identifiers must not be within arrays or records";
-        _logger->error(s);
+    case ParserNodeType::ident_list: {
+      for (auto &ids :parser_child->getChildren()) {
+        auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*ids));
+        if (ParserNodeType::identifier == p_child->getParserNodeType()) {
+          identifier = parse_identifier(p_child, scope);
+          if (identifier.size() > 1) {
+            std::string s = "Const declaration identifiers must not be within arrays or records";
+            _logger->error(s);
+          }
+          id_list.push_back(identifier[0]);
+        }
       }
+      continue;
     }
     case ParserNodeType::type: {
-      // TODO check and create propper node; either Array, record, type or numbernode; assing name
-      var = parse_type(parser_child, true, scope);
-    }
-    default: {
-      continue;
-    }
-    }
-  }
-  // TODO rework
-  auto decl = std::make_shared<DeclarationNode>(identifier[0], DeclarationType::VAR);
-  decl->addChild(var);
-  return decl;
-}
-
-std::shared_ptr<ProcedureNode> SemanticAnalysis::procedure_declaration(std::shared_ptr<const ParserNode> proc_decl, std::shared_ptr<SymbolScopeNode> current_scope) {
-  std::vector<std::string> identifier;
-  std::shared_ptr<ParserNode> proc_h;
-  std::shared_ptr<const ParserNode> proc_b;
-
-  for (auto &child : proc_decl->getChildren()) {
-    auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
-
-    switch (parser_child->getParserNodeType()) {
-    case ParserNodeType::identifier: {
-      identifier = parse_identifier(parser_child, current_scope);
-      if (identifier.size() > 1) {
-        std::string s = "Const declaration identifiers must not be within arrays or records";
-        _logger->error(s);
+      var = parse_type(parser_child, var_, scope);
+      if (!var) {
+        throw "couldnt parse type at var declaration";
       }
     }
+    default: {
+      continue;
+    }
+    }
+  }
+  var_declarations.reserve(id_list.size());
+  for (auto &id : id_list) {
+    DeclarationNode temp = *var;
+    temp.setName(id);
+    var_declarations.push_back(std::make_shared<DeclarationNode>(temp));
+  }
+  return var_declarations;
+}
+
+std::shared_ptr<ProcedureNode> SemanticAnalysis::procedure_declaration(std::shared_ptr<const ParserNode> proc_decl,
+                                                                       std::shared_ptr<SymbolScopeNode> current_scope) {
+  std::vector<std::string> identifier;
+  std::vector<std::shared_ptr<DeclarationNode>> params;
+  std::shared_ptr<SymbolScopeNode> scope_child;
+  std::shared_ptr<Node> proc_ast;
+
+  for (auto &child : proc_decl->getChildren()) {
+    auto parser_child = std::make_shared<const ParserNode>(dynamic_cast<const ParserNode &>(*child));
+
+    switch (parser_child->getParserNodeType()) {
+
     case ParserNodeType::procedure_heading: {
-      proc_h = parser_child;
+      for (auto &ph_child : parser_child->getChildren()) {
+        auto cpp_rapist = std::make_shared<const ParserNode>(dynamic_cast<const ParserNode &>(*ph_child));
+        switch (cpp_rapist->getParserNodeType()) {
+        case ParserNodeType::identifier: {
+          identifier = parse_identifier(cpp_rapist, current_scope);
+          if (identifier.size() > 1 || identifier.empty()) {
+            std::string s = "Const declaration identifiers must not be within arrays or records";
+            _logger->error(s);
+          }
+          break;
+        }
+        case ParserNodeType::formal_parameters: {
+          std::cout << *cpp_rapist << std::endl;
+          params = parse_params(cpp_rapist, current_scope);
+          break;
+        }
+        default:continue;
+        }
+      }
     }
     case ParserNodeType::procedure_body: {
-      proc_b = parser_child;
+      scope_child = build_symbol_table(current_scope, parser_child);
+      proc_ast = build_ast(parser_child);
     }
     default: {
       continue;
     }
     }
   }
-  auto params = parse_params(proc_h);
-  auto scope_child = build_symbol_table(std::move(current_scope), proc_b);
-  auto proc_ast = build_ast(proc_b);
-  auto decl = std::make_shared<ProcedureNode>(identifier[0], params, scope_child);
+
+  auto decl = std::make_shared<ProcedureNode>(identifier[0], params, scope_child, proc_ast);
 
   return decl;
 }
 
-std::shared_ptr<DeclarationNode> SemanticAnalysis::look_up(std::vector<std::string> identifier, std::shared_ptr<SymbolScopeNode> scope) {
+std::shared_ptr<DeclarationNode> SemanticAnalysis::look_up(std::vector<std::string> identifier,
+                                                           std::shared_ptr<SymbolScopeNode> scope) {
   // find declaration (node) for identifier
   auto ident = identifier[0];
 
-  std::shared_ptr<DeclarationNode> node;
-  for (auto &decl_ : scope->getChildren()) {
+  if (!scope) {
+    std::string s = "Couldn't find symbol " + ident + " did you declare it?";
+    _logger->error(s);
+  }
+
+  std::string type;
+  std::shared_ptr<Node> node;
+  for (const auto &decl_ : scope->getChildren()) {
     auto decl = std::make_shared<DeclarationNode>(dynamic_cast<DeclarationNode &>(*decl_));
     if (decl->getName() == ident) {
-      node = decl;
+      node = decl_;
+      type = decl->getType();
+      break;
     }
   }
   if (!node) {
-    if (scope == this->_symbol_tree) {
-      if (identifier.size() > 1) {
-        std::string s = "Couldn't find symbol" + ident + "did you declare it?";
-        _logger->error(s);
-      }
+    if (!scope) {
+      std::string s = "Couldn't find symbol" + ident + "did you declare it?";
+      _logger->error(s);
     } else {
       return look_up(identifier, scope->getContainingScope());
     }
@@ -215,71 +269,147 @@ std::shared_ptr<DeclarationNode> SemanticAnalysis::look_up(std::vector<std::stri
     if (identifier[i] == ".") {
       // case . : look for field in record
       auto record = std::make_shared<RecordNode>(dynamic_cast<RecordNode &>(*node));
-      if (!record) throw "unexpected type when looking up" + ident + "expected record type due to the . selector";
-      node = record->getField(identifier[i+1]);
+      if (!record)
+        throw "unexpected type when looking up" + ident + "expected record type due to the . selector";
+      node = record->getField(identifier[i + 1]);
       i++;
     } else if (identifier[i] == "[") {
       // case [ : look for array including size
       auto array = std::make_shared<ArrayNode>(dynamic_cast<ArrayNode &>(*node));
-      if (!array) throw "unexpected type when looking up" + ident + "expected array type due to the [] selector";
-      node = array->getValue(std::stoi(identifier[i+1]));
-      i = i+2;
+      if (!array)
+        throw "unexpected type when looking up" + ident + "expected array type due to the [] selector";
+      node = array->getValue(std::stoi(identifier[i + 1]));
+      i = i + 2;
     }
   }
-  return node;
+
+  if (type == "NumberNode") {
+    return std::make_shared<NumberNode>(dynamic_cast<NumberNode &>(*node));
+  } else if (type == "ArrayNode") {
+    return std::make_shared<ArrayNode>(dynamic_cast<ArrayNode &>(*node));
+  } else if (type == "RecordNode") {
+    return std::make_shared<RecordNode>(dynamic_cast<RecordNode &>(*node));
+  } else if (type == "TypeNode") {
+    return std::make_shared<TypeNode>(dynamic_cast<TypeNode &>(*node));
+  } else if (type == "ProcedureNode") {
+    return std::make_shared<ProcedureNode>(dynamic_cast<ProcedureNode &>(*node));
+  } else {
+
+    std::cout << "shuck this fit!! " << type << std::endl;
+    return nullptr;
+  }
 }
 
-std::shared_ptr<ArrayNode> SemanticAnalysis::parse_array(std::shared_ptr<ParserNode> array_type) {
-  // TODO
+std::shared_ptr<ArrayNode> SemanticAnalysis::parse_array(std::shared_ptr<ParserNode> array_type,
+                                                         bool var,
+                                                         std::shared_ptr<SymbolScopeNode> current_scope) {
+  int expr = 0;
+  std::shared_ptr<DeclarationNode> type;
 
+  for (auto &child : array_type->getChildren()) {
+    auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+
+    switch (parser_child->getParserNodeType()) {
+    case ParserNodeType::expression: {
+      expr = eval_expr(parser_child, current_scope);
+      continue;
+    }
+    case ParserNodeType::type: {
+      type = parse_type(parser_child, false, current_scope);
+    }
+    default: {
+      continue;
+    }
+    }
+  }
+  return var ? std::make_shared<ArrayNode>("TOBESET", DeclarationType::VAR, expr, type) :
+         std::make_shared<ArrayNode>("TYPE", DeclarationType::TYPE, expr, type);
 }
 
-std::shared_ptr<RecordNode> SemanticAnalysis::parse_record(std::shared_ptr<ParserNode> record_type, std::shared_ptr<SymbolScopeNode> scope) {
-  // TODO
+std::shared_ptr<RecordNode> SemanticAnalysis::parse_record(std::shared_ptr<ParserNode> record_type,
+                                                           bool var,
+                                                           std::shared_ptr<SymbolScopeNode> scope) {
+  std::shared_ptr<SymbolScopeNode> record_scope = std::make_shared<SymbolScopeNode>(scope, _logger);
+
+  for (auto &parser_child : record_type->getChildren()) {
+    auto field_list = std::make_shared<const ParserNode>(dynamic_cast<const ParserNode &>(*parser_child));
+
+    if (ParserNodeType::field_list == field_list->getParserNodeType()) {
+      // parse each ident list w. type
+      auto vars = var_declaration(field_list, scope, var);
+      for (const auto &var_d : vars) {
+        record_scope->addChild(var_d);
+      }
+    }
+  }
+  return var ? std::make_shared<RecordNode>("TOBESET", DeclarationType::VAR, record_scope) :
+         std::make_shared<RecordNode>("TYPE", DeclarationType::TYPE, record_scope);
 }
 
-std::vector<std::shared_ptr<Node>> SemanticAnalysis::parse_params(std::shared_ptr<ParserNode> params) {
-  // TODO
-  return std::vector<std::shared_ptr<Node>>();
+std::vector<std::shared_ptr<DeclarationNode>> SemanticAnalysis::parse_params(std::shared_ptr<const ParserNode> params,
+                                                                             std::shared_ptr<SymbolScopeNode> current_scope) {
+  std::vector<std::shared_ptr<DeclarationNode>> result;
+
+  for (const auto &tok : params->getChildren()) {
+    auto token = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*tok));
+
+    if (token->getParserNodeType() == ParserNodeType::fp_section) {
+      auto fp_token = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*token->getChildren()[0]));
+      for (auto &var : var_declaration(token, current_scope,
+                                       fp_token->getParserNodeType() == ParserNodeType::terminal_token
+                                           && fp_token->getValue() == "VAR"))
+        result.push_back(var);
+    }
+  }
+  return result;
 }
 
-std::shared_ptr<Node> SemanticAnalysis::parse_type(std::shared_ptr<ParserNode> type_, bool var, std::shared_ptr<SymbolScopeNode> current_scope) {
+std::shared_ptr<DeclarationNode> SemanticAnalysis::parse_type(std::shared_ptr<ParserNode> type_,
+                                                              bool var,
+                                                              std::shared_ptr<SymbolScopeNode> current_scope) {
   auto pt_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*type_->getChildren()[0]));
+
+  current_scope->getChildren();
 
   switch (pt_child->getParserNodeType()) {
   case ParserNodeType::identifier: {
     if (pt_child->getValue() == "INTEGER") {
       return var ? std::make_shared<NumberNode>("TOBESET", -999999, DeclarationType::VAR)
-          : std::make_shared<NumberNode>("TYPE", 0, DeclarationType::TYPE);
+                 : std::make_shared<NumberNode>("TYPE", 0, DeclarationType::TYPE);
     }
-    auto node = look_up(parse_identifier(pt_child, std::move(current_scope)), std::move(current_scope));
-    auto type = std::make_shared<TypeNode>(dynamic_cast<TypeNode &>(*node));
-    if (!type)  {
-      std::string msg = "no type declaration found with such a name" + pt_child->getValue();
-      _logger->error(msg);
-      return nullptr;
+    auto node = look_up(parse_identifier(pt_child, current_scope), current_scope);
+    if (node->getDeclType() != DeclarationType::TYPE) {
+      throw "cant use a variable as a type";
     }
-    return var ? std::make_shared<TypeNode>("TOBESET", type->getAliased(), DeclarationType::VAR, type->getAliasedString()) : type;
+    auto type = node->getType();
+    if (type == "ArrayNode") {
+      auto array = dynamic_cast<ArrayNode &>(*node);
+      return var ? std::make_shared<ArrayNode>("TOBESET", DeclarationType::VAR, array.getSize(), array.getArrayType())
+                 : std::make_shared<ArrayNode>(array);
+    } else if (type == "RecordNode") {
+      auto record = dynamic_cast<RecordNode &>(*node);
+      return var ? std::make_shared<RecordNode>("TOBESET", DeclarationType::VAR, record.getScope())
+                 : std::make_shared<RecordNode>(record);
+    } else if (type == "TypeNode") {
+      auto type_n = dynamic_cast<TypeNode &>(*node);
+      return var ? std::make_shared<TypeNode>("TOBESET", type_n.getAliased(), DeclarationType::VAR)
+                 : std::make_shared<TypeNode>(type_n);
+    }
   }
   case ParserNodeType::array_type: {
-    // TODO remember to set var or type
-    auto node = parse_array(pt_child);
-    break;
+    return parse_array(pt_child, var, current_scope);
   }
   case ParserNodeType::record_type: {
-    // TODO remember to set var or type
-    auto node = parse_record(pt_child, current_scope);
-    break;
+    return parse_record(pt_child, var, current_scope);
   }
   default:return nullptr; //unreachable
   }
 }
 
-std::vector<std::string> SemanticAnalysis::parse_identifier(std::shared_ptr<ParserNode> identifer,
+std::vector<std::string> SemanticAnalysis::parse_identifier(std::shared_ptr<const ParserNode> identifer,
                                                             std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<std::string> result({identifer->getValue()});
-
-  // End identifier
+  // identifier after End keyword
   if (identifer->getChildren().empty())
     return result;
 
@@ -291,15 +421,15 @@ std::vector<std::string> SemanticAnalysis::parse_identifier(std::shared_ptr<Pars
         return result;
       } else if (token->getValue() == ".") {
         result.push_back(token->getValue());
-        auto id = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*tokens[i+1]));
+        auto id = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*tokens[i + 1]));
         result.push_back(id->getValue());
         i++;
       } else if (token->getValue() == "[") {
         result.push_back(token->getValue());
-        auto expr = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*tokens[i+1]));
+        auto expr = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*tokens[i + 1]));
         result.push_back(to_string(eval_expr(expr, current_scope)));
         result.emplace_back("]");
-        i = i+2;
+        i = i + 2;
       }
     }
   }
@@ -327,7 +457,8 @@ int SemanticAnalysis::eval_expr(std::shared_ptr<ParserNode> expr, std::shared_pt
   return result;
 }
 
-int SemanticAnalysis::eval_simple_expr(std::shared_ptr<ParserNode> simple_expr, std::shared_ptr<SymbolScopeNode> current_scope) {
+int SemanticAnalysis::eval_simple_expr(std::shared_ptr<ParserNode> simple_expr,
+                                       std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<int> numbers;
   std::vector<std::string> ops;
   for (auto &child : simple_expr->getChildren()) {
@@ -397,16 +528,16 @@ int SemanticAnalysis::calculate(std::vector<int> numbers, std::vector<std::strin
     if (op == "-") {
       result = result - numbers.back();
       numbers.pop_back();
-    } else if (op == "+"){
+    } else if (op == "+") {
       result = result + numbers.back();
       numbers.pop_back();
-    } else if (op == "*"){
+    } else if (op == "*") {
       result = result * numbers.back();
       numbers.pop_back();
-    } else if (op == "/"){
+    } else if (op == "/") {
       result = result / numbers.back();
       numbers.pop_back();
-    } else if (op == "%"){
+    } else if (op == "%") {
       result = result % numbers.back();
       numbers.pop_back();
     } else {
@@ -418,34 +549,37 @@ int SemanticAnalysis::calculate(std::vector<int> numbers, std::vector<std::strin
 }
 
 int SemanticAnalysis::eval_factor(std::shared_ptr<ParserNode> factor, std::shared_ptr<SymbolScopeNode> current_scope) {
-  auto &child = factor->getChildren()[0];
-  auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+  int res = -999999999;
 
-  switch (p_child->getParserNodeType()) {
-  case ParserNodeType::binary_op: {
-    std::string msg = "~ not allowed in constant declarations right hand side";
-    _logger->error(msg);
-    return -999999;
-  }
-  case ParserNodeType::number: {
-    return std::stoi(p_child->getValue());
-  }
-  case ParserNodeType::expression: {
-    return eval_expr(p_child, std::move(current_scope));
-  }
-  case ParserNodeType::identifier: {
-    auto declaration_node = look_up(parse_identifier(p_child, current_scope), current_scope);
-    auto number = std::make_shared<NumberNode>(dynamic_cast<NumberNode &>(*declaration_node));
-    if (!number)  {
-      std::string msg = "no type declaration found with such a name" + p_child->getValue();
+  for (const auto &child : factor->getChildren()) {
+    auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+    switch (p_child->getParserNodeType()) {
+    case ParserNodeType::binary_op: {
+      std::string msg = "~ not allowed in constant declarations right hand side";
       _logger->error(msg);
-      return -99999999;
+      break;
     }
-    return number->getValue();
+    case ParserNodeType::number: {
+      res = std::stoi(p_child->getValue());
+      break;
+    }
+    case ParserNodeType::expression: {
+      res = eval_expr(p_child, current_scope);
+      break;
+    }
+    case ParserNodeType::identifier: {
+      auto declaration_node = look_up(parse_identifier(p_child, current_scope), current_scope);
+      auto number = std::make_shared<NumberNode>(dynamic_cast<NumberNode &>(*declaration_node));
+      if (!number) {
+        std::string msg = "no type declaration found with such a name" + p_child->getValue();
+        _logger->error(msg);
+        break;
+      }
+      res = number->getValue();
+      break;
+    }
+    default:continue;
+    }
   }
-  default:
-    std::string msg = "unexpected token, check your parsing of the tree fool";
-    _logger->error(msg);
-    return -9999999;
-  }
+  return res;
 }

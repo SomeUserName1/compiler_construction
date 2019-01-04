@@ -5,7 +5,7 @@ MODULE BubbleSort;
 CONST Dim = 2 * 10;
       Dim1 = 3 * 10;
       Dim2 = 4 * 10;
-      Ugly = - 1 + (- 5 + 9);
+      Ugly = - 1 + (- 5 + (9 * 3));
 
 (* Record definition for a two-dimensional point. *)
 TYPE Test = RECORD
@@ -42,7 +42,7 @@ END Init;
 (* NOPROCEDURE *)
 
 (* Swaps the two values passed as var-parameters. *)
-PROCEDURE Swap(VAR a, b: INTEGER);
+PROCEDURE Swap(VAR a, b: INTEGER; qwe : Point2D);
 VAR t: INTEGER;
 BEGIN
     WHILE 1 > 2 DO END;

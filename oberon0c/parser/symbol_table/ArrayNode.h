@@ -12,13 +12,14 @@
 class ArrayNode : public DeclarationNode {
   private:
     int _size;
-    std::string _type;
+    std::shared_ptr<DeclarationNode> _array_type;
     // Elements are stored as children
 
   public:
-    ArrayNode(std::string name, DeclarationType decl_type, std::vector<std::shared_ptr<Node>> elements, int size, std::string array_type);
+    ArrayNode(std::string name, DeclarationType decl_type, int size, std::shared_ptr<DeclarationNode> type);
+  void setValue(int position, std::shared_ptr<DeclarationNode> node);
     const int getSize();
-    const std::string getType();
+    const std::shared_ptr<DeclarationNode>  getArrayType();
   const std::vector<std::shared_ptr<DeclarationNode>> getValues();
   const std::shared_ptr<DeclarationNode> getValue(int position);
 };

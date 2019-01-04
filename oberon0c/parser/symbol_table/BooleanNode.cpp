@@ -1,12 +1,9 @@
 #include "BooleanNode.h"
 
-BooleanNode::BooleanNode(std::string name, int value) : DeclarationNode(std::move(name), DeclarationType::VAR) {
+BooleanNode::BooleanNode(std::string name, int value) : DeclarationNode(std::move(name), DeclarationType::VAR, "BooleanNode") {
   this->setValue(value);
 }
 
-const std::string BooleanNode::getType() const {
-  return this->_type;
-}
 const int BooleanNode::getValue() const {
   return this->_value;
 }

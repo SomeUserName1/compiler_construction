@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD 17)
 
 SET(CMAKE_CXX_FLAGS "-Wall -Wpedantic -std=c++17 -fsanitize=address -fno-omit-frame-pointer -fno-optimize-sibling-calls")
 #  -fsanitize=memory spits out uninitialized memory on an ifstream... even though its initialized ... wtf
+#
 SET(ASAN_OPTIONS symbolize=1)
 SET(ASAN_OPTIONS detect_leaks=1)
 SET(ASAN_SYMBOLIZER_PATH $(which llvm-symbolizer-6.0))
