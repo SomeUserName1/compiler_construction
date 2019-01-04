@@ -33,6 +33,11 @@
 #include <algorithm>
 #include <symbol_table/ArrayNode.h>
 #include <symbol_table/RecordNode.h>
+#include <ast/CallNode.h>
+#include <ast/BranchNode.h>
+#include <ast/AssignmentNode.h>
+#include <ast/LoopNode.h>
+#include <ast/ArithmeticOpNode.h>
 
 class SemanticAnalysis {
 private:
@@ -43,11 +48,11 @@ private:
   std::shared_ptr<SymbolScopeNode> build_symbol_table(std::shared_ptr<SymbolScopeNode> parent, std::shared_ptr<const ParserNode> &sub_tree);
   std::shared_ptr<NumberNode> const_declaration(std::shared_ptr<const ParserNode> const_decl, std::shared_ptr<SymbolScopeNode> current_scope);
   std::vector<std::string> parse_identifier(std::shared_ptr<const ParserNode> identifer, std::shared_ptr<SymbolScopeNode> current_scope);
-  int eval_expr(std::shared_ptr<ParserNode> expr, std::shared_ptr<SymbolScopeNode> current_scope);
-  int eval_simple_expr(std::shared_ptr<ParserNode> simple_expr, std::shared_ptr<SymbolScopeNode> current_scope);
-  int eval_term(std::shared_ptr<ParserNode> term, std::shared_ptr<SymbolScopeNode> current_scope);
+  int eval_const_expr(std::shared_ptr<ParserNode> expr, std::shared_ptr<SymbolScopeNode> current_scope);
+  int eval_const_simple_expr(std::shared_ptr<ParserNode> simple_expr, std::shared_ptr<SymbolScopeNode> current_scope);
+  int eval_const_term(std::shared_ptr<ParserNode> term, std::shared_ptr<SymbolScopeNode> current_scope);
   int calculate(std::vector<int> numbers, std::vector<std::string> ops);
-  int eval_factor(std::shared_ptr<ParserNode> factor, std::shared_ptr<SymbolScopeNode> current_scope);
+  int eval_const_factor(std::shared_ptr<ParserNode> factor, std::shared_ptr<SymbolScopeNode> current_scope);
   std::shared_ptr<DeclarationNode> type_declaration(std::shared_ptr<const ParserNode> type_decl, std::shared_ptr<SymbolScopeNode> parent);
   std::shared_ptr<DeclarationNode> parse_type(std::shared_ptr<ParserNode> type, bool var, std::shared_ptr<SymbolScopeNode> parent);
   std::shared_ptr<ArrayNode> parse_array(std::shared_ptr<ParserNode> array_type, bool var, std::shared_ptr<SymbolScopeNode> current_scope);
@@ -56,7 +61,16 @@ private:
   std::vector<std::shared_ptr<DeclarationNode>> var_declaration(std::shared_ptr<const ParserNode> var_decl, std::shared_ptr<SymbolScopeNode> scope, bool var);
   std::shared_ptr<ProcedureNode> procedure_declaration(std::shared_ptr<const ParserNode> proc_decl, std::shared_ptr<SymbolScopeNode> parent);
   std::vector<std::shared_ptr<DeclarationNode>> parse_params(std::shared_ptr<const ParserNode> params, std::shared_ptr<SymbolScopeNode> current_scope);
-  std::shared_ptr<Node> build_ast(std::shared_ptr<const ParserNode> statement_sequence);
+  std::shared_ptr<Node> build_ast(std::shared_ptr<const ParserNode> statement_sequence, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<CallNode> parse_call(std::shared_ptr<const ParserNode> const_decl, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<LoopNode> parse_loop(std::shared_ptr<const ParserNode> const_decl, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<BranchNode> parse_branch(std::shared_ptr<const ParserNode> const_decl, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<AssignmentNode> parse_assignment(std::shared_ptr<const ParserNode> const_decl, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<NumberNode> eval_var_expr(std::shared_ptr<ParserNode> expr, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<NumberNode> eval_var_simple_expr(std::shared_ptr<ParserNode> simple_expr, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<NumberNode> eval_var_term(std::shared_ptr<ParserNode> term, std::shared_ptr<SymbolScopeNode> current_scope);
+  std::shared_ptr<NumberNode> build_arith_op_tree(std::vector<std::shared_ptr<NumberNode>> numbers, std::vector<std::string> ops);
+  std::shared_ptr<NumberNode> eval_var_factor(std::shared_ptr<ParserNode> factor, std::shared_ptr<SymbolScopeNode> current_scope);
 
 public:
   SemanticAnalysis(std::shared_ptr<const ParserNode> parse_tree, std::shared_ptr<Logger> logger);

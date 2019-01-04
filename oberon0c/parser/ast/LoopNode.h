@@ -6,7 +6,7 @@
 #define OBERON0C_CONTROLFLOWNODE_H
 
 #include <Node.h>
-class ControlFlowNode : public Node {
+class LoopNode : public Node {
 
 };
 

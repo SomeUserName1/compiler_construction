@@ -7,20 +7,13 @@
 
 #include <Node.h>
 #include <symbol_table/NumberNode.h>
-static char ADD = '+';
-static char SUB = '-';
-static char MULT = '*';
-static char DIV = '/';
-static char MOD = '%';
 
-class ArithmeticOpNode : public Node {
+class ArithmeticOpNode : public NumberNode {
 private:
-  char _operator;
-  std::shared_ptr<NumberNode> _op_0;
-  std::shared_ptr<NumberNode> _op_1;
 
 public:
-  ArithmeticOpNode(char operator_, std::shared_ptr<NumberNode> operand_0, std::shared_ptr<NumberNode> operand_1);
+  ArithmeticOpNode(std::string operator_, std::shared_ptr<NumberNode> operand_0, std::shared_ptr<NumberNode> operand_1);
+  ArithmeticOpNode(std::string operator_);
 };
 
 #endif //OBERON0C_ARITHMETICOPNODE_H

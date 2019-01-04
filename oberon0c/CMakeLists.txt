@@ -40,7 +40,7 @@ ADD_LIBRARY(lex ${lexer})
 # The AST Nodes: Basic control flow and data structures that are type checked
 set(ast
 		parser/ast/AssignmentNode.cpp
-		parser/ast/ControlFlowNode.cpp
+        parser/ast/LoopNode.cpp
 		parser/ast/CallNode.cpp
 		parser/ast/ArithmeticOpNode.cpp
 		parser/ast/BooleanOpNode.cpp
@@ -67,7 +67,7 @@ set(parser
 		${ast}
 		${symbol_table}
 		parser/Parser.cpp
-        parser/SemanticAnalysis.cpp)
+        parser/SemanticAnalysis.cpp parser/ast/BranchNode.cpp parser/ast/BranchNode.h)
 ADD_LIBRARY(parse ${parser})
 
 # Main executable

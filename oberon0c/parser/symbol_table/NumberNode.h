@@ -9,12 +9,13 @@
 
 #include "DeclarationNode.h"
 
-class NumberNode : public DeclarationNode{
+class NumberNode : public DeclarationNode {
   private:
     int _value;
 
   public:
     NumberNode(std::string name, int value, DeclarationType declarationType);
+    NumberNode(std::string, DeclarationType declarationType);
     const int getValue() const;
     void setValue(int new_val);
 };
