@@ -1,73 +1,96 @@
-/**
- * @authors fabian.klopfer@uni-konstanz.de, daniel.metzger@uni-konstanz.de
- * 
- * Check the syntax of the code.
- * Iff the code is syntactically correct it's converted into a parse tree and the type checker is invoked to do
- * semantic analysis and to build the AST
- * 
- */
+//
+// Created by Michael Grossniklaus on 2/2/18.
+//
+
 #ifndef OBERON0C_PARSER_H
 #define OBERON0C_PARSER_H
 
-#include <iostream>
-#include <stdexcept>
-#include <IdentToken.h>
-#include <NumberToken.h>
-#include <utility>
-#include <type_traits>
 
-#include <Lexer.h>
-#include <parse_tree/ParserNode.h>
-
+#include "../scanner/Scanner.h"
+#include "ast/Node.h"
 
 class Parser
 {
 
 private:
-    std::shared_ptr<Lexer> scanner_;
-    std::shared_ptr<Logger> logger_;
+    Scanner *scanner_;
+    Logger *logger_;
+
 	std::unique_ptr<const Token> word;
-	bool _state = true;
 
-	// Non-Terminals
-    const std::shared_ptr<ParserNode> module();
-    const std::shared_ptr<ParserNode> declarations();
-    const std::shared_ptr<ParserNode> const_declaration();
-    const std::shared_ptr<ParserNode> type_declaration();
-    const std::shared_ptr<ParserNode> var_declaration();
-    const std::shared_ptr<ParserNode> procedure_declaration();
-    const std::shared_ptr<ParserNode> expression();
-    const std::shared_ptr<ParserNode> simple_expression();
-    const std::shared_ptr<ParserNode> term();
-    const std::shared_ptr<ParserNode> factor();
-    const std::shared_ptr<ParserNode> type();
-    const std::shared_ptr<ParserNode> array_type();
-    const std::shared_ptr<ParserNode> record_type();
-    const std::shared_ptr<ParserNode> field_list();
-    const std::shared_ptr<ParserNode> ident_list();
-    const std::shared_ptr<ParserNode> procedure_heading();
-    const std::shared_ptr<ParserNode> procedure_body();
-    const std::shared_ptr<ParserNode> formal_parameters();
-    const std::shared_ptr<ParserNode> fp_section();
-    const std::shared_ptr<ParserNode> statement_sequence();
-    const std::shared_ptr<ParserNode> statement();
-    const std::shared_ptr<ParserNode> if_statement();
-    const std::shared_ptr<ParserNode> while_statement();
-    const std::shared_ptr<ParserNode> actual_parameters();
-    const std::shared_ptr<ParserNode> selector();
-    const std::shared_ptr<ParserNode> identifier();
-	const std::shared_ptr<ParserNode> number();
 
-	const std::shared_ptr<ParserNode> binary_op();
-	const std::shared_ptr<ParserNode> id_sel();
 
-	const std::shared_ptr<ParserNode> decideToken(TokenType type);
+	// None-Terminals
+    const Node* module();
+    const Node* declarations();
+    const Node* const_declarations();
+    const Node* type_declarations();
+    const Node* var_declarations();
+    const Node* procedure_declaration();
+    const Node* expression();
+    const Node* simple_expression();
+    const Node* term();
+    const Node* factor();
+    const Node* type();
+    const Node* array_type();
+    const Node* record_type();
+    const Node* field_list();
+    const Node* ident_list();
+    const Node* procedure_heading();
+    const Node* procedure_body();
+    const Node* formal_parameters();
+    const Node* fp_section();
+    const Node* statement_sequence();
+    const Node* statement();
+    const Node* if_statement();
+    const Node* while_statement();
+    const Node* actual_parameters();
+    const Node* selector();
+    const Node* ident();
+	const Node* number();
 
+	// Added non-terminals
+	const Node* binary_op();
+	const Node* A();
+
+	//Terminals
+	void module_t();
+	void semicolon_t();
+	void comma_t();
+	void begin_t();
+	void end_t();
+	void point_t();
+	void equals_symbol_t();
+	void double_colon_t();
+	void lparen_t();
+	void rparen_t();
+	void lbrack_t();
+	void rbrack_t();
+	void not_t();
+	void array_t();
+	void of_t();
+	void record_t();
+	void procedure_t();
+	void const_t();
+	void type_t();
+	void var_t();
+	void becomes_t();
+	void if_t();
+	void then_t();
+	void else_t();
+	void elseif_t();
+	void while_t();
+	void do_t();
+	// Decides given terminals
+	void decideToken(TokenType type, std::string &errormsg);
+
+	// Generic error handler
 	void fail(std::string &msg);
 
 public:
-    explicit Parser(Lexer* scanner, Logger* logger);
-    const std::shared_ptr<const ParserNode> parse();
+    explicit Parser(Scanner *scanner, Logger *logger);
+    ~Parser();
+    const std::unique_ptr<const Node> parse();
 };
 
 

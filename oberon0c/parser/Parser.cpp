@@ -1,535 +1,720 @@
+
+
 //
 // Created by Michael Grossniklaus on 11/20/18.
 //
 
-
+#include <iostream>
+#include <stdexcept>
+#include <IdentToken.h>
+#include <NumberToken.h>
+#include <utility>
 #include "Parser.h"
 
-Parser::Parser(Lexer *scanner, Logger *logger) :
-    scanner_(scanner), logger_(logger) {
+Parser::Parser(Scanner *scanner, Logger *logger) :
+	scanner_(scanner), logger_(logger) {
 }
 
-const std::shared_ptr<const ParserNode> Parser::parse() {
-  auto parse_tree(module());
+Parser::~Parser() = default;
 
-  if (!this->_state) {
+const std::unique_ptr<const Node> Parser::parse() {
+    std::unique_ptr<const Node>
+    parse_tree(module());
+
     std::cout << *parse_tree << std::endl;
-    throw std::invalid_argument("Found sytnax errors, see ");
-  }
 
-  return parse_tree;
+    return parse_tree;
 }
 
-const std::shared_ptr<ParserNode> Parser::module() {
-  auto moduleParserNode = std::make_shared<ParserNode>(ParserNodeType::module, this->scanner_->peekToken()->getPosition());
+const Node* Parser::ident() {
+	word = scanner_->nextToken();
 
-  // Module declaration
-  moduleParserNode->addChild(decideToken(TokenType::kw_module));
-  const auto ident = identifier();
-  moduleParserNode->addChild({ident, decideToken(TokenType::semicolon)});
-
-  // Declarations
-  moduleParserNode->addChild(declarations());
-
-  // Optional: Begin (main method)
-  if (scanner_->peekToken()->getType() == TokenType::kw_begin) {
-    moduleParserNode->addChild({decideToken(TokenType::kw_begin), statement_sequence()});
-  }
-
-  //End
-  moduleParserNode->addChild(decideToken(TokenType::kw_end));
-  const auto id_end = identifier();
-  if (ident->getValue() != id_end->getValue()) {
-    std::string s = std::string("Expected module identifier at MODULE and END to be equal");
-    fail(s);
-  } else {
-    moduleParserNode->addChild(id_end);
-  }
-
-  moduleParserNode->addChild(decideToken(TokenType::period));
-
-  return moduleParserNode;
+	if (word->getType() != TokenType::const_ident) {
+        std::string s = std::string("Expected identifier. ident()");
+		fail(s);
+	}
+    auto* identifier = (IdentToken*) &*word;
+    Node* node = new Node(NodeType::identifier, word->getPosition(), identifier->getValue());
+	
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::identifier() {
-  std::shared_ptr<ParserNode> node;
-  auto prev_token = *word;
-  word = scanner_->nextToken();
+const Node* Parser::module() {
+	// Module declaration
+	module_t();
+	Node* moduleNode = new Node(NodeType::module, word->getPosition());
+	const Node* identifier = ident();
+	moduleNode->addChild(*identifier);
+	semicolon_t();
 
-  if (word->getType() != TokenType::const_ident) {
-    node = std::make_shared<ParserNode>(ParserNodeType::syntax_error, word->getPosition(), "expected identifier");
-    std::string s = std::string("Expected identifier");
-    fail(s);
-  } else {
-    auto identifier = dynamic_cast<const IdentToken &>(*word);
-    node = std::make_shared<ParserNode>(ParserNodeType::identifier, word->getPosition(), identifier.getValue());
-  }
-  auto next_word = scanner_->peekToken();
-  if (!(prev_token.getType() == TokenType::kw_end) && (next_word->getType() == TokenType::period
-      || next_word->getType() == TokenType::lbrack)) {
-    node->addChild(selector());
-  }
-  return node;
+	// Declarations
+	moduleNode->addChild(*declarations());
+
+	// Optional: Begin (main method)
+	if (scanner_->peekToken()->getType() == TokenType::kw_begin) {
+		begin_t();
+		moduleNode->addChild(*statement_sequence());
+	}
+
+	//End
+	end_t();
+	if (identifier->getValue() != ident()->getValue()) {
+	    std::string s = std::string("Expected module identifier module()");
+		fail(s);
+	}
+	point_t();
+
+	return moduleNode;
 }
 
-const std::shared_ptr<ParserNode> Parser::declarations() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::declarations, word->getPosition());
-  // CONSTs
-  if (scanner_->peekToken()->getType() == TokenType::kw_const) {
-    node->addChild(decideToken(TokenType::kw_const));
+const Node* Parser::declarations() {
+	Node* node = new Node(NodeType::declarations, word->getPosition());
 
-    while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-      node->addChild(const_declaration());
+	// CONSTs
+	if (scanner_->peekToken()->getType() == TokenType::kw_const) {
+		const_t();
+
+		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
+			node->addChild(*const_declarations());
+		}
+	}
+
+	// TYPEs
+	if (scanner_->peekToken()->getType() == TokenType::kw_type) {
+		type_t();
+		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
+			node->addChild(*type_declarations());
+		}
+	}
+
+	// VARs
+	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
+		var_t();
+		while (scanner_->peekToken()->getType() == TokenType::const_ident) {
+			node->addChild(*var_declarations());
+		}
+	}
+
+
+	// Optional Procedures
+	while (scanner_->peekToken()->getType() == TokenType::kw_procedure) {
+		node->addChild(*procedure_declaration());
+	}
+
+	return node;
+}
+
+const Node* Parser::const_declarations() {
+	Node* node = new Node(NodeType::const_declarations, word->getPosition());
+
+    node->addChild(*ident());
+	equals_symbol_t();
+	node->addChild(*expression());
+	semicolon_t();
+
+	return node;
+}
+
+const Node* Parser::type_declarations() {
+	Node* node = new Node(NodeType::type_declarations, word->getPosition());
+
+    node->addChild(*ident());
+	equals_symbol_t();
+	node->addChild(*type());
+	semicolon_t();
+
+	return node;
+}
+
+const Node* Parser::var_declarations() {
+	Node* node = new Node(NodeType::var_declarations, word->getPosition());
+
+	ident_list();
+	double_colon_t();
+	node->addChild(*type());
+	semicolon_t();
+
+	return node;
+}
+
+const Node* Parser::procedure_declaration() {
+	Node* node = new Node(NodeType::procedure_declaration, word->getPosition());
+
+	node->addChild(*procedure_heading());
+	semicolon_t();
+	node->addChild(*procedure_body());
+
+	return node;
+}
+
+const Node* Parser::expression() {
+	Node* node = new Node(NodeType::expression, word->getPosition());
+
+	node->addChild(*simple_expression());
+
+	TokenType type = scanner_->peekToken()->getType();
+	if (type == TokenType::op_eq || type == TokenType::op_neq
+		|| type == TokenType::op_lt || type == TokenType::op_leq
+		|| type == TokenType::op_gt || type == TokenType::op_geq) {
+		node->addChild(*binary_op());
+		node->addChild(*simple_expression());
+	}
+
+	return node;
+}
+
+const Node* Parser::simple_expression() {
+	Node* node = new Node(NodeType::simple_expression, word->getPosition());
+
+	TokenType type = scanner_->peekToken()->getType();
+	if (type == TokenType::op_plus || type == TokenType::op_minus) {
+		node->addChild(*binary_op());
+	}
+	node->addChild(*term());
+
+	type = scanner_->peekToken()->getType();
+	while (type == TokenType::op_plus || type == TokenType::op_minus
+		|| type == TokenType::op_or) {
+		node->addChild(*binary_op());
+		node->addChild(*term());
+
+		type = scanner_->peekToken()->getType();
+	}
+
+
+	return node;
+}
+
+const Node* Parser::term() {
+	Node* node = new Node(NodeType::term, word->getPosition());
+
+	node->addChild(*factor());
+
+	TokenType type = scanner_->peekToken()->getType();
+	while (type == TokenType::op_times || type == TokenType::op_div
+		|| type == TokenType::op_mod || type == TokenType::op_and) {
+		node->addChild(*binary_op());
+		node->addChild(*factor());
+
+		type = scanner_->peekToken()->getType();
+	}
+
+	return node;
+}
+
+const Node* Parser::number() {
+    word = scanner_->nextToken();
+
+    if (word->getType() != TokenType::const_number) {
+        std::string s = std::string("Expected number.");
+        fail(s);
     }
-  }
-  // TYPEs
-  if (scanner_->peekToken()->getType() == TokenType::kw_type) {
-    node->addChild(decideToken(TokenType::kw_type));
-    while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-      node->addChild(type_declaration());
-    }
-  }
-  // VARs
-  if (scanner_->peekToken()->getType() == TokenType::kw_var) {
-    node->addChild(decideToken(TokenType::kw_var));
-    while (scanner_->peekToken()->getType() == TokenType::const_ident) {
-      node->addChild(var_declaration());
-    }
-  }
-  // Optional Procedures
-  while (scanner_->peekToken()->getType() == TokenType::kw_procedure) {
-    node->addChild(procedure_declaration());
-  }
+    auto* number = (NumberToken*) &*word;
+    Node* node = new Node(NodeType::number, word->getPosition(), std::to_string(number->getValue()));
 
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::const_declaration() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::const_declaration, word->getPosition());
-
-  node->addChild({identifier(), decideToken(TokenType::op_eq), expression(), decideToken(TokenType::semicolon)});
-
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::type_declaration() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::type_declaration, word->getPosition());
-
-  node->addChild({identifier(), decideToken(TokenType::op_eq), type(), decideToken(TokenType::semicolon)});
-
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::var_declaration() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::var_declaration, word->getPosition());
-
-  node->addChild({ident_list(), decideToken(TokenType::colon), type(), decideToken(TokenType::semicolon)});
-
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::procedure_declaration() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::procedure_declaration, word->getPosition());
-
-  node->addChild({procedure_heading(), decideToken(TokenType::semicolon), procedure_body()});
-
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::expression() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::expression, word->getPosition());
-
-  node->addChild(simple_expression());
-
-  TokenType type = scanner_->peekToken()->getType();
-  if (type == TokenType::op_eq || type == TokenType::op_neq
-      || type == TokenType::op_lt || type == TokenType::op_leq
-      || type == TokenType::op_gt || type == TokenType::op_geq) {
-    node->addChild({binary_op(), simple_expression()});
-  }
-
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::simple_expression() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::simple_expression, word->getPosition());
-
-  TokenType type = scanner_->peekToken()->getType();
-  if (type == TokenType::op_plus || type == TokenType::op_minus) {
-    node->addChild(binary_op());
-  }
-  node->addChild(term());
-
-  type = scanner_->peekToken()->getType();
-  while (type == TokenType::op_plus || type == TokenType::op_minus
-      || type == TokenType::op_or) {
-    node->addChild({binary_op(), term()});
-
-    type = scanner_->peekToken()->getType();
-  }
-
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::term() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::term, word->getPosition());
-
-  node->addChild(factor());
-
-  TokenType type = scanner_->peekToken()->getType();
-  while (type == TokenType::op_times || type == TokenType::op_div
-      || type == TokenType::op_mod || type == TokenType::op_and) {
-    node->addChild({binary_op(), factor()});
-
-    type = scanner_->peekToken()->getType();
-  }
-
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::number() {
-  std::shared_ptr<ParserNode> node;
-  word = scanner_->nextToken();
-
-  if (word->getType() != TokenType::const_number) {
-    node = std::make_shared<ParserNode>(ParserNodeType::syntax_error, word->getPosition(), "expected number here");
-    std::string s = std::string("Expected number.");
-    fail(s);
-  } else {
-    auto number = dynamic_cast<const NumberToken &>(*word);
-    node = std::make_shared<ParserNode>(ParserNodeType::number, word->getPosition(), std::to_string(number.getValue()));
-  }
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::factor() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::factor, word->getPosition());
-
-  TokenType type = scanner_->peekToken()->getType();
-  switch(type) {
-    case TokenType::const_ident: {
-
-      node->addChild(identifier());
-      break;
-    }
-    case TokenType::const_number: {
-      node->addChild(number());
-      break;
-    }
-    case TokenType::lparen: {
-      node->addChild({decideToken(TokenType::lparen), expression(), decideToken(TokenType::rparen)});
-      break;
-    }
-    case TokenType::op_not: {
-      node->addChild({binary_op(), factor()});
-      break;
-    }
-    default: {
-      node = std::make_shared<ParserNode>(ParserNodeType::factor, word->getPosition());
-      std::string s = std::string("Expected a factor");
-      fail(s);
-    }
-  }
-  return node;
-}
-
-const std::shared_ptr<ParserNode> Parser::type() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::type, word->getPosition());
-
-  TokenType type = scanner_->peekToken()->getType();
-  switch (type) {
-  case TokenType::const_ident: {
-    node->addChild(identifier());
-    break;
-  }
-  case TokenType::kw_array: {
-    node->addChild(array_type());
-    break;
-  }
-  case TokenType::kw_record: {
-    node->addChild(record_type());
-    break;
-  }
-  default: {
-    node = std::make_shared<ParserNode>(ParserNodeType::syntax_error, word->getPosition(), "Expected type name, "
-                                                                                           "ARRAY or RECORD");
-    std::string s = std::string("Expected type name, ARRAY or RECORD");
-    fail(s);
     return node;
-  }
-  }
-
-  return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::array_type() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::array_type, word->getPosition());
 
-  node->addChild({decideToken(TokenType::kw_array), expression(), decideToken(TokenType::kw_of), type()});
+const Node* Parser::factor() {
+	Node* node = new Node(NodeType::factor, word->getPosition());
 
-  return node;
+
+	TokenType type = scanner_->peekToken()->getType();
+	if (type == TokenType::const_ident) {
+		node->addChild(*ident());
+		node->addChild(*selector());
+	}
+	else if (type == TokenType::const_number) {
+        node->addChild(*number());
+	}
+	else if (type == TokenType::lparen) {
+		lparen_t();
+		node->addChild(*expression());
+		rparen_t();
+	}
+	else if (type == TokenType::op_not) {
+		not_t();
+		node->addChild(*factor());
+	}
+	else {
+		word = scanner_->nextToken();
+		std::string s = std::string("Expected a factor but was something else factor()");
+		fail(s);
+	}
+
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::record_type() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::record_type, word->getPosition());
+const Node* Parser::type() {
+	Node* node = new Node(NodeType::factor, word->getPosition());
 
-  node->addChild({decideToken(TokenType::kw_record), field_list()});
+	TokenType type = scanner_->peekToken()->getType();
+	if (type == TokenType::const_ident) {
+		node->addChild(*ident());
+	}
+	else if (type == TokenType::kw_array) {
+		node->addChild(*array_type());
+	}
+	else if (type == TokenType::kw_record) {
+		node->addChild(*record_type());
+	}
+	else {
+	    std::string s = std::string("Unknown error (expected type) type()");
+		fail(s);
+	}
 
-  TokenType type = scanner_->peekToken()->getType();
-  while (type == TokenType::semicolon) {
-    node->addChild({decideToken(TokenType::semicolon), field_list()});
-
-    type = scanner_->peekToken()->getType();
-  }
-  node->addChild(decideToken(TokenType::kw_end));
-
-  return node;
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::field_list() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::field_list, word->getPosition());
+const Node* Parser::array_type() {
+	Node* node = new Node(NodeType::array_type, word->getPosition());
 
-  TokenType t_type = scanner_->peekToken()->getType();
-  if (t_type == TokenType::const_ident) {
-    node->addChild({ident_list(), decideToken(TokenType::colon), type()});
-  }
-  return node;
+	array_t();
+	node->addChild(*expression());
+	of_t();
+	node->addChild(*type());
+
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::ident_list() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::ident_list, word->getPosition());
+const Node* Parser::record_type() {
+	Node* node = new Node(NodeType::record_type, word->getPosition());
 
-  node->addChild(identifier());
+	record_t();
+	node->addChild(*field_list());
 
-  while (scanner_->peekToken()->getType() == TokenType::comma) {
-    node->addChild({decideToken(TokenType::comma), identifier()});
-  }
+	TokenType type = scanner_->peekToken()->getType();
+	while (type == TokenType::semicolon) {
+		semicolon_t();
+		node->addChild(*field_list());
 
-  return node;
+		type = scanner_->peekToken()->getType();
+	}
+	end_t();
+
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::procedure_heading() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::procedure_heading, word->getPosition());
+const Node* Parser::field_list() {
+	Node* node = new Node(NodeType::field_list, word->getPosition());
 
-  node->addChild({decideToken(TokenType::kw_procedure), identifier()});
-
-  if (scanner_->peekToken()->getType() == TokenType::lparen) {
-    node->addChild(formal_parameters());
-  }
-  return node;
+	TokenType t_type = scanner_->peekToken()->getType();
+	if (t_type == TokenType::const_ident) {
+		node->addChild(*ident_list());
+		double_colon_t();
+		node->addChild(*type());
+	}
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::procedure_body() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::procedure_body, word->getPosition());
+const Node* Parser::ident_list() {
+	Node* node = new Node(NodeType::ident_list, word->getPosition());
 
-  node->addChild(declarations());
+	node->addChild(*ident());
 
-  if (scanner_->peekToken()->getType() == TokenType::kw_begin) {
-    node->addChild({decideToken(TokenType::kw_begin), statement_sequence()});
-  }
-  node->addChild({decideToken(TokenType::kw_end), identifier(), decideToken(TokenType::semicolon)});
+	while (scanner_->peekToken()->getType() == TokenType::comma) {
+		comma_t();
+		node->addChild(*ident());
+	}
 
-  return node;
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::formal_parameters() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::formal_parameters, word->getPosition());
+const Node* Parser::procedure_heading() {
+	Node* node = new Node(NodeType::procedure_heading, word->getPosition());
 
-  node->addChild(decideToken(TokenType::lparen));
+	procedure_t();
+	node->addChild(*ident());
 
-  TokenType type = scanner_->peekToken()->getType();
-  if (type == TokenType::kw_var || type == TokenType::const_ident) {
-    node->addChild(fp_section());
-    while (scanner_->peekToken()->getType() == TokenType::semicolon) {
-      node->addChild({decideToken(TokenType::semicolon), fp_section()});
-    }
-  }
-  node->addChild(decideToken(TokenType::rparen));
-
-  return node;
+	if (scanner_->peekToken()->getType() == TokenType::lparen) {
+		node->addChild(*formal_parameters());
+	}
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::fp_section() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::fp_section, word->getPosition());
+const Node* Parser::procedure_body()
+{
+	Node* node = new Node(NodeType::procedure_body, word->getPosition());
 
-  if (scanner_->peekToken()->getType() == TokenType::kw_var) {
-    node->addChild(decideToken(TokenType::kw_var));
-  }
-  node->addChild({ident_list(), decideToken(TokenType::colon), type()});
+	node->addChild(*declarations());
 
-  return node;
+	if (scanner_->peekToken()->getType() == TokenType::kw_begin) {
+		begin_t();
+		node->addChild(*statement_sequence());
+	}
+	end_t();
+	node->addChild(*ident());
+	semicolon_t();
+
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::statement_sequence() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::statement_sequence, word->getPosition());
+const Node* Parser::formal_parameters()
+{
+	Node* node = new Node(NodeType::formal_parameters, word->getPosition());
 
-  node->addChild(statement());
-  while (scanner_->peekToken()->getType() == TokenType::semicolon) {
-    node->addChild({decideToken(TokenType::semicolon), statement()});
-  }
-  return node;
+	lparen_t();
+
+	TokenType type = scanner_->peekToken()->getType();
+	if (type == TokenType::kw_var || type == TokenType::const_ident) {
+		node->addChild(*fp_section());
+		while (scanner_->peekToken()->getType() == TokenType::semicolon) {
+			semicolon_t();
+			node->addChild(*fp_section());
+		}
+	}
+	rparen_t();
+
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::statement() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::statement, word->getPosition());
+const Node* Parser::fp_section()
+{
+	Node* node = new Node(NodeType::fp_section, word->getPosition());
 
-  TokenType type = scanner_->peekToken()->getType();
-  switch (type) {
-    case TokenType::const_ident: {
-      node->addChild(id_sel());
-      break;
-    } case TokenType::kw_if: {
-      node->addChild(if_statement());
-      break;
-    } case TokenType::kw_while: {
-      node->addChild(while_statement());
-    break;
-    } default: {
-      break;
-    }
-  }
-  return node;
+	if (scanner_->peekToken()->getType() == TokenType::kw_var) {
+		var_t();
+	}
+	node->addChild(*ident_list());
+	double_colon_t();
+	node->addChild(*type());
+
+	return node;
 }
 
-// Implements identifier selector before Assignment or ProcedureCall
-const std::shared_ptr<ParserNode> Parser::id_sel() {
-  std::shared_ptr<ParserNode> node;
+const Node* Parser::statement_sequence()
+{
+	Node* node = new Node(NodeType::statement_sequence, word->getPosition());
 
-  const auto ident = identifier();
-
-  if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
-    node = std::make_shared<ParserNode>(ParserNodeType::assignment, word->getPosition());
-    node->addChild({ident, decideToken(TokenType::op_becomes), expression()});
-  } else {
-    node = std::make_shared<ParserNode>(ParserNodeType::procedure_call, word->getPosition());
-    node->addChild(ident);
-
-    if (scanner_->peekToken()->getType() == TokenType::lparen) {
-      node->addChild(actual_parameters());
-    }
-  }
-
-  return node;
+	node->addChild(*statement());
+	while (scanner_->peekToken()->getType() == TokenType::semicolon) {
+		semicolon_t();
+		node->addChild(*statement());
+	}
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::if_statement() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::if_statement, word->getPosition());
+const Node* Parser::statement()
+{ //TODO
+	Node* node = new Node(NodeType::statement, word->getPosition());
 
-  node->addChild({decideToken(TokenType::kw_if), expression(), decideToken(TokenType::kw_then), statement_sequence()});
+	TokenType type = scanner_->peekToken()->getType();
+	if (type == TokenType::const_ident) {
+		node->addChild(*A());
+	}
+	else if (type == TokenType::kw_if) {
+		node->addChild(*if_statement());
+	}
+	else if (type == TokenType::kw_while) {
+		node->addChild(*while_statement());
+	}
 
-  while (scanner_->peekToken()->getType() == TokenType::kw_elsif) {
-    node->addChild({decideToken(TokenType::kw_elsif), expression(), decideToken(TokenType::kw_then),
-                    statement_sequence()});
-  }
-  if (scanner_->peekToken()->getType() == TokenType::kw_else) {
-    node->addChild({decideToken(TokenType::kw_else), statement_sequence()});
-  }
-  node->addChild(decideToken(TokenType::kw_end));
 
-  return node;
+	return node;
+
 }
 
-const std::shared_ptr<ParserNode> Parser::while_statement() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::while_statement, word->getPosition());
+// Implements Assignment & ProcedureCall
+const Node* Parser::A()
+{
+	Node* node;
 
-  node->addChild({decideToken(TokenType::kw_while), expression(), decideToken(TokenType::kw_do), statement_sequence(),
-                  decideToken(TokenType::kw_end)});
+	const Node* identifier = ident();
+	const Node* select = selector();
 
-  return node;
+	if (scanner_->peekToken()->getType() == TokenType::op_becomes) {
+		node = new Node(NodeType::assignment, word->getPosition());
+		node->addChild(*identifier);
+		node->addChild(*select);
+		becomes_t();
+		node->addChild(*expression());
+	}
+	else {
+		node = new Node(NodeType::procedure_call, word->getPosition());
+		node->addChild(*identifier);
+		node->addChild(*select);
+
+		if (scanner_->peekToken()->getType() == TokenType::lparen) {
+			node->addChild(*actual_parameters());
+		}
+	}
+
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::actual_parameters() {
-  auto node = std::make_shared<ParserNode>(ParserNodeType::acutal_parameters, word->getPosition());
+const Node* Parser::if_statement()
+{
+	Node* node = new Node(NodeType::if_statement, word->getPosition());
 
-  node->addChild(decideToken(TokenType::lparen));
-  if (scanner_->peekToken()->getType() != TokenType::rparen) {
-    node->addChild(expression());
-    while (scanner_->peekToken()->getType() == TokenType::comma) {
-      node->addChild({decideToken(TokenType::comma), expression()});
-    }
-  }
-  node->addChild(decideToken(TokenType::rparen));
+	if_t();
+	node->addChild(*expression());
+	then_t();
+	node->addChild(*statement_sequence());
 
-  return node;
+	while (scanner_->peekToken()->getType() == TokenType::kw_elsif) {
+		elseif_t();
+		node->addChild(*expression());
+		then_t();
+		node->addChild(*statement_sequence());
+	}
+	if (scanner_->peekToken()->getType() == TokenType::kw_else) {
+		else_t();
+		node->addChild(*statement_sequence());
+	}
+	end_t();
+
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::selector() {
-  std::shared_ptr<ParserNode> node;
+const Node* Parser::while_statement()
+{
+	Node* node = new Node(NodeType::while_statement, word->getPosition());
 
-  switch (scanner_->peekToken()->getType()) {
-    case TokenType::period: {
-      node = std::make_shared<ParserNode>(ParserNodeType::selector, word->getPosition());
-      node->addChild({decideToken(TokenType::period), identifier()});
-      break;
-    }
-    case TokenType::lbrack: {
-      node = std::make_shared<ParserNode>(ParserNodeType::selector, word->getPosition());
-      node->addChild({decideToken(TokenType::lbrack), expression(), decideToken(TokenType::rbrack)});
-      break;
-    }
-    default: {
-      node = std::make_shared<ParserNode>(ParserNodeType::selector, word->getPosition());
-    }
-  }
+	while_t();
+	node->addChild(*expression());
+	do_t();
+	node->addChild(*statement_sequence());
+	end_t();
 
-  TokenType next_token_type = scanner_->peekToken()->getType();
-  if (next_token_type == TokenType::period || next_token_type == TokenType::lbrack) {
-    node->addChild(selector());
-  }
-
-  return node;
+	return node;
 }
 
-const std::shared_ptr<ParserNode> Parser::binary_op() {
-  word = scanner_->nextToken();
+const Node* Parser::actual_parameters()
+{
+	Node* node = new Node(NodeType::acutal_parameters, word->getPosition());
 
-  TokenType type = word->getType();
-  switch (type) {
-    // Boolean Ops
-  case TokenType::op_not:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "~");
-  case TokenType::op_and:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "AND");
-  case TokenType::op_or:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "OR");
-    // Comparators
-  case TokenType::op_eq:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "=");
-  case TokenType::op_neq:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "!=");
-  case TokenType::op_lt:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "<");
-  case TokenType::op_leq:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "<=");
-  case TokenType::op_gt:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), ">");
-  case TokenType::op_geq:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), ">=");
-    // Arithmetic Ops
-  case TokenType::op_plus:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "+");
-  case TokenType::op_minus:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "-");
-  case TokenType::op_times:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "*");
-  case TokenType::op_div:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "/");
-  case TokenType::op_mod:return std::make_shared<ParserNode>(ParserNodeType::binary_op, word->getPosition(), "%");
-    // No match, degrade
-  default:
-    std::string s = std::string("Expected binary operator in method binary op");
-    fail(s);
-    return std::make_shared<ParserNode>(ParserNodeType::syntax_error, word->getPosition(), "Expected binary operator");
-  }
+	lparen_t();
+	if (scanner_->peekToken()->getType() != TokenType::rparen) {
+		node->addChild(*expression());
+		while (scanner_->peekToken()->getType() == TokenType::comma) {
+			comma_t();
+			node->addChild(*expression());
+		}
+	}
+	rparen_t();
+
+	return node;
+}
+
+const Node* Parser::selector()
+{
+	Node* node = new Node(NodeType::selector, word->getPosition());
+
+	while (scanner_->peekToken()->getType() == TokenType::period
+			|| scanner_->peekToken()->getType() == TokenType::lbrack) {
+		if (scanner_->peekToken()->getType() == TokenType::period) {
+			point_t();
+			node->addChild(*ident());
+		}
+		else {
+			lbrack_t();
+			node->addChild(*expression());
+			rbrack_t();
+		}
+	}
+
+	return node;
+}
+
+const Node* Parser::binary_op() {
+	word = scanner_->nextToken();
+
+	TokenType type = word->getType();
+	if (type == TokenType::op_eq) {
+		return new Node(NodeType::binary_op, word->getPosition(), "=");
+	}
+	else if (type == TokenType::op_neq) {
+		return new Node(NodeType::binary_op, word->getPosition(), "#");
+	}
+	else if (type == TokenType::op_lt) {
+		return new Node(NodeType::binary_op, word->getPosition(), "<");
+	}
+	else if (type == TokenType::op_leq) {
+		return new Node(NodeType::binary_op, word->getPosition(), "<=");
+	}
+	else if (type == TokenType::op_gt) {
+		return new Node(NodeType::binary_op, word->getPosition(), ">");
+	}
+	else if (type == TokenType::op_geq) {
+		return new Node(NodeType::binary_op, word->getPosition(), ">=");
+	}
+	else if (type == TokenType::op_plus) {
+		return new Node(NodeType::binary_op, word->getPosition(), "+");
+	}
+	else if (type == TokenType::op_minus) {
+		return new Node(NodeType::binary_op, word->getPosition(), "-");
+	}
+	else if (type == TokenType::op_or) {
+		return new Node(NodeType::binary_op, word->getPosition(), "OR");
+	}
+	else if (type == TokenType::op_times) {
+		return new Node(NodeType::binary_op, word->getPosition(), "*");
+	}
+	else if (type == TokenType::op_div) {
+		return new Node(NodeType::binary_op, word->getPosition(), "DIV");
+	}
+	else if (type == TokenType::op_mod) {
+		return new Node(NodeType::binary_op, word->getPosition(), "MOD");
+	}
+	else if (type == TokenType::op_and) {
+		return new Node(NodeType::binary_op, word->getPosition(), "&");
+	}
+
+	std::string s = std::string("Expected binary operator in method binary op");
+	fail(s);
+
+	return nullptr;
 }
 
 void Parser::fail(std::string &msg) {
-  std::stringstream ss;
-  ss << "\"" << *word << "\"" << std::endl;
-  msg = msg + " expected but got " + ss.str();
+    std::stringstream ss;
+    ss << "\"" << *word << "\"" << std::endl;
+    msg = msg + " expected but got " + ss.str();
 
-  logger_->error(word->getPosition(), msg);
+	logger_->error(word->getPosition(), msg);
+	throw  std::invalid_argument("You failed!" + msg);
 }
 
-const std::shared_ptr<ParserNode> Parser::decideToken(TokenType type) {
-  std::shared_ptr<ParserNode> node;
-  word = scanner_->nextToken();
-  std::stringstream ss;
-  ss << type;
-  std::string c = ss.str();
+void Parser::module_t()
+{
+	std::string s = std::string("\"MODULE\"");
+	decideToken(TokenType::kw_module, s);
+}
 
-  if (word->getType() != type) {
-    node = std::make_shared<ParserNode>(ParserNodeType::syntax_error, word->getPosition());
-    fail(c);
-  } else {
-    node = std::make_shared<ParserNode>(ParserNodeType::terminal_token, word->getPosition(), c);
-  }
-  return node;
+void Parser::semicolon_t() {
+    std:: string s = std::string("semicolon");
+	decideToken(TokenType::semicolon, s);
+}
+
+void Parser::comma_t() {
+    std::string s = std::string("comma");
+	decideToken(TokenType::comma, s);
+}
+
+void Parser::begin_t() {
+    std::string s = std::string("\"BEGIN\"");
+	decideToken(TokenType::kw_begin, s);
+}
+
+void Parser::end_t() {
+    std::string s =  std::string("\"END\"");
+	decideToken(TokenType::kw_end, s);
+}
+
+void Parser::point_t() {
+    std::string s = std::string("\".\"");
+	decideToken(TokenType::period, s);
+}
+
+void Parser::equals_symbol_t() {
+    std::string s = std::string("\"=\"");
+	decideToken(TokenType::op_eq, s);
+}
+
+void Parser::double_colon_t() {
+    std::string s = std::string("\":\"");
+	decideToken(TokenType::colon, s);
+}
+
+void Parser::lparen_t() {
+    std::string s = std::string("\"(\"");
+	decideToken(TokenType::lparen, s);
+}
+
+void Parser::rparen_t() {
+    std::string s = std::string("\")\"");
+	decideToken(TokenType::rparen, s);
+}
+
+void Parser::lbrack_t() {
+    std::string s = std::string("\"[\"");
+	decideToken(TokenType::lbrack, s);
+}
+
+void Parser::rbrack_t() {
+    std::string s = std::string("\"]\"");
+	decideToken(TokenType::rbrack, s);
+}
+
+void Parser::not_t() {
+    std::string s = std::string("\"]\"");
+	decideToken(TokenType::op_not, s);
+}
+
+void Parser::array_t() {
+    std::string s = std::string("\"ARRAY\"");
+	decideToken(TokenType::kw_array, s);
+}
+
+void Parser::of_t() {
+    std::string s = std::string("\"OF\"");
+	decideToken(TokenType::kw_of, s);
+}
+
+void Parser::record_t() {
+    std::string s = std::string("\"RECORD\"");
+	decideToken(TokenType::kw_record, s);
+}
+
+void Parser::procedure_t() {
+    std::string s = std::string("\"PROCEDURE\"");
+	decideToken(TokenType::kw_procedure, s);
+}
+
+void Parser::const_t() {
+    std::string s = std::string("\"CONST\"");
+	decideToken(TokenType::kw_const, s);
+}
+
+void Parser::type_t() {
+    std::string s = std::string("\"TYPE\"");
+	decideToken(TokenType::kw_type, s);
+}
+
+void Parser::var_t() {
+    std::string s = std::string("\"VAR\"");
+	decideToken(TokenType::kw_var, s);
+}
+
+void Parser::becomes_t() {
+    std::string s = std::string("\":=\"");
+	decideToken(TokenType::op_becomes, s);
+}
+
+void Parser::if_t() {
+    std::string s = std::string("\"IF\"");
+	decideToken(TokenType::kw_if, s);
+}
+
+void Parser::then_t() {
+    std::string s = std::string("\"THEN\"");
+	decideToken(TokenType::kw_then, s);
+}
+
+void Parser::else_t() {
+    std::string s = std::string("\"ELSE\"");
+	decideToken(TokenType::kw_else, s);
+}
+
+void Parser::elseif_t() {
+    std::string s = std::string("\"ELSEIF\"");
+	decideToken(TokenType::kw_elsif, s);
+}
+
+void Parser::while_t() {
+    std::string s = std::string("\"WHILE\"");
+	decideToken(TokenType::kw_while, s);
+}
+
+void Parser::do_t() {
+    std::string s =  std::string("\"DO\"");
+	decideToken(TokenType::kw_do, s);
+}
+
+void Parser::decideToken(TokenType type, std::string &errormsg) {
+	word = scanner_->nextToken();
+	if (word->getType() != type) {
+		fail(errormsg);
+	}
 }

@@ -62,6 +62,3 @@ void Logger::debug(const std::string &fileName, const std::string &msg) const {
 void Logger::setLevel(LogLevel level) {
     level_ = level;
 }
-void Logger::error(std::string &ss) const {
-    log(LogLevel::ERROR, std::string(), -1, -1, ss);
-}

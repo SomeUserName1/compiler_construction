@@ -5,24 +5,16 @@ MODULE BubbleSort;
 CONST Dim = 2 * 10;
       Dim1 = 3 * 10;
       Dim2 = 4 * 10;
-      Ugly = - 1 + (- 5 + (9 * 3));
 
 (* Record definition for a two-dimensional point. *)
-TYPE Test = RECORD
-        x, y: INTEGER;
-        a: ARRAY 3 OF INTEGER;
-        r: RECORD w,s,d: INTEGER END;
-     END;
-     Point2D = RECORD x, y: INTEGER END;
+TYPE Point2D = RECORD x, y: INTEGER END;
      Point3D = RECORD x, y, z: INTEGER END;
      Point4D = RECORD w, x, y, z: INTEGER END;
-     IntArray = ARRAY 10 OF INTEGER;
-     typedef = IntArray;
 
 (* Array to be sorted. *)
 VAR a: ARRAY Dim OF INTEGER;
     p: Point2D;
-    c: ARRAY 2 OF ARRAY Dim OF INTEGER;
+    c: ARRAY Dim1 OF INTEGER;
     d: Point3D;
 
 (* Initializes the array. *)
@@ -33,23 +25,16 @@ BEGIN
     WHILE i < Dim DO
         a[i] := Dim-i;
         i := i + 1
-    END;
-    c[1] := a
+    END
 END Init;
 
-(* should yield procedure error or end*)
-
-(* NOPROCEDURE *)
-
 (* Swaps the two values passed as var-parameters. *)
-PROCEDURE Swap(VAR a, b: INTEGER; qwe : Point2D);
+PROCEDURE Swap(VAR a, b: INTEGER);
 VAR t: INTEGER;
 BEGIN
-    WHILE 1 > 2 DO END;
     t := a;
     a := b; 
-    b := t;
-    c[0][0] := b
+    b := t
 END Swap;
     
 (* Applies the bubble sort algorithm to the array. *)
