@@ -7,17 +7,13 @@
 
 #include <Node.h>
 #include <symbol_table/BooleanNode.h>
-static char AND = '&';
-static char OR = '|';
-
-class BooleanOpNode : public Node {
+#include "ComparatorNode.h"
+class BooleanOpNode : public BooleanNode {
 private:
-  char _operator;
-  std::shared_ptr<BooleanNode> _op_0;
-  std::shared_ptr<BooleanNode> _op_1;
 
 public:
-  BooleanOpNode(char operator_, std::shared_ptr<BooleanNode> operand_0, std::shared_ptr<BooleanNode> operand_1);
+  explicit BooleanOpNode(std::string operator_);
+  void addChild(std::shared_ptr <Node> newChild) override;
 };
 
 #endif //OBERON0C_BOOLEANOPNODE_H

@@ -15,16 +15,17 @@ BEGIN
     i := Dim;
     WHILE i > 1 DO
         j := i-1;
+        i := a[i] - a[j];
         WHILE j > 0 DO
-            IF (a[i] > a[j]) & (2 > 1) THEN
-                Swap(a[i], a[j])
+            IF (a[i] > a[j]) & (2+(3*5)-2 > 1) THEN
+                i := a[i] - a[j];
             ELSIF 1 > 2 THEN
                 WHILE 1 > 2 DO END;
             ELSE
                 WHILE 1 > 2 DO END;
             END;
-            j := j + 1
+            j := j - 1
         END;
-        i := i + 1
+        i := i - 1
     END
 END HelloWorld.

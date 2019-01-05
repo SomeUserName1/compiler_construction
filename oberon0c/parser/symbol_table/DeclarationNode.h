@@ -6,7 +6,7 @@
 #define OBERON0C_DECLARATIONNODE_H
 
 #include <Node.h>
-enum class DeclarationType {CONST, VAR, TYPE, PROCEDURE, SCOPE};
+enum class DeclarationType {CONST, VAR, TYPE, PROCEDURE, SCOPE, OP};
 
 std::ostream& operator<<(std::ostream &ostr, DeclarationType type);
 
@@ -25,9 +25,8 @@ class DeclarationNode : public Node {
     void setName(std::string &new_name);
     const DeclarationType getDeclType() const;
     const std::string getType() const;
-    virtual void print(std::ostream & stream) const;
-    virtual void printTree(std::ostream & stream) const;
-    virtual void printTreeRec(std::ostream & stream, int depth) const;
+    void print(std::ostream & stream) const override;
+    void printTreeRec(std::ostream & stream, int depth) const override;
   friend std::ostream& operator<<(std::ostream &stream, const DeclarationNode &node);
 };
 #endif //OBERON0C_DECLARATIONNODE_H

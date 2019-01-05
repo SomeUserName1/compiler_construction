@@ -56,20 +56,16 @@ std::ostream& operator<<(std::ostream &stream, const ParserNodeType &type) {
 
 void ParserNode::print(std::ostream & stream) const {
 	if (!this->value_.empty()) {
-		stream << this->getParserNodeType() << ": " << this->getValue();
+		stream << "|_" << this->getParserNodeType() << ": " << this->getValue();
 	} else {
-		stream << this->getParserNodeType();
+		stream << "|_" << this->getParserNodeType();
 	}
-}
-
-void ParserNode::printTree(std::ostream & stream) const {
-	printTreeRec(stream, 0);
 }
 
 void ParserNode::printTreeRec(std::ostream & stream, int depth) const
 {
 	for (int i = 0; i < depth; i++) {
-		stream << "|-";
+		stream << "  ";
 	}
 
 	this->print(stream);

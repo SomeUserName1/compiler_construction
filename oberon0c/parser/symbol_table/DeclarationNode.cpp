@@ -36,7 +36,9 @@ std::ostream& operator<<(std::ostream &ostr, DeclarationType type) {
     break;
   case DeclarationType::PROCEDURE: result = "PROCEDURE";
     break;
-  case DeclarationType ::SCOPE: result = "SCOPE";
+  case DeclarationType::SCOPE: result = "SCOPE";
+    break;
+  case DeclarationType::OP: result = "OP";
     break;
   }
   ostr << result;
@@ -45,17 +47,13 @@ std::ostream& operator<<(std::ostream &ostr, DeclarationType type) {
 
 
 void DeclarationNode::print(std::ostream & stream) const {
-  stream << this->_name << ", " << this->_declaration_type << ", " << this->_type ;
-}
-
-void DeclarationNode::printTree(std::ostream & stream) const {
-  printTreeRec(stream, 0);
+  stream << "|_" << this->_name << ", " << this->_declaration_type << ", " << this->_type ;
 }
 
 void DeclarationNode::printTreeRec(std::ostream & stream, int depth) const
 {
   for (int i = 0; i < depth; i++) {
-    stream << "|-";
+    stream << "  ";
   }
 
   this->print(stream);

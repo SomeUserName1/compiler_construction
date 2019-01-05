@@ -9,11 +9,9 @@
 #include <symbol_table/DeclarationNode.h>
 
 class AssignmentNode : public Node {
-private:
-  const std::string _ASSIGNMENT_STRING = ":=";
-
 public:
   AssignmentNode(std::shared_ptr<DeclarationNode> lhs, std::shared_ptr<DeclarationNode> rhs);
+  void print(std::ostream & stream) const override;
 };
 
 #endif //OBERON0C_ASSIGNMENTNODE_H

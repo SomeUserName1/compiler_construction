@@ -31,7 +31,7 @@ private:
     FilePos pos_;
 	std::string value_;
 
-	void printTreeRec(std::ostream &stream, int depth) const;
+	void printTreeRec(std::ostream &stream, int depth) const override;
 
 public:
 	ParserNode(ParserNodeType nodeType, FilePos pos);
@@ -40,8 +40,7 @@ public:
 
     const ParserNodeType getParserNodeType() const;
 
-    virtual void print(std::ostream &stream) const;
-	virtual void printTree(std::ostream &stream) const;
+    void print(std::ostream &stream) const override;
     friend std::ostream& operator<<(std::ostream &stream, const ParserNode &node);
 
 	std::string getValue() const;

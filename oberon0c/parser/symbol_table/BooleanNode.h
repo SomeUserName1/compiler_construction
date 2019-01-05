@@ -7,15 +7,13 @@
 #ifndef OBERON0C_BOOLEANNODE_H
 #define OBERON0C_BOOLEANNODE_H
 
-#include "DeclarationNode.h"
-class BooleanNode : public DeclarationNode{
-private:
-  bool _value;
-
+#include <assert.h>
+#include "NumberNode.h"
+class BooleanNode : public NumberNode {
 public:
   BooleanNode(std::string name, int value);
-  const int getValue() const;
-  void setValue(int new_val);
+  explicit BooleanNode(std::string name);
+  void setValue(int value) override;
 };
 
 #endif //OBERON0C_BOOLEANNODE_H

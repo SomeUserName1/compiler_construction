@@ -1,4 +1,4 @@
-#include <ast/ArithmeticOpNode.h>
+
 #include "SemanticAnalysis.h"
 
 SemanticAnalysis::SemanticAnalysis(std::shared_ptr<const ParserNode> parse_tree, std::shared_ptr<Logger> logger)
@@ -8,24 +8,33 @@ std::shared_ptr<Node> SemanticAnalysis::check() {
 //  std::cout << "\n\n\n\n \t\t\tDISCLAIMER: \n"
 //               "\tThe following code is designed in an extremely ill-formed, if not systematically chaotic way \n"
 //               "\tThis leads especially to the overuse of for loops, switch statements and worst and foremost dynamic casts\n"
-//               "\tThe author obviously didnt proppely inform oneself about inheritance in Cpp thus tought polymorphism works\n"
-//               "\tsimilar to javas but that is obviously not the case \n"
+//               "\tThe author obviously didnt proppely inform oneself about inheritance in Cpp. And is incapable of designing more than 500 loc on the fly\n"
+//               " How it should actually be done is to put more stuff into the BaseClass and use less inheritance to induce less complexity (\"KISS\") \n"
+//               " This uni's cs bachelor needs more proper (first and foremost) C and C++ courses instead of Java and lecturers like klinger instead of de ridder and waldvogel\n"
+//               " (fuck java: hides the machine, hides pointers, is inefficient and way too comfortable for the \"programmers\")\n"
+//               " covering ALL of that shit: https://en.cppreference.com/w/cpp/language and https://en.cppreference.com/w/cpp/header\n"
+//               " By that also all of https://en.cppreference.com/w/c/language and https://en.cppreference.com/w/c/header\n"
+//                "Instead of the Java bullshit: Programming I (C) & III (C++); (II -> Haskell is perfectly fine)\n"
 //               "BE CAREFUL WHEN YOU READ THE FOLLOWING, IT MIGHT DYNAMICALLY CAST YOUR BRAIN AT READ TIME\n"
 //               "INTO AN UNDEFINED PROTEIN-BASED GLIBBERISH LIQUID BEFORE BEEING ABLE TO\n"
 //               "SWITCH TO A DIFFERENT STUDENTs PROJECT\n"
-//               "Maybe the lacking structure in terms of programming interfaces motivated the author to apply anti-patterns when possible\n"
+//               "Maybe the lacking structure in terms of programming interfaces let the author to apply anti-patterns when possible\n"
 //               "Maybe a good intermediate assignment for the next years would be to submit interfaces which a random HiWi named after a strange"
 //               " platypus\n has to review and fix the best one so that students are\n forced not to use anti-patterns and may cry and shit arround less"
 //               " in the form of spaghetti code and mimimi\n"
+//                "The main error of this piece of software pointed out in one sentence by an SO author:\n"
+//                "\t\t \"The elimination of needless complexity is not a shortcut; it's key to writing better software.\" – MSalters"
 //               "Anderst formuliert, was folgt ist E-KEL-HAFT\n"
+//               "Und statt große reden zu schwingen hätte ich vermutlich besser programmieren lernen sollen... Stichworte Eigenverantwortung, Selbstverschuldete Unmündigkeit\n"
 //               "\tThanks for your attention\n\n\n" << std::endl;
 
   // build symbol table, report if a symbol collision occurs
   this->_symbol_tree = build_symbol_table(nullptr, _parse_tree);
-  //std::cout << *_symbol_tree << std::endl;
+  std::cout << *_symbol_tree << std::endl;
 
   // take ops out of parse tree and link them to symbol table entries or temp results, report on type error
   this->_ast = build_ast(_parse_tree, _symbol_tree);
+  //std::cout << *_ast << std::endl;
 
   // do all other checks
 
@@ -73,42 +82,49 @@ std::shared_ptr<SymbolScopeNode> SemanticAnalysis::build_symbol_table(std::share
   return scope;
 }
 
-std::shared_ptr<Node> SemanticAnalysis::build_ast(std::shared_ptr<const ParserNode> sub_tree, std::shared_ptr<SymbolScopeNode> current_scope) {
+std::shared_ptr<Node> SemanticAnalysis::build_ast(std::shared_ptr<const ParserNode> sub_tree,
+                                                  std::shared_ptr<SymbolScopeNode> current_scope) {
   auto root = std::make_shared<Node>();
 
-  for (auto & child : sub_tree->getChildren()) {
+  for (auto &child : sub_tree->getChildren()) {
     auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
 
     if (parser_child->getParserNodeType() == ParserNodeType::statement_sequence) {
-      for (auto &st_child : parser_child->getChildren()) {
-        auto pst_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*st_child));
+      root = parse_statement_sequence(parser_child, current_scope);
+    }
+  }
+  return root;
+}
 
-        if (pst_child->getParserNodeType() == ParserNodeType::statement) {
-          for (auto &cst_child : pst_child->getChildren()) {
-            auto pcst_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*cst_child));
+std::shared_ptr<Node> SemanticAnalysis::parse_statement_sequence(std::shared_ptr<const ParserNode> sub_tree,
+                                                                 std::shared_ptr<SymbolScopeNode> current_scope) {
+  auto root = std::make_shared<Node>();
+  for (auto &st_child : sub_tree->getChildren()) {
+    auto pst_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*st_child));
 
-            switch (pcst_child->getParserNodeType()) {
-            case ParserNodeType::assignment: {
-              root->addChild(parse_assignment(pcst_child, current_scope));
-              break;
-            }
-            // TODO If and While: parse boolean expr
-            case ParserNodeType::while_statement: {
-              root->addChild(parse_loop(pcst_child, current_scope));
-              break;
-            }
-            case ParserNodeType::if_statement: {
-              root->addChild(parse_branch(pcst_child, current_scope));
-              break;
-            }
-            // TODO look up procedure, parse actual params & check
-            case ParserNodeType::procedure_call: {
-              root->addChild(parse_call(pcst_child, current_scope));
-              break;
-            }
-            default: continue;
-            }
-          }
+    if (pst_child->getParserNodeType() == ParserNodeType::statement) {
+      for (auto &cst_child : pst_child->getChildren()) {
+        auto pcst_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*cst_child));
+
+        switch (pcst_child->getParserNodeType()) {
+        case ParserNodeType::assignment: {
+          root->addChild(parse_assignment(pcst_child, current_scope));
+          break;
+        }
+        case ParserNodeType::while_statement: {
+          root->addChild(parse_loop(pcst_child, current_scope));
+          break;
+        }
+        case ParserNodeType::if_statement: {
+          root->addChild(parse_branch(pcst_child, current_scope));
+          break;
+        }
+          // TODO look up procedure, parse actual params & check
+        case ParserNodeType::procedure_call: {
+          root->addChild(parse_call(pcst_child, current_scope));
+          break;
+        }
+        default: continue;
         }
       }
     }
@@ -116,20 +132,64 @@ std::shared_ptr<Node> SemanticAnalysis::build_ast(std::shared_ptr<const ParserNo
   return root;
 }
 
-std::shared_ptr<CallNode> SemanticAnalysis::parse_call(std::shared_ptr<const ParserNode> proc_call, std::shared_ptr<SymbolScopeNode> current_scope) {
-return std::shared_ptr<CallNode>();
+std::shared_ptr<CallNode> SemanticAnalysis::parse_call(std::shared_ptr<const ParserNode> proc_call,
+                                                       std::shared_ptr<SymbolScopeNode> current_scope) {
+  return std::shared_ptr<CallNode>();
 }
 
-std::shared_ptr<BranchNode> SemanticAnalysis::parse_branch(std::shared_ptr<const ParserNode> if_statement, std::shared_ptr<SymbolScopeNode> current_scope) {
-return std::shared_ptr<BranchNode>();
+std::shared_ptr<BranchNode> SemanticAnalysis::parse_branch(std::shared_ptr<const ParserNode> if_statement,
+                                                           std::shared_ptr<SymbolScopeNode> current_scope) {
+  auto branch = std::make_shared<BranchNode>();
+
+  for (auto &child : if_statement->getChildren()) {
+    auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+
+    switch (parser_child->getParserNodeType()) {
+    case ParserNodeType::expression: {
+      branch->addChild(eval_bool_expr(parser_child, current_scope));
+      continue;
+    }
+    case ParserNodeType::statement_sequence: {
+      branch->addChild(parse_statement_sequence(parser_child, current_scope));
+      continue;
+    }
+    default: {
+      continue;
+    }
+    }
+  }
+
+  return branch;
 }
 
-std::shared_ptr<LoopNode> SemanticAnalysis::parse_loop(std::shared_ptr<const ParserNode> loop, std::shared_ptr<SymbolScopeNode> current_scope) {
-return std::shared_ptr<LoopNode>();
+std::shared_ptr<LoopNode> SemanticAnalysis::parse_loop(std::shared_ptr<const ParserNode> loop,
+                                                       std::shared_ptr<SymbolScopeNode> current_scope) {
+  std::shared_ptr<BooleanNode> condition;
+  std::shared_ptr<Node> ast;
+
+  for (auto &child : loop->getChildren()) {
+    auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+
+    switch (parser_child->getParserNodeType()) {
+    case ParserNodeType::expression: {
+      condition = eval_bool_expr(parser_child, current_scope);
+      continue;
+    }
+    case ParserNodeType::statement_sequence: {
+      ast = parse_statement_sequence(parser_child, current_scope);
+      continue;
+    }
+    default: {
+      continue;
+    }
+    }
+  }
+
+  return std::make_shared<LoopNode>(condition, ast);
 }
 
-std::shared_ptr<AssignmentNode> SemanticAnalysis::parse_assignment(std::shared_ptr<const ParserNode> assignment, std::shared_ptr<SymbolScopeNode> current_scope) {
-  std::shared_ptr<AssignmentNode> asg;
+std::shared_ptr<AssignmentNode> SemanticAnalysis::parse_assignment(std::shared_ptr<const ParserNode> assignment,
+                                                                   std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<std::string> identifier;
   std::shared_ptr<NumberNode> var_expr;
   std::shared_ptr<DeclarationNode> id;
@@ -139,7 +199,7 @@ std::shared_ptr<AssignmentNode> SemanticAnalysis::parse_assignment(std::shared_p
 
     switch (parser_child->getParserNodeType()) {
     case ParserNodeType::identifier: {
-      identifier = parse_identifier(parser_child, current_scope);
+      identifier = parse_identifier(parser_child, current_scope, false);
       if (identifier.empty()) {
         std::string s = "Const declaration identifiers must not be within arrays or records";
         _logger->error(s);
@@ -157,7 +217,7 @@ std::shared_ptr<AssignmentNode> SemanticAnalysis::parse_assignment(std::shared_p
     }
   }
 
-return std::make_shared<AssignmentNode>(id, var_expr);
+  return std::make_shared<AssignmentNode>(id, var_expr);
 }
 
 std::shared_ptr<NumberNode> SemanticAnalysis::const_declaration(std::shared_ptr<const ParserNode> const_decl,
@@ -170,7 +230,7 @@ std::shared_ptr<NumberNode> SemanticAnalysis::const_declaration(std::shared_ptr<
 
     switch (parser_child->getParserNodeType()) {
     case ParserNodeType::identifier: {
-      identifier = parse_identifier(parser_child, current_scope);
+      identifier = parse_identifier(parser_child, current_scope, true);
       if (identifier.size() > 1) {
         std::string s = "Const declaration identifiers must not be within arrays or records";
         _logger->error(s);
@@ -199,7 +259,7 @@ std::shared_ptr<DeclarationNode> SemanticAnalysis::type_declaration(std::shared_
 
     switch (parser_child->getParserNodeType()) {
     case ParserNodeType::identifier: {
-      identifier = parse_identifier(parser_child, current_scope);
+      identifier = parse_identifier(parser_child, current_scope, true);
       if (identifier.size() > 1 || identifier.empty()) {
         std::string s = "expected exactly one identifier in type declaration, found 0 or more than 1";
         _logger->error(s);
@@ -238,7 +298,7 @@ std::vector<std::shared_ptr<DeclarationNode>> SemanticAnalysis::var_declaration(
       for (auto &ids :parser_child->getChildren()) {
         auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*ids));
         if (ParserNodeType::identifier == p_child->getParserNodeType()) {
-          identifier = parse_identifier(p_child, scope);
+          identifier = parse_identifier(p_child, scope, true);
           if (identifier.size() > 1) {
             std::string s = "Const declaration identifiers must not be within arrays or records";
             _logger->error(s);
@@ -268,11 +328,11 @@ std::vector<std::shared_ptr<DeclarationNode>> SemanticAnalysis::var_declaration(
       temp.setName(id);
       var_declarations.push_back(std::make_shared<ArrayNode>(temp));
     } else if (type == "RecordNode") {
-      RecordNode temp =  dynamic_cast<RecordNode &>(*var);
+      RecordNode temp = dynamic_cast<RecordNode &>(*var);
       temp.setName(id);
       var_declarations.push_back(std::make_shared<RecordNode>(temp));
     } else if (type == "TypeNode") {
-      TypeNode temp =  dynamic_cast<TypeNode &>(*var);
+      TypeNode temp = dynamic_cast<TypeNode &>(*var);
       temp.setName(id);
       var_declarations.push_back(std::make_shared<TypeNode>(temp));
     }
@@ -297,7 +357,7 @@ std::shared_ptr<ProcedureNode> SemanticAnalysis::procedure_declaration(std::shar
         auto cpp_rapist = std::make_shared<const ParserNode>(dynamic_cast<const ParserNode &>(*ph_child));
         switch (cpp_rapist->getParserNodeType()) {
         case ParserNodeType::identifier: {
-          identifier = parse_identifier(cpp_rapist, current_scope);
+          identifier = parse_identifier(cpp_rapist, current_scope, true);
           if (identifier.size() > 1 || identifier.empty()) {
             std::string s = "Const declaration identifiers must not be within arrays or records";
             _logger->error(s);
@@ -318,6 +378,7 @@ std::shared_ptr<ProcedureNode> SemanticAnalysis::procedure_declaration(std::shar
       // std::cout << *parser_child << std::endl;
       scope_child = build_symbol_table(current_scope, parser_child);
       proc_ast = build_ast(parser_child, scope_child);
+      continue;
     }
     default: {
       continue;
@@ -365,11 +426,25 @@ std::shared_ptr<DeclarationNode> SemanticAnalysis::look_up(std::vector<std::stri
       // case . : look for field in record
       auto record = std::make_shared<RecordNode>(dynamic_cast<RecordNode &>(*node));
       node = record->getField(identifier[i + 1]);
+      auto field = dynamic_cast<DeclarationNode &>(*node);
+      type = field.getType();
       i++;
     } else if (identifier[i] == "[") {
       // case [ : look for array including size
       auto array = std::make_shared<ArrayNode>(dynamic_cast<ArrayNode &>(*node));
-      node = array->getValue(std::stoi(identifier[i + 1]));
+
+      char* p;
+      int converted = (int) strtol(identifier[i+1].c_str(), &p, 10);
+      if (*p == 0) {
+        node = array->getValue(converted);
+      } else {
+        // so we have a var array selector...
+        std::vector str(identifier.begin()+(i+1), identifier.end());
+        auto sel = look_up(str, scope);
+
+      }
+
+      type = array->getArrayType()->getType();
       i = i + 2;
     }
   }
@@ -406,6 +481,7 @@ std::shared_ptr<ArrayNode> SemanticAnalysis::parse_array(std::shared_ptr<ParserN
     }
     case ParserNodeType::type: {
       type = parse_type(parser_child, false, current_scope);
+      continue;
     }
     default: {
       continue;
@@ -464,12 +540,12 @@ std::shared_ptr<DeclarationNode> SemanticAnalysis::parse_type(std::shared_ptr<Pa
   switch (pt_child->getParserNodeType()) {
   case ParserNodeType::identifier: {
     if (pt_child->getValue() == "INTEGER") {
-      return var ? std::make_shared<NumberNode>("TOBESET", -999999, DeclarationType::VAR)
-                 : std::make_shared<NumberNode>("TYPE", 0, DeclarationType::TYPE);
+      return var ? std::make_shared<NumberNode>("TOBESET", DeclarationType::VAR)
+                 : std::make_shared<NumberNode>("TYPE", DeclarationType::TYPE);
     }
-    auto node = look_up(parse_identifier(pt_child, current_scope), current_scope);
+    auto node = look_up(parse_identifier(pt_child, current_scope, true), current_scope);
     if (node->getDeclType() != DeclarationType::TYPE) {
-      throw "cant use a variable as a type";
+      throw std::logic_error("cant use a variable as a type");
     }
     auto type = node->getType();
     if (type == "ArrayNode") {
@@ -484,6 +560,8 @@ std::shared_ptr<DeclarationNode> SemanticAnalysis::parse_type(std::shared_ptr<Pa
       auto type_n = dynamic_cast<TypeNode &>(*node);
       return var ? std::make_shared<TypeNode>("TOBESET", type_n.getAliased(), DeclarationType::VAR)
                  : std::make_shared<TypeNode>(type_n);
+    } else {
+      throw std::logic_error("somewhere over the rainbow is where we shouldnt reach");
     }
   }
   case ParserNodeType::array_type: {
@@ -497,7 +575,7 @@ std::shared_ptr<DeclarationNode> SemanticAnalysis::parse_type(std::shared_ptr<Pa
 }
 
 std::vector<std::string> SemanticAnalysis::parse_identifier(std::shared_ptr<const ParserNode> identifer,
-                                                            std::shared_ptr<SymbolScopeNode> current_scope) {
+                                                            std::shared_ptr<SymbolScopeNode> current_scope, bool decl) {
   std::vector<std::string> result({identifer->getValue()});
   // identifier after End keyword
   if (identifer->getChildren().empty())
@@ -517,7 +595,15 @@ std::vector<std::string> SemanticAnalysis::parse_identifier(std::shared_ptr<cons
       } else if (token->getValue() == "[") {
         result.push_back(token->getValue());
         auto expr = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*tokens[i + 1]));
-        result.push_back(to_string(eval_const_expr(expr, current_scope)));
+
+        if (decl){
+          result.push_back(to_string(eval_const_expr(expr, current_scope)));
+        } else {
+          auto eval = parse_identifier(expr, current_scope, false);
+          for (auto &elem : eval) {
+            result.push_back(elem);
+          }
+        }
         result.emplace_back("]");
         i = i + 2;
       }
@@ -526,7 +612,8 @@ std::vector<std::string> SemanticAnalysis::parse_identifier(std::shared_ptr<cons
   return result;
 }
 
-int SemanticAnalysis::eval_const_expr(std::shared_ptr<ParserNode> expr, std::shared_ptr<SymbolScopeNode> current_scope) {
+int SemanticAnalysis::eval_const_expr(std::shared_ptr<ParserNode> expr,
+                                      std::shared_ptr<SymbolScopeNode> current_scope) {
   int result = 0;
   for (auto &child : expr->getChildren()) {
     auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
@@ -548,7 +635,7 @@ int SemanticAnalysis::eval_const_expr(std::shared_ptr<ParserNode> expr, std::sha
 }
 
 int SemanticAnalysis::eval_const_simple_expr(std::shared_ptr<ParserNode> simple_expr,
-                                       std::shared_ptr<SymbolScopeNode> current_scope) {
+                                             std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<int> numbers;
   std::vector<std::string> ops;
   for (auto &child : simple_expr->getChildren()) {
@@ -576,7 +663,8 @@ int SemanticAnalysis::eval_const_simple_expr(std::shared_ptr<ParserNode> simple_
   return calculate(numbers, ops);
 }
 
-int SemanticAnalysis::eval_const_term(std::shared_ptr<ParserNode> term, std::shared_ptr<SymbolScopeNode> current_scope) {
+int SemanticAnalysis::eval_const_term(std::shared_ptr<ParserNode> term,
+                                      std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<int> numbers;
   std::vector<std::string> ops;
   for (auto &child : term->getChildren()) {
@@ -638,8 +726,9 @@ int SemanticAnalysis::calculate(std::vector<int> numbers, std::vector<std::strin
   return result;
 }
 
-int SemanticAnalysis::eval_const_factor(std::shared_ptr<ParserNode> factor, std::shared_ptr<SymbolScopeNode> current_scope) {
-  int res = -999999999;
+int SemanticAnalysis::eval_const_factor(std::shared_ptr<ParserNode> factor,
+                                        std::shared_ptr<SymbolScopeNode> current_scope) {
+  int res = INT32_MIN;
 
   for (const auto &child : factor->getChildren()) {
     auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
@@ -658,7 +747,7 @@ int SemanticAnalysis::eval_const_factor(std::shared_ptr<ParserNode> factor, std:
       break;
     }
     case ParserNodeType::identifier: {
-      auto declaration_node = look_up(parse_identifier(p_child, current_scope), current_scope);
+      auto declaration_node = look_up(parse_identifier(p_child, current_scope, true), current_scope);
       auto number = std::make_shared<NumberNode>(dynamic_cast<NumberNode &>(*declaration_node));
       if (!number || number->getDeclType() != DeclarationType::CONST) {
         std::string msg = "no const declaration found with such a name" + p_child->getValue();
@@ -674,7 +763,8 @@ int SemanticAnalysis::eval_const_factor(std::shared_ptr<ParserNode> factor, std:
   return res;
 }
 
-std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_expr(std::shared_ptr<ParserNode> expr, std::shared_ptr<SymbolScopeNode> current_scope) {
+std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_expr(std::shared_ptr<ParserNode> expr,
+                                                            std::shared_ptr<SymbolScopeNode> current_scope) {
   std::shared_ptr<NumberNode> result;
   for (auto &child : expr->getChildren()) {
     auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
@@ -696,7 +786,7 @@ std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_expr(std::shared_ptr<Pars
 }
 
 std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_simple_expr(std::shared_ptr<ParserNode> simple_expr,
-                                             std::shared_ptr<SymbolScopeNode> current_scope) {
+                                                                   std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<std::shared_ptr<NumberNode>> numbers;
   std::vector<std::string> ops;
   for (auto &child : simple_expr->getChildren()) {
@@ -724,7 +814,8 @@ std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_simple_expr(std::shared_p
   return build_arith_op_tree(numbers, ops);
 }
 
-std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_term(std::shared_ptr<ParserNode> term, std::shared_ptr<SymbolScopeNode> current_scope) {
+std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_term(std::shared_ptr<ParserNode> term,
+                                                            std::shared_ptr<SymbolScopeNode> current_scope) {
   std::vector<std::shared_ptr<NumberNode>> numbers;
   std::vector<std::string> ops;
   for (auto &child : term->getChildren()) {
@@ -735,7 +826,6 @@ std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_term(std::shared_ptr<Pars
       if (p_child->getValue() == "AND") {
         std::string msg = "AND not allowed in var assignments right hand side";
         _logger->error(msg);
-        std::cout << "right here" << std::endl;
         return nullptr;
       }
       ops.push_back(p_child->getValue());
@@ -747,22 +837,25 @@ std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_term(std::shared_ptr<Pars
     }
     default:std::string msg = "unexpected token, check your parsing of the tree fool";
       _logger->error(msg);
-      std::cout << "right here" << std::endl;
       return nullptr;
     }
   }
   return build_arith_op_tree(numbers, ops);
 }
 
-
-
-std::shared_ptr<NumberNode> SemanticAnalysis::build_arith_op_tree(std::vector<std::shared_ptr<NumberNode>> numbers, std::vector<std::string> ops) {
+std::shared_ptr<NumberNode> SemanticAnalysis::build_arith_op_tree(std::vector<std::shared_ptr<NumberNode>> numbers,
+                                                                  std::vector<std::string> ops) {
   if (ops.empty()) {
-    return numbers[0];}
+    if (numbers.size() == 1) {
+      return numbers[0];
+    } else  {
+      throw std::logic_error("ill-formed condition 1");
+    }
+  }
   std::reverse(numbers.begin(), numbers.end());
   std::reverse(ops.begin(), ops.end());
   auto arith = std::make_shared<ArithmeticOpNode>(ops.back());
-  if (ops.size() == numbers.size() ) {
+  if (ops.size() == numbers.size()) {
     arith->addChild(std::make_shared<NumberNode>("temp", 0, DeclarationType::VAR));
   } else {
     arith->addChild(numbers.back());
@@ -772,7 +865,7 @@ std::shared_ptr<NumberNode> SemanticAnalysis::build_arith_op_tree(std::vector<st
 
   std::shared_ptr<ArithmeticOpNode> prev = arith;
   std::shared_ptr<ArithmeticOpNode> next;
-  while(!ops.empty()) {
+  while (!ops.empty()) {
     next = std::make_shared<ArithmeticOpNode>(ops.back());
     next->addChild(numbers.back());
     prev->addChild(next);
@@ -782,11 +875,11 @@ std::shared_ptr<NumberNode> SemanticAnalysis::build_arith_op_tree(std::vector<st
   }
   prev->addChild(numbers.back());
 
-  std::cout << "right here" << std::endl;
   return arith;
 }
 
-std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_factor(std::shared_ptr<ParserNode> factor, std::shared_ptr<SymbolScopeNode> current_scope) {
+std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_factor(std::shared_ptr<ParserNode> factor,
+                                                              std::shared_ptr<SymbolScopeNode> current_scope) {
   std::shared_ptr<NumberNode> number;
 
   for (const auto &child : factor->getChildren()) {
@@ -799,16 +892,222 @@ std::shared_ptr<NumberNode> SemanticAnalysis::eval_var_factor(std::shared_ptr<Pa
     }
     case ParserNodeType::number: {
       number = std::make_shared<NumberNode>("temp", std::stoi(p_child->getValue()), DeclarationType::CONST);
+      break;
     }
     case ParserNodeType::expression: {
       number = eval_var_expr(p_child, current_scope);
+      break;
     }
     case ParserNodeType::identifier: {
-      auto declaration_node = look_up(parse_identifier(p_child, current_scope), current_scope);
+      auto declaration_node = look_up(parse_identifier(p_child, current_scope, false), current_scope);
       number = std::make_shared<NumberNode>(dynamic_cast<NumberNode &>(*declaration_node));
+      break;
     }
     default:continue;
     }
   }
   return number;
+}
+
+std::shared_ptr<BooleanNode> SemanticAnalysis::eval_bool_expr(std::shared_ptr<ParserNode> expr,
+                                                              std::shared_ptr<SymbolScopeNode> current_scope) {
+  std::vector<std::shared_ptr<NumberNode>> numbers;
+  std::vector<std::string> ops;
+
+  for (auto &child : expr->getChildren()) {
+    auto parser_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+
+    switch (parser_child->getParserNodeType()) {
+    case ParserNodeType::simple_expression: {
+      numbers.push_back(eval_bool_simple_expr(parser_child, current_scope));
+      continue;
+    }
+    case ParserNodeType::binary_op: {
+      ops.push_back(parser_child->getValue());
+      continue;
+    }
+    default: {
+      continue;
+    }
+    }
+  }
+
+  return build_comp_op_tree(numbers, ops);
+}
+
+std::shared_ptr<NumberNode> SemanticAnalysis::eval_bool_simple_expr(std::shared_ptr<ParserNode> simple_expr,
+                                                                    std::shared_ptr<SymbolScopeNode> current_scope) {
+  std::vector<std::shared_ptr<NumberNode>> numbers;
+  std::vector<std::string> ops;
+  bool is_bin = false;
+
+  for (auto &child : simple_expr->getChildren()) {
+    auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+
+    switch (p_child->getParserNodeType()) {
+    case ParserNodeType::binary_op: {
+      if(p_child->getValue() == "OR") is_bin=true;
+      ops.push_back(p_child->getValue());
+      continue;
+    }
+    case ParserNodeType::term: {
+      numbers.push_back(eval_bool_term(p_child, current_scope));
+      continue;
+    }
+    default:std::string msg = "unexpected token, check your parsing of the tree fool";
+      _logger->error(msg);
+      return nullptr;
+    }
+  }
+  return is_bin ? build_bool_op_tree(numbers, ops) : build_arith_op_tree(numbers, ops);
+}
+
+std::shared_ptr<NumberNode> SemanticAnalysis::eval_bool_term(std::shared_ptr<ParserNode> term,
+                                                             std::shared_ptr<SymbolScopeNode> current_scope) {
+  std::vector<std::shared_ptr<NumberNode>> numbers;
+  std::vector<std::string> ops;
+  bool is_bin = false;
+
+  for (auto &child : term->getChildren()) {
+    auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+
+    switch (p_child->getParserNodeType()) {
+    case ParserNodeType::binary_op: {
+      if(p_child->getValue() == "AND") is_bin=true;
+      ops.push_back(p_child->getValue());
+      continue;
+    }
+    case ParserNodeType::factor: {
+      numbers.push_back(eval_bool_factor(p_child, current_scope));
+      continue;
+    }
+    default:std::string msg = "unexpected token, check your parsing of the tree fool";
+      _logger->error(msg);
+      return nullptr;
+    }
+  }
+  return is_bin ? build_bool_op_tree(numbers, ops) : build_arith_op_tree(numbers, ops);
+}
+
+std::shared_ptr<NumberNode> SemanticAnalysis::build_bool_op_tree(std::vector<std::shared_ptr<NumberNode>> numbers,
+                                                                 std::vector<std::string> ops) {
+  std::vector<std::shared_ptr<BooleanNode>> booleans;
+  for (auto &bools : numbers) {
+    if (bools->getType() == "BooleanNode") {
+      booleans.push_back(std::make_shared<BooleanNode>(dynamic_cast<BooleanNode &>(*bools)));
+    } else {
+      if (bools->getValue() == 0 || bools->getValue() == 1) {
+        booleans.push_back(std::make_shared<BooleanNode>("temp", bools->getValue()));
+      } else {
+        throw std::logic_error("error: not a boolean value/Node" + bools->getType() + to_string(bools->getValue()) + bools->getName());
+      }
+    }
+  }
+
+  if (ops.empty()) {
+    if (numbers.size() == 1) {
+      return numbers[0];
+    } else  {
+      throw std::logic_error("ill-formed condition 2");
+    }
+  }
+
+  std::reverse(numbers.begin(), numbers.end());
+  std::reverse(ops.begin(), ops.end());
+  auto arith = std::make_shared<BooleanOpNode>(ops.back());
+
+  arith->addChild(numbers.back());
+  numbers.pop_back();
+  ops.pop_back();
+
+  std::shared_ptr<BooleanOpNode> prev = arith;
+  std::shared_ptr<BooleanOpNode> next;
+  while (!ops.empty()) {
+    next = std::make_shared<BooleanOpNode>(ops.back());
+    next->addChild(numbers.back());
+    prev->addChild(next);
+    ops.pop_back();
+    numbers.pop_back();
+    prev = next;
+  }
+  prev->addChild(numbers.back());
+
+  return arith;
+}
+
+std::shared_ptr<BooleanNode> SemanticAnalysis::build_comp_op_tree(std::vector<std::shared_ptr<NumberNode>> numbers,
+                                                                  std::vector<std::string> ops) {
+  if (ops.empty()) {
+    if (numbers.size() == 1) {
+      if (numbers[0]->getValue() == 0) {
+        return std::make_shared<BooleanNode>("temp", 0);
+      } else if (numbers[0]->getValue() == 1) {
+        return std::make_shared<BooleanNode>("temp", 1);
+      } else {
+        throw std::logic_error("ill-formed condition 3");
+      }
+    } else {
+      throw std::logic_error("ill-formed condition 4");
+    }
+  }
+
+  std::reverse(numbers.begin(), numbers.end());
+  std::reverse(ops.begin(), ops.end());
+
+  auto comp = std::make_shared<ComparatorNode>(ops.back());
+  comp->addChild(numbers.back());
+  numbers.pop_back();
+  ops.pop_back();
+
+  std::shared_ptr<ComparatorNode> prev = comp;
+  std::shared_ptr<ComparatorNode> next;
+  while (!ops.empty()) {
+    next = std::make_shared<ComparatorNode>(ops.back());
+    next->addChild(numbers.back());
+    prev->addChild(next);
+    ops.pop_back();
+    numbers.pop_back();
+    prev = next;
+  }
+  prev->addChild(numbers.back());
+
+  return comp;
+}
+
+std::shared_ptr<NumberNode> SemanticAnalysis::eval_bool_factor(std::shared_ptr<ParserNode> factor,
+                                                               std::shared_ptr<SymbolScopeNode> current_scope) {
+  std::shared_ptr<NumberNode> number;
+
+  for (const auto &child : factor->getChildren()) {
+    auto p_child = std::make_shared<ParserNode>(dynamic_cast<ParserNode &>(*child));
+    switch (p_child->getParserNodeType()) {
+    case ParserNodeType::factor: {
+      return negate(eval_bool_factor(p_child, current_scope));
+    }
+    case ParserNodeType::number: {
+      number = std::make_shared<NumberNode>("temp", std::stoi(p_child->getValue()), DeclarationType::CONST);
+      break;
+    }
+    case ParserNodeType::expression: {
+      return eval_bool_expr(p_child, current_scope);
+    }
+    case ParserNodeType::identifier: {
+      auto declaration_node = look_up(parse_identifier(p_child, current_scope, false), current_scope);
+      number = std::make_shared<NumberNode>(dynamic_cast<NumberNode &>(*declaration_node));
+      break;
+    }
+    default:continue;
+    }
+  }
+  return number;
+}
+
+std::shared_ptr<BooleanNode> SemanticAnalysis::negate(std::shared_ptr<NumberNode> factor) {
+  if (factor->getType() != "BooleanNode") {
+    throw std::logic_error("cant negate a non-boolean");
+  }
+  auto boolean = std::make_shared<BooleanNode>(dynamic_cast<BooleanNode &>(*factor));
+  int new_val = boolean->getValue() == 0 ? 1 : 0;
+  boolean->setValue(new_val);
+  return boolean;
 }

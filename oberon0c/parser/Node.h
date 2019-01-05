@@ -31,8 +31,10 @@ class Node {
     virtual void addChild(std::shared_ptr<Node> newChild);
     virtual void setChild(int position, std::shared_ptr<Node> newChild);
     const std::vector<std::shared_ptr<Node>> getChildren() const;
-    //virtual const std::ostream& operator<<(std::ostream &stream) const;
-    //virtual const void print() const;
+    virtual void print(std::ostream & stream) const;
+    virtual void printTree(std::ostream & stream) const;
+    virtual void printTreeRec(std::ostream & stream, int depth) const;
+    friend std::ostream& operator<<(std::ostream &stream, const Node &node);
 };
 
 #endif //OBERON0C_ASTNODE_H

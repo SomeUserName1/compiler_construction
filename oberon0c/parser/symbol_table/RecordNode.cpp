@@ -12,7 +12,7 @@ const std::shared_ptr<DeclarationNode> RecordNode::getField(const std::string &n
 		if (decl_node.getName() == name)
           return std::shared_ptr<DeclarationNode>(&decl_node);
 	}
-	throw "Field not present in the record. Invalid field name!";
+	throw std::logic_error("Field not present in the record. Invalid field name!");
 }
 
 const std::shared_ptr<SymbolScopeNode> RecordNode::getScope() const {
@@ -26,14 +26,14 @@ const int RecordNode::getFieldPos(const std::string &name) {
 		if (decl_node.getName() == name)
 			return i;
 	}
-	throw "Field not present in the record. Invalid field name!";
+	throw std::logic_error("Field not present in the record. Invalid field name!");
 }
 
 void RecordNode::setValue(const std::string &name, std::shared_ptr<DeclarationNode> node) {
 	if (node->getType() == this->getField(name)->getType()) {
 		this->getChildren()[0]->setChild(this->getFieldPos(name), node);
 	} else {
-		throw "Nope, invalid types";
+		throw std::logic_error("Nope, invalid types");
 	}
 }
 

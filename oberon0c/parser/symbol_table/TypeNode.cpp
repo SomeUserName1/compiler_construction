@@ -13,7 +13,7 @@ void TypeNode::setValue(std::shared_ptr<DeclarationNode> node) {
   if (node->getType() == type.getType()) {
     this->setChild(0, node);
   } else {
-    throw "Nope, invalid types";
+    throw std::logic_error("Nope, invalid types");
   }
 }
 

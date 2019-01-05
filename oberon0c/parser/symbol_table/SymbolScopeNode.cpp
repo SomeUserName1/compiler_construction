@@ -42,7 +42,7 @@ void SymbolScopeNode::symbolCollision(std::shared_ptr<DeclarationNode> new_child
 }
 
 void SymbolScopeNode::print(std::ostream & stream) const {
-  stream << this->getName() << ", " << this->getDeclType() << ", " << this->getType();
+  stream << "|_" << "Scope";
 }
 
 void SymbolScopeNode::printTree(std::ostream & stream) const {
@@ -52,7 +52,7 @@ void SymbolScopeNode::printTree(std::ostream & stream) const {
 void SymbolScopeNode::printTreeRec(std::ostream & stream, int depth) const
 {
   for (int i = 0; i < depth; i++) {
-    stream << "|-";
+    stream << "  ";
   }
 
   this->print(stream);

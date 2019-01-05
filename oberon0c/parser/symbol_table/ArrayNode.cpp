@@ -51,7 +51,7 @@ const std::vector<std::shared_ptr<DeclarationNode>> ArrayNode::getValues() {
 
 const std::shared_ptr<DeclarationNode> ArrayNode::getValue(int position) {
   if (position < 0 || position > this->getChildren().size()-1)
-    throw ("arrays out of bounds" + this->getName() + " actual size " + to_string(this->getChildren().size()) +
+    throw std::logic_error("arrays out of bounds" + this->getName() + " actual size " + to_string(this->getChildren().size()) +
      " but tried to access " + to_string(position +1) + " element");
   auto *result = dynamic_cast<DeclarationNode *>(&*this->getChildren()[position]);
   return std::shared_ptr<DeclarationNode>(result);
@@ -61,6 +61,6 @@ void ArrayNode::setValue(int position, std::shared_ptr<DeclarationNode> node) {
   if (node->getType() == this->_array_type->getType()) {
     this->setChild(position, node);
   } else {
-    throw "Nope, invalid types";
+    throw std::logic_error("Nope, invalid types");
   }
 }
