@@ -14,17 +14,17 @@ init:    push     rbp
          mov      rbp, rsp
          mov      r12, 0
          cmp      r12, dim
-         jge      endloop_1
-startloop_1:
-         lea      r13, [rel num]      ;holt eine adresse in's register 13?
-         ;mov      [r13,r12*4], r12 
-         mov      r8, [dim]
-         mov      [r13,r12*4], r8
-         sub      [r13,r12*4], r12
-         inc      r12
-         cmp      r12, 20
-         jl       startloop_1
-endloop_1:
+         jge      endloop_init_1
+startloop_init_1:
+         lea      r13, [rel num]      ;holt eine adresse in's register 13? 
+         mov      r8, [dim]           ; copy constant 20 to register 8
+         mov      [r13,r12*4], r8     ; copy the constant 20 from r8 to the appropriate array location
+				      ; (cannot be copied directly from dim since assembler doesn't support to copy mem to mem)
+         sub      [r13,r12*4], r12    ; subtract i-counter from the 20 in the array
+         inc      r12                 ; increment i-counter
+         cmp      r12, 20             ; check if counter still below the maximum
+         jl       startloop_init_1
+endloop_init_1:
          xor      rax, rax
          mov      rsp, rbp
          pop      rbp
@@ -36,7 +36,7 @@ main:    push     rbp
          xor      rax, rax
          mov      rdi, msg
          lea      r13, [rel num]
-         mov      rsi, [r13+76]
+         mov      rsi, [r13+12]
          call     printf
          xor      rax, rax
          mov      rsp, rbp
