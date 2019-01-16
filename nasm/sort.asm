@@ -48,7 +48,7 @@ endloop_print_1:
          ret
 
 ; takes two pointers and swaps the elements behind them
-Swap:
+swap:
          push     rbp
          mov      rbp, rsp
          mov      r12, [rdi]
