@@ -141,10 +141,10 @@ qsort:
          mov      r8d, edi               ; i := l @ 68
          mov      r9d, esi               ; j := r @ 69
          mov      r12d, esi              ; r @ 70
-         add      r12d, edi                ; (r+1) @ 70
-         shr      r12d, 1                ; (r+1) / 2 @ 70
+         add      r12d, edi              ; (r+l) @ 70
+         shr      r12d, 1                ; (r+l) / 2 @ 70
          lea      r13, [rel num]         ; access a[] @ 70
-         mov      r10d, [r13, r12 * 4]   ; x := a[(r+1) DIV 2] @ 70
+         mov      r10d, [r13, r12 * 4]   ; x := a[(r+l) DIV 2] @ 70
 conditionloop_qsort1:
          cmp      r8d, r9d               ; i <= j @ 71
          jg       endloop_qsort_1
