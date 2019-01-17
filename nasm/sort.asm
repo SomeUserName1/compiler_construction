@@ -112,6 +112,9 @@ swap:
          pop      rbp
          ret
 
+;bubblesort
+;not implemented because not used and compiler would optimize that away... ;)
+
 quicksort:
          push     rbp
          mov      rbp, rsp
