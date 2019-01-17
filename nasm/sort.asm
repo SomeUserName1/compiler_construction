@@ -29,8 +29,60 @@ endloop_init_1:
          mov      rsp, rbp
          pop      rbp
          ret
+         
+init2:   ;Alternate initialization of array so quicksort is more interesting
+         push      rbp
+         mov       rbp, rsp
+         lea       r13, [rel num]
+         mov       r12, 0
+         mov       [r13, r12*4], dword 62
+         inc       r12
+         mov       [r13, r12*4], dword 87
+         inc       r12
+         mov       [r13, r12*4], dword 84
+         inc       r12
+         mov       [r13, r12*4], dword 54
+         inc       r12
+         mov       [r13, r12*4], dword 96
+         inc       r12
+         mov       [r13, r12*4], dword 44
+         inc       r12
+         mov       [r13, r12*4], dword 88
+         inc       r12
+         mov       [r13, r12*4], dword 30
+         inc       r12
+         mov       [r13, r12*4], dword 25
+         inc       r12
+         mov       [r13, r12*4], dword 85
+         inc       r12
+         mov       [r13, r12*4], dword 35
+         inc       r12
+         mov       [r13, r12*4], dword 100
+         inc       r12
+         mov       [r13, r12*4], dword 46
+         inc       r12
+         mov       [r13, r12*4], dword 79
+         inc       r12
+         mov       [r13, r12*4], dword 98
+         inc       r12
+         mov       [r13, r12*4], dword 76
+         inc       r12
+         mov       [r13, r12*4], dword 93
+         inc       r12
+         mov       [r13, r12*4], dword 72
+         inc       r12
+         mov       [r13, r12*4], dword 49
+         inc       r12
+         mov       [r13, r12*4], dword 14
+         xor       rax, rax
+         mov       rsp, rbp
+         pop       rbp
+         ret
 
 print:
+         ; Note: Since the funny stuff is commented in the source program we act like a good compiler and did what the programmer obviously intended ;)
+         ; Note2: The comparision i <= Dim is wrong. Accesses memory outside of the array (if comments wouldnt save the day)
+         ; Note3: i is not initialized with a value. Don't no if this is critical, maybe oberon initializes integers as zero...
          push     rbp
          mov      rbp, rsp
          mov      r12d, 0
@@ -65,8 +117,7 @@ quicksort:
          mov      rbp, rsp
          
          mov      rdi, 0                 ; 0 @ 86
-         mov      rsi, 19 ;[dim]             ; Dim @ 86
-         dec      rsi                    ; Dim - 1 @ 86
+         mov      rsi, 19 ;[dim]         ; Dim - 1 @ 86
          call     qsort                  ; QSort(0, Dim - 1) @ 86
          xor      rax, rax
          
@@ -87,7 +138,7 @@ qsort:
          mov      r8d, edi               ; i := l @ 68
          mov      r9d, esi               ; j := r @ 69
          mov      r12d, esi              ; r @ 70
-         add      r12d, 1                ; (r+1) @ 70
+         add      r12d, edi                ; (r+1) @ 70
          shr      r12d, 1                ; (r+1) / 2 @ 70
          lea      r13, [rel num]         ; access a[] @ 70
          mov      r10d, [r13, r12 * 4]   ; x := a[(r+1) DIV 2] @ 70
@@ -154,7 +205,11 @@ if_qsort_1_3:
          pop      r8
          pop      rsi
          pop      rdi
+         
+         inc      r8                       ; i := i + 1 @76
+         dec      r9                       ; j := j + 1 @77
          jmp      conditionloop_qsort1
+         
 if_qsort_2:
          ; save registers as they would be overwritten for qsort, r14, r15 are also overwritten by swap!
          push     rdi
@@ -166,6 +221,7 @@ if_qsort_2:
          
          ; prepare params and call qsort subinstance (left)
          mov      esi, r9d
+         ;dec      esi
          call     qsort
          xor      rax, rax
          
@@ -191,6 +247,7 @@ if_qsort_3:
          
          ; prepare params and call qsort subinstance (right)
          mov      edi, r8d
+         ;inc      edi
          call     qsort
          xor      rax, rax
          
@@ -214,7 +271,7 @@ main:
          mov      rbp, rsp
          
          ;call init
-         call     init
+         call     init2
          xor      rax, rax
         
          ;call quicksort
@@ -226,16 +283,15 @@ main:
          xor      rax, rax
  
          ;call a final print (still here from arrays.asm)
-         mov      rdi, msg
-         lea      r13, [rel num]
-         mov      rsi, [r13+12]
-         call     printf
-         xor      rax, rax
+         ;mov      rdi, msg
+         ;lea      r13, [rel num]
+         ;mov      rsi, [r13+12]
+         ;call     printf
+         ;xor      rax, rax
          
          ;restore pointer and return
          mov      rsp, rbp
          pop      rbp
          ret
 
-; nasm -fmacho64 arrays.asm
-; ld -macosx_version_min 10.11 -lSystem -e _main -o arrays arrays.o
+; nasm -f elf64 -o sort.o sort.asm && gcc -m64 sort.o -o sort -no-pie
