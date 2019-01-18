@@ -1,13 +1,12 @@
-%pragma macho64 prefix _
          global   main
          extern   printf
 
-dim	 DD      20
          section  .data
 msg:     db       "The value is %d!", 10, 0
+dim:     dd       20
          section  .bss
 num:     resb     80                        ; reserve 20 * 4 bytes
-;a:       resb     dim * 4
+a:       resb     dim * 4
 
          section  .text
 init:    push     rbp
@@ -112,8 +111,66 @@ swap:
          pop      rbp
          ret
 
-;bubblesort
-;not implemented because not used and compiler would optimize that away... ;)
+bubblesort:
+        push    rbp
+        mov     rbp, rsp
+
+        mov     r8, 0                          ; i := 0
+
+bubblesort_outer_cond:                      ; While
+        cmp     r8, dim                        ; i < Dim
+        jge     bubblesort_outer_end      ; jump outer_end if not
+
+bubblesort_outer_loop:                      ; Do
+        mov     r9, dim-1                      ; j := Dim - 1
+
+bubblesort_inner_cond:                      ; While
+        cmp     r9, r8                        ; j > i
+        jle     bubblesort_inner_end            ; jump inner_end if not
+
+bubblesort_inner_loop: ; Do TODO correct addr calc below: split or adjust
+        mov     r13, [rel a]                    ; access a[]
+        mov     r10, [r13 + (r9-1)*4]            ; access a[j - 1]
+        mov     r11, [r13, r9*4]              ; access a[j]
+        cmp     r10, r11                      ; a[j - 1] > a[j]
+        jle     bubblesort_reentry_if           ; Jump over then when cond false
+        push    rdi                             
+        push    rsi
+        push    r8
+        push    r9
+        push    r10
+        push    r11
+        push    r13
+        
+        mov     rdi, r10
+        mov     rsi, r11
+        call    swap
+        xor     rax, rax
+        
+        pop     r13
+        pop     r11
+        pop     r10
+        pop     r9
+        pop     r8
+        pop     rsi
+        pop     rdi       
+
+bubblesort_reentry_if:
+        dec     r9d                             ; j := j - 1
+        jmp     bubblesort_inner_cond
+
+bubblesort_inner_end:
+        inc r8d
+        jmp bubblesort_outer_cond
+
+bubblesort_outer_end:
+        
+bubblesort_end:
+        xor rax, rax
+        mov rsp, rbp
+        pop rbp
+        ret
+
 
 quicksort:
          push     rbp
@@ -278,7 +335,8 @@ main:
          xor      rax, rax
         
          ;call quicksort
-         call     quicksort
+         ;call     quicksort
+         call     bubblesort
          xor      rax, rax
         
          ;call print
