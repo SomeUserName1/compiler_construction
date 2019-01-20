@@ -3,7 +3,8 @@
 
          section  .data
 msg:     db       "The value is %d!", 10, 0
-dim:     dd       20
+dim:     equ      20
+
          section  .bss
 num:     resb     80                        ; reserve 20 * 4 bytes
 a:       resb     dim * 4
@@ -32,7 +33,7 @@ endloop_init_1:
 init2:   ;Alternate initialization of array so quicksort is more interesting
          push      rbp
          mov       rbp, rsp
-         lea       r13, [rel num]
+         lea       r13, [rel a]
          mov       r12, 0
          mov       [r13, r12*4], dword 62
          inc       r12
@@ -85,12 +86,16 @@ print:
          push     rbp
          mov      rbp, rsp
          mov      r12d, 0
-         cmp      r12d, 20
+         cmp      r12d, 19
          jge      endloop_print_1
 startloop_print_1:
-         lea      r13, [rel num]
+         mov      rdi, msg
+         lea      r13, [rel a]
+         mov      rsi, [r13, r12*4]
+         call     printf
+         xor      rax, rax
          inc      r12d
-         cmp      r12d, 20
+         cmp      r12d, 19
          jle      startloop_print_1
 endloop_print_1:
          xor      rax, rax
@@ -117,23 +122,25 @@ bubblesort:
 
         mov     r8, 0                          ; i := 0
 
-bubblesort_outer_cond:                      ; While
+.outer_cond:                      ; While
         cmp     r8, dim                        ; i < Dim
-        jge     bubblesort_outer_end      ; jump outer_end if not
+        jge     .outer_end      ; jump outer_end if not
 
-bubblesort_outer_loop:                      ; Do
+.outer_loop:                     ; Do
         mov     r9, dim-1                      ; j := Dim - 1
 
-bubblesort_inner_cond:                      ; While
+.inner_cond:                      ; While
         cmp     r9, r8                        ; j > i
-        jle     bubblesort_inner_end            ; jump inner_end if not
+        jle     .inner_end            ; jump inner_end if not
 
-bubblesort_inner_loop: ; Do TODO correct addr calc below: split or adjust
-        mov     r13, [rel a]                    ; access a[]
-        mov     r10, [r13 + (r9-1)*4]            ; access a[j - 1]
-        mov     r11, [r13, r9*4]              ; access a[j]
+.inner_loop: ; Do TODO correct addr calc below: split or adjust
+        lea     r13, [rel a]                    ; access a[]
+        mov     rax, r9
+        dec     rax
+        mov     r10d, [r13,rax*4]            ; access a[j - 1]
+        mov     r11d, [r13,r9*4]              ; access a[j]
         cmp     r10, r11                      ; a[j - 1] > a[j]
-        jle     bubblesort_reentry_if           ; Jump over then when cond false
+        jle     .reentry_if           ; Jump over then when cond false
         push    rdi                             
         push    rsi
         push    r8
@@ -142,8 +149,17 @@ bubblesort_inner_loop: ; Do TODO correct addr calc below: split or adjust
         push    r11
         push    r13
         
-        mov     rdi, r10
-        mov     rsi, r11
+        mov     rdi, r13
+        mov     r14, r9
+        dec     r14
+        mov     rax, 4
+        mul     r14
+        add     rdi, rax
+        
+        mov     rsi, r13
+        mov     rax, 4
+        mul     r9
+        add     rsi, rax
         call    swap
         xor     rax, rax
         
@@ -155,17 +171,17 @@ bubblesort_inner_loop: ; Do TODO correct addr calc below: split or adjust
         pop     rsi
         pop     rdi       
 
-bubblesort_reentry_if:
+.reentry_if:
         dec     r9d                             ; j := j - 1
-        jmp     bubblesort_inner_cond
+        jmp     .inner_cond
 
-bubblesort_inner_end:
+.inner_end:
         inc r8d
-        jmp bubblesort_outer_cond
+        jmp .outer_cond
 
-bubblesort_outer_end:
+.outer_end:
         
-bubblesort_end:
+.end:
         xor rax, rax
         mov rsp, rbp
         pop rbp
