@@ -8,7 +8,10 @@ void ASTNode::printTreeRec(std::ostream & stream, int depth) const
 
 	stream << nodeType_;
 
-	if (nodeType_ == ASTNodeType::symbol) {
+	if (nodeType_ == ASTNodeType::symbol
+	||  nodeType_ == ASTNodeType::_constant
+	||  nodeType_ == ASTNodeType::_deref
+	||  nodeType_ == ASTNodeType::_addr) {
 		stream << " " << *symbol_;
 	}
 
@@ -89,6 +92,7 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	case ASTNodeType::_not: result = "~"; break;
 	case ASTNodeType::_constant: result = "CONSTANT"; break;
 	case ASTNodeType::_deref: result = "DEREF"; break;
+	case ASTNodeType::_addr: result = "ADDR"; break;
 	}
 	stream << result;
 	return stream;

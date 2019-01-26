@@ -99,7 +99,8 @@ const ASTNode * BuildAST::assignment(const Node * assignmentNode)
 	const Node* identifierNode = lastSelectorVariable(&children, &currentTable_);
 	std::string identifier = identifierNode->getValue();
 	Symbol* identifierSymbol = currentTable_->getSymbol(&identifier);
-	ASTNode* identAST = new ASTNode(ASTNodeType::symbol, identifierSymbol);
+	//ASTNode* identAST = new ASTNode(ASTNodeType::symbol, identifierSymbol);
+	ASTNode* identAST = new ASTNode(ASTNodeType::_addr, identifierSymbol);
 
 	currentTable_ = oldTable;
 
@@ -385,7 +386,14 @@ const ASTNode * BuildAST::identifier(std::vector<const Node*>* children)
 	std::string identName = ident->getValue();
 	Symbol* identSymbol = currentTable_->getSymbol(&identName);
 
-	ASTNode* node = new ASTNode(ASTNodeType::symbol, identSymbol);
+	//ASTNode* node = new ASTNode(ASTNodeType::symbol, identSymbol);
+	ASTNode* node;
+	if (identSymbol->getSymbolType() == SymbolType::constant) {
+		node = new ASTNode(ASTNodeType::_constant, identSymbol);
+	} else {
+		node = new ASTNode(ASTNodeType::_deref, identSymbol);
+	}
+
 	currentTable_ = oldTable;
 	return node;
 }
@@ -393,7 +401,8 @@ const ASTNode * BuildAST::identifier(std::vector<const Node*>* children)
 const ASTNode * BuildAST::number(const Node * numberNode)
 {
 	Symbol* anonymousSymbol = createAnonymousSymbol(numberNode);
-	ASTNode* node = new ASTNode(ASTNodeType::symbol, anonymousSymbol);
+	//ASTNode* node = new ASTNode(ASTNodeType::symbol, anonymousSymbol);
+	ASTNode* node = new ASTNode(ASTNodeType::_constant, anonymousSymbol);
 	return node;
 }
 
