@@ -21,6 +21,5 @@ int main(const int argc, const char *argv[]) {
     auto parse = parser->parse();
     logger->info(filename, "Parsing complete.");
 
-	std::cin.ignore();
     exit(0);
 }
