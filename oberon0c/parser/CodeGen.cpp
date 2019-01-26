@@ -4,10 +4,11 @@
 
 #include "CodeGen.h"
 
-CodeGen::CodeGen(std::unique_ptr<SymbolTable> sym, std::unique_ptr<ASTNode> ast) : _sym(std::move(sym)),
+CodeGen::CodeGen(std::unique_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast) : _sym(std::move(sym)),
     _ast(std::move(ast)) {
-    this->_result;
     init();
+    gen(this->_ast);
+    finish();
 }
 
 const std::stringstream CodeGen::init() const {
@@ -15,61 +16,68 @@ const std::stringstream CodeGen::init() const {
     return std::stringstream();
 }
 
-std::stringstream CodeGen::gen(const std::shared_ptr<ASTNode> &node) const {
-    std::stringstream generated;
-    generated << std::endl;
+void CodeGen::finish() {
+    // TODO prints
+    std::ofstream myfile;
+    myfile.open ("out.nasm");
+    myfile << _result;
+    myfile.close();
+}
+
+void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
     switch(node->getNodeType()) {
         case ASTNodeType::statement_sequence: {
             for (auto child : node->getChildren()) {
-                this->_result << gen(std::make_shared<ASTNode>(child)).str();
+                gen(std::make_shared<ASTNode>(child));
             }
         }
         case ASTNodeType::plus: {
             for (auto child : node->getChildren()) {
-                this->_result <<  gen(std::make_shared<ASTNode>(child)).str();
+                gen(std::make_shared<ASTNode>(child));
             }
-            this->_result << add().str();
+            *_result << add().str();
         }
         case ASTNodeType ::minus: {
             for (auto child : node->getChildren()) {
-                this->_result << gen(std::make_shared<ASTNode>(child));
+                gen(std::make_shared<ASTNode>(child));
             }
-            this->_result << sub();
+            *_result << sub().str();
         }
         case ASTNodeType::div: {
             for (auto child : node->getChildren()) {
-                this->_result << gen(std::make_shared<ASTNode>(child));
+                gen(std::make_shared<ASTNode>(child));
             }
-            this->_result << div();
+            *_result << div().str();
         }
         case ASTNodeType::times: {
             for (auto child : node->getChildren()) {
-                this->_result << gen(std::make_shared<ASTNode>(child));
+                gen(std::make_shared<ASTNode>(child));
             }
-            this->_result << mul();
+            *_result << mul().str();
         }
         case ASTNodeType::assignment: {
             for (auto child : node->getChildren()) {
-                this->_result << gen(std::make_shared<ASTNode>(child));
+                gen(std::make_shared<ASTNode>(child));
             }
-            this->_result << assign(node);
+            *_result << assign(node).str();
         }
         case ASTNodeType::_constant: {
-            this->_result << push_const(node);
+            *_result << push_const(node).str();
         }
         case ASTNodeType ::_deref: {
-            this->_result << push_var(node);
+            *_result << push_var(node).str();
         }
         case ASTNodeType::_addr: {
-            this->_result << push_address(node);
+            *_result << push_address(node).str();
         }
         case ASTNodeType::_not_int: {
             // TODO GenCode that inverts an int (shift and toggle)
+            *_result << invert(node).str();
+            gen(node);
         }
         default: break;
     }
-    this->_result <<  generated.str();
-    return this-> _result;
+    *_result << std::endl;
 }
 
 const std::stringstream CodeGen::add() const {
@@ -157,6 +165,19 @@ const std::stringstream CodeGen::assign(const std::shared_ptr<ASTNode>& node) co
     _asm << "add    rsp, 12" << std::endl;
     _asm << "pop    r8"      << std::endl;
     _asm << "mov    [r8], r9" << std::endl;
+
+    return _asm;
+}
+
+const std::stringstream  CodeGen::invert(const std::shared_ptr<ASTNode> &node) const {
+    std::stringstream _asm;
+
+    _asm << "add    rsp, 12" << std::endl;
+    _asm << "pop    r9"      << std::endl;
+    _asm << "not    r9"      << std::endl;
+    _asm << "inc    r9"      << std::endl;
+    _asm << "push   r9"      << std::endl;
+    _asm << "sub    rsp, 12" << std::endl;
 
     return _asm;
 }

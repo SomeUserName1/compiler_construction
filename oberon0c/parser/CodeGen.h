@@ -11,26 +11,30 @@
 #include <string>
 #include <ios>
 #include <st/SymbolTable.h>
+#include <iostream>
+#include <fstream>
 
 class CodeGen {
 private:
-    std::unique_ptr<SymbolTable> _sym;
-    std::unique_ptr<ASTNode> _ast;
-    std::stringstream _result;
+    std::shared_ptr<SymbolTable> _sym;
+    std::shared_ptr<ASTNode> _ast;
+    std::shared_ptr<std::stringstream> _result;
 
     const std::stringstream add() const;
     const std::stringstream sub() const;
     const std::stringstream div() const;
     const std::stringstream mul() const;
+    const std::stringstream invert(const std::shared_ptr<ASTNode> &node) const;
     const std::stringstream push_const(const std::shared_ptr<ASTNode>& node) const;
     const std::stringstream push_var(const std::shared_ptr<ASTNode>& node) const;
     const std::stringstream push_address(const std::shared_ptr<ASTNode>& node) const;
     const std::stringstream assign(const std::shared_ptr<ASTNode>& node) const;
     const std::stringstream init() const;
+    void finish();
 
 public:
-    explicit CodeGen(std::unique_ptr<SymbolTable> sym, std::unique_ptr<ASTNode> ast);
-    std::stringstream gen(const std::shared_ptr<ASTNode> &node) const;
+    CodeGen(std::unique_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
+    void gen(const std::shared_ptr<ASTNode> &node);
 
 };
 
