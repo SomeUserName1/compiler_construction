@@ -23,7 +23,7 @@ enum class NodeType : char {
 	procedure_body, formal_parameters, fp_section, statement_sequence,
 	statement, if_statement, while_statement, acutal_parameters,
 	selector, assignment, procedure_call,
-	plus, minus, div, times, or, and, leq, lt, geq, gt, eq, neq, mod
+	plus, minus, div, times, _or, _and, leq, lt, geq, gt, eq, neq, mod
 };
 
 std::ostream& operator<<(std::ostream &stream, const NodeType &type);
