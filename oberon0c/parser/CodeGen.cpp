@@ -4,7 +4,7 @@
 
 #include "CodeGen.h"
 
-CodeGen::CodeGen(std::unique_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast) : _sym(std::move(sym)),
+CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast) : _sym(std::move(sym)),
     _ast(std::move(ast)) {
     init();
     gen(this->_ast);

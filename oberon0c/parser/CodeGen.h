@@ -33,7 +33,7 @@ private:
     void finish();
 
 public:
-    CodeGen(std::unique_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
+    CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
     void gen(const std::shared_ptr<ASTNode> &node);
 
 };
