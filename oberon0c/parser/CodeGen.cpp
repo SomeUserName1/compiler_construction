@@ -70,7 +70,7 @@ void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
         case ASTNodeType::_addr: {
             *_result << push_address(node).str();
         }
-        case ASTNodeType::_not_int: {
+        case ASTNodeType::_int_not: {
             // TODO GenCode that inverts an int (shift and toggle)
             *_result << invert(node).str();
             gen(node);
