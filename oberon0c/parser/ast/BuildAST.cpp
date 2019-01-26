@@ -240,8 +240,18 @@ const ASTNode * BuildAST::simpleExpression(const Node * simpleExpressionNode)
 {
 	std::vector<const Node*> children = simpleExpressionNode->getChildren();
 
-	if (children.size() == 1) {
-		return term(children.at(0));
+	// If the simple expressions consists of only one term or one term with a leading minus.
+	if (children.size() == 1 || (children.size() == 2 && children.at(0)->getNodeType() == NodeType::minus)) {
+		// Check for leading minus
+		if (children.at(0)->getNodeType() == NodeType::minus) {
+			const ASTNode* subTerm = term(children.at(1));
+			ASTNode* notInt = new ASTNode(ASTNodeType::_int_not);
+			notInt->addChild(subTerm);
+			return notInt;
+		} else {
+			const ASTNode* subTerm = term(children.at(0));
+			return subTerm;
+		}
 	}
 
 	std::list<const Node*> operators;
@@ -258,6 +268,14 @@ const ASTNode * BuildAST::simpleExpression(const Node * simpleExpressionNode)
 		else {
 			throw std::invalid_argument("Something failed horrible");
 		}
+	}
+
+	const Node* leadingMinus;
+	if (operators.size() == terms.size()) {
+		leadingMinus = operators.front();
+		operators.pop_front();
+	} else {
+		leadingMinus = nullptr;
 	}
 
 	std::vector<ASTNode*> nodes;
@@ -282,9 +300,25 @@ const ASTNode * BuildAST::simpleExpression(const Node * simpleExpressionNode)
 			throw std::invalid_argument("You failed!");
 		}
 
-		ASTNode* node = new ASTNode(astType);
-		node->addChild(term(se));
-		nodes.push_back(node);
+		if (leadingMinus == nullptr) {
+			// No leading minus in se
+			ASTNode* node = new ASTNode(astType);
+			node->addChild(term(se));
+			nodes.push_back(node);
+		} else {
+			// First term of se was leaded by a minus. Insert _int_not ast node above the term.
+			ASTNode* node = new ASTNode(astType);
+			ASTNode* intNot = new ASTNode(ASTNodeType::_int_not);
+			intNot->addChild(term(se));
+			node->addChild(intNot);
+			nodes.push_back(node);
+
+			leadingMinus = nullptr;
+		}
+
+		//ASTNode* node = new ASTNode(astType);
+		//node->addChild(term(se));
+		//nodes.push_back(node);
 	}
 
 	for (size_t i = 0; i < nodes.size() - 1; i++) {

@@ -82,6 +82,7 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	case ASTNodeType::symbol: result = "symbol"; break;
 	case ASTNodeType::plus: result = "+"; break;
 	case ASTNodeType::minus: result = "-"; break;
+	case ASTNodeType::_int_not: result = "INT_NOT"; break;
 	case ASTNodeType::div: result = "DIV"; break;
 	case ASTNodeType::times: result = "*"; break;
 	case ASTNodeType::_or : result = "|"; break;
