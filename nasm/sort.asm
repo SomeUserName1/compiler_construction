@@ -1,13 +1,14 @@
-%pragma macho64 prefix _
+
          global   main
          extern   printf
 
-dim	 DD      20
          section  .data
 msg:     db       "The value is %d!", 10, 0
+dim:     equ      20
+
          section  .bss
 num:     resb     80                        ; reserve 20 * 4 bytes
-;a:       resb     dim * 4
+a:       resb     dim * 4
 
          section  .text
 init:    push     rbp
@@ -33,7 +34,8 @@ endloop_init_1:
 init2:   ;Alternate initialization of array so quicksort is more interesting
          push      rbp
          mov       rbp, rsp
-         lea       r13, [rel num]
+
+         lea       r13, [rel a]
          mov       r12, 0
          mov       [r13, r12*4], dword 62
          inc       r12
@@ -86,12 +88,17 @@ print:
          push     rbp
          mov      rbp, rsp
          mov      r12d, 0
-         cmp      r12d, 20
+
+         cmp      r12d, 19
          jge      endloop_print_1
 startloop_print_1:
-         lea      r13, [rel num]
+         mov      rdi, msg
+         lea      r13, [rel a]
+         mov      rsi, [r13, r12*4]
+         call     printf
+         xor      rax, rax
          inc      r12d
-         cmp      r12d, 20
+         cmp      r12d, 19
          jle      startloop_print_1
 endloop_print_1:
          xor      rax, rax
@@ -112,8 +119,77 @@ swap:
          pop      rbp
          ret
 
-;bubblesort
-;not implemented because not used and compiler would optimize that away... ;)
+bubblesort:
+        push    rbp
+        mov     rbp, rsp
+
+        mov     r8, 0                          ; i := 0
+
+.outer_cond:                      ; While
+        cmp     r8, dim                        ; i < Dim
+        jge     .outer_end      ; jump outer_end if not
+
+.outer_loop:                     ; Do
+        mov     r9, dim-1                      ; j := Dim - 1
+
+.inner_cond:                      ; While
+        cmp     r9, r8                        ; j > i
+        jle     .inner_end            ; jump inner_end if not
+
+.inner_loop: ; Do TODO correct addr calc below: split or adjust
+        lea     r13, [rel a]                    ; access a[]
+        mov     rax, r9
+        dec     rax
+        mov     r10d, [r13,rax*4]            ; access a[j - 1]
+        mov     r11d, [r13,r9*4]              ; access a[j]
+        cmp     r10, r11                      ; a[j - 1] > a[j]
+        jle     .reentry_if           ; Jump over then when cond false
+        push    rdi                             
+        push    rsi
+        push    r8
+        push    r9
+        push    r10
+        push    r11
+        push    r13
+        
+        mov     rdi, r13
+        mov     r14, r9
+        dec     r14
+        mov     rax, 4
+        mul     r14
+        add     rdi, rax
+        
+        mov     rsi, r13
+        mov     rax, 4
+        mul     r9
+        add     rsi, rax
+        call    swap
+        xor     rax, rax
+        
+        pop     r13
+        pop     r11
+        pop     r10
+        pop     r9
+        pop     r8
+        pop     rsi
+        pop     rdi       
+
+.reentry_if:
+        dec     r9d                             ; j := j - 1
+        jmp     .inner_cond
+
+.inner_end:
+        inc r8d
+        jmp .outer_cond
+
+.outer_end:
+        
+.end:
+        xor rax, rax
+        mov rsp, rbp
+        pop rbp
+        ret
+
 
 quicksort:
          push     rbp
@@ -278,7 +354,9 @@ main:
          xor      rax, rax
         
          ;call quicksort
-         call     quicksort
+
+         ;call     quicksort
+         call     bubblesort
          xor      rax, rax
         
          ;call print
