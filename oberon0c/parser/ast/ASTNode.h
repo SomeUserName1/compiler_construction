@@ -14,7 +14,7 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
 class ASTNode {
 private:
 	ASTNodeType nodeType_;
-	std::vector<const ASTNode*> children_;
+	std::vector<std::shared_ptr<ASTNode>> children_;
 	Symbol* symbol_;
 
 	void printTreeRec(std::ostream & stream, int depth) const;
@@ -24,9 +24,9 @@ public:
 	explicit ASTNode(ASTNodeType nodeType, Symbol* symbol);
 
 	const ASTNodeType getNodeType() const;
-	std::vector<const ASTNode*> getChildren() const;
-	void addChild(const ASTNode* node);
-	void addChilds(std::shared_ptr<std::vector<const ASTNode*>> nodes);
+    std::vector<std::shared_ptr<ASTNode>> getChildren() const;
+	void addChild(std::shared_ptr<ASTNode> node);
+	void addChilds(std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> nodes);
 
 	void printTree(std::ostream &stream) const;
 	//friend std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);

@@ -38,19 +38,19 @@ const ASTNodeType ASTNode::getNodeType() const
 	return nodeType_;
 }
 
-std::vector<const ASTNode*> ASTNode::getChildren() const
+std::vector<std::shared_ptr<ASTNode>> ASTNode::getChildren() const
 {
 	return children_;
 }
 
-void ASTNode::addChild(const ASTNode * node)
+void ASTNode::addChild(std::shared_ptr<ASTNode> node)
 {
 	children_.push_back(node);
 }
 
-void ASTNode::addChilds(std::shared_ptr<std::vector<const ASTNode*>> nodes)
+void ASTNode::addChilds(std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> nodes)
 {
-	for (const ASTNode* node : *nodes) {
+	for (std::shared_ptr<ASTNode> node : *nodes) {
 		addChild(node);
 	}
 }

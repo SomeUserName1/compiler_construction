@@ -120,12 +120,12 @@ int Symbol::getValue()
 	return value_;
 }
 
-void Symbol::setAst(const ASTNode * node)
+void Symbol::setAst(const std::shared_ptr<ASTNode> node)
 {
 	ast_ = node;
 }
 
-const ASTNode * Symbol::getAst()
+const std::shared_ptr<ASTNode> Symbol::getAst()
 {
 	return ast_;
 }

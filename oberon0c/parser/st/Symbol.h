@@ -25,7 +25,7 @@ private:
 	SymbolType symbolType_;
 	bool isVariable_;
 	int value_;
-	const ASTNode* ast_;
+	std::shared_ptr<ASTNode> ast_;
 	bool isVarParam_;
 	std::shared_ptr<SymbolTable> symbolTable_; //The table this symbol is standing in.
 
@@ -52,8 +52,8 @@ public:
 	void setValue(int value);
 	int getValue();
 
-	void setAst(const ASTNode* node);
-	const ASTNode* getAst();
+	void setAst(const std::shared_ptr<ASTNode> node);
+	const std::shared_ptr<ASTNode> getAst();
 
 	void setIsVarParam(bool val);
 	bool getIsVarParam();

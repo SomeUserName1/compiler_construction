@@ -17,20 +17,20 @@ public:
 
 	void build();
 	void declarations(const Node* declarationsNode);
-	const ASTNode* statementSequence(const Node* statementSequenceNode);
+	const std::shared_ptr<ASTNode> statementSequence(const Node* statementSequenceNode);
 	void procedureDeclaration(const Node* procedureDeclarationNode);
-	const ASTNode* statement(const Node* statementNode);
-	const ASTNode* assignment(const Node* assignmentNode);
-	const ASTNode* procedureCall(const Node* procedureCallNode);
-	const ASTNode* ifStatement(const Node* ifStatementNode);
-	const ASTNode* whileStatement(const Node* whileStatementNode);
-	const ASTNode* expression(const Node* expressionNode);
-	const ASTNode* simpleExpression(const Node* simpleExpressionNode);
-	const ASTNode* term(const Node* termNode);
-	const ASTNode* factor(const Node* factorNode);
-	const ASTNode* identifier(std::vector<const Node*>* children);
-	const ASTNode* number(const Node* numberNode);
-	const ASTNode* _not(const Node* factorNode);
+	const std::shared_ptr<ASTNode> statement(const Node* statementNode);
+	const std::shared_ptr<ASTNode> assignment(const Node* assignmentNode);
+	const std::shared_ptr<ASTNode> procedureCall(const Node* procedureCallNode);
+	const std::shared_ptr<ASTNode> ifStatement(const Node* ifStatementNode);
+	const std::shared_ptr<ASTNode> whileStatement(const Node* whileStatementNode);
+	const std::shared_ptr<ASTNode> expression(const Node* expressionNode);
+	const std::shared_ptr<ASTNode> simpleExpression(const Node* simpleExpressionNode);
+	const std::shared_ptr<ASTNode> term(const Node* termNode);
+	const std::shared_ptr<ASTNode> factor(const Node* factorNode);
+	const std::shared_ptr<ASTNode> identifier(std::vector<const Node*>* children);
+	const std::shared_ptr<ASTNode> number(const Node* numberNode);
+	const std::shared_ptr<ASTNode> _not(const Node* factorNode);
 
 
 	const Node* lastSelectorVariable(std::vector<const Node*>* children, std::shared_ptr<SymbolTable>* table);
