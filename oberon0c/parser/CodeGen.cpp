@@ -28,36 +28,36 @@ void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
     switch(node->getNodeType()) {
         case ASTNodeType::statement_sequence: {
             for (auto child : node->getChildren()) {
-                gen(std::make_shared<ASTNode>(child));
+                gen(child);
             }
         }
         case ASTNodeType::plus: {
             for (auto child : node->getChildren()) {
-                gen(std::make_shared<ASTNode>(child));
+                gen(child);
             }
             *_result << add().str();
         }
         case ASTNodeType ::minus: {
             for (auto child : node->getChildren()) {
-                gen(std::make_shared<ASTNode>(child));
+                gen(child);
             }
             *_result << sub().str();
         }
         case ASTNodeType::div: {
             for (auto child : node->getChildren()) {
-                gen(std::make_shared<ASTNode>(child));
+                gen(child);
             }
             *_result << div().str();
         }
         case ASTNodeType::times: {
             for (auto child : node->getChildren()) {
-                gen(std::make_shared<ASTNode>(child));
+                gen(child);
             }
             *_result << mul().str();
         }
         case ASTNodeType::assignment: {
             for (auto child : node->getChildren()) {
-                gen(std::make_shared<ASTNode>(child));
+                gen(child);
             }
             *_result << assign(node).str();
         }
