@@ -1,3 +1,4 @@
+
          global   main
          extern   printf
 
@@ -33,6 +34,7 @@ endloop_init_1:
 init2:   ;Alternate initialization of array so quicksort is more interesting
          push      rbp
          mov       rbp, rsp
+
          lea       r13, [rel a]
          mov       r12, 0
          mov       [r13, r12*4], dword 62
@@ -86,6 +88,7 @@ print:
          push     rbp
          mov      rbp, rsp
          mov      r12d, 0
+
          cmp      r12d, 19
          jge      endloop_print_1
 startloop_print_1:
@@ -351,6 +354,7 @@ main:
          xor      rax, rax
         
          ;call quicksort
+
          ;call     quicksort
          call     bubblesort
          xor      rax, rax
