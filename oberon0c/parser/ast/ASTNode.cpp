@@ -87,6 +87,8 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	case ASTNodeType::neq: result = "#"; break;
 	case ASTNodeType::mod: result = "MOD"; break;
 	case ASTNodeType::_not: result = "~"; break;
+	case ASTNodeType::_constant: result = "CONSTANT"; break;
+	case ASTNodeType::_deref: result = "DEREF"; break;
 	}
 	stream << result;
 	return stream;

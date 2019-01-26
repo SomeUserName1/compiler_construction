@@ -153,3 +153,29 @@ std::ostream & operator<<(std::ostream & stream, const Symbol & symbol)
 
 	return stream;
 }
+
+size_t Symbol::size() {
+	// Constants don't need space
+	if (name_ == "CONSTANT") {
+		return 0;
+	}
+
+	// If base type return immediately 4 byte of size
+	if (name_ == "INTEGER"
+	||  name_ == "BOOLEAN") {
+		return 4;
+	}
+
+	// Calc the size of all sub types
+    size_t size = 0;
+    for (auto type : types_) {
+		size += type->size();
+    }
+
+    // If this is a array multiply with array dimension
+    if (symbolType_ == SymbolType::array) {
+    	size *= value_;
+    }
+
+    return size;
+}

@@ -59,5 +59,7 @@ public:
 	bool getIsVarParam();
 
 	std::shared_ptr<SymbolTable> getSymbolTable();
+
+	size_t size();
 };
 #endif

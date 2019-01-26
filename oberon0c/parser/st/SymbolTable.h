@@ -10,10 +10,12 @@
 class SymbolTable {
 private:
 	std::unordered_map<std::string, Symbol> symbolTable_;
+	std::unordered_map<Symbol*, size_t> offsetTable_;
 	size_t level_;
 	std::shared_ptr<SymbolTable> parent_;
 	std::vector<std::shared_ptr<SymbolTable>> children_;
 	std::string name_;
+	size_t nextOffset_;
 
 	void printTreeRec(std::ostream &stream, int depth) const;
 
@@ -43,5 +45,8 @@ public:
 	std::shared_ptr<SymbolTable> getParent();
 
 	std::unordered_map<std::string, Symbol> getMap();
+
+	size_t size();
+	size_t _offset(Symbol* symbol);
 };
 #endif
