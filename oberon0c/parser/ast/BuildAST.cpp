@@ -315,10 +315,6 @@ const ASTNode * BuildAST::simpleExpression(const Node * simpleExpressionNode)
 
 			leadingMinus = nullptr;
 		}
-
-		//ASTNode* node = new ASTNode(astType);
-		//node->addChild(term(se));
-		//nodes.push_back(node);
 	}
 
 	for (size_t i = 0; i < nodes.size() - 1; i++) {
