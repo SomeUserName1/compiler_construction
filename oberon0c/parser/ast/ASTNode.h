@@ -6,7 +6,7 @@
 
 enum class ASTNodeType : char {
 	statement_sequence, statement, if_statement, while_statement, assignment, procedure_call, symbol,
-	plus, minus, div, times, _or, _and, leq, lt, geq, gt, eq, neq, mod, _not
+	plus, minus, div, times, _or, _and, leq, lt, geq, gt, eq, neq, mod, _not, _constant, _deref
 };
 
 std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
