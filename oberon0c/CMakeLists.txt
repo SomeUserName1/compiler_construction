@@ -34,4 +34,4 @@ add_executable(oberon0c
 		${scanner}
 		${parser}
         main.cpp
-		)
+        parser/CodeGen.cpp parser/CodeGen.h)

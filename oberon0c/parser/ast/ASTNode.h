@@ -32,7 +32,7 @@ public:
 	//friend std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
 	friend std::ostream& operator<<(std::ostream &stream, const ASTNode &node);
 
-	Symbol* getSymbol();
+	Symbol* getSymbol() const;
 };
 
 #endif //OBERON0C_FOOOOOO_H
