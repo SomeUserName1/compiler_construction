@@ -77,8 +77,8 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	case ASTNodeType::minus: result = "-"; break;
 	case ASTNodeType::div: result = "DIV"; break;
 	case ASTNodeType::times: result = "*"; break;
-	case ASTNodeType:: or : result = "|"; break;
-	case ASTNodeType::and: result = "&"; break;
+	case ASTNodeType::_or : result = "|"; break;
+	case ASTNodeType::_and: result = "&"; break;
 	case ASTNodeType::leq: result = "<="; break;
 	case ASTNodeType::lt: result = "<"; break;
 	case ASTNodeType::geq: result = ">="; break;
@@ -86,7 +86,7 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	case ASTNodeType::eq: result = "="; break;
 	case ASTNodeType::neq: result = "#"; break;
 	case ASTNodeType::mod: result = "MOD"; break;
-	case ASTNodeType::not: result = "~"; break;
+	case ASTNodeType::_not: result = "~"; break;
 	}
 	stream << result;
 	return stream;

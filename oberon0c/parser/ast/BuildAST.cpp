@@ -1,6 +1,7 @@
 #include <vector>
 #include "BuildAST.h"
-
+#include <list>
+#include <algorithm>
 
 BuildAST::BuildAST(std::shared_ptr<SymbolTable> symbolTable, std::shared_ptr<Node> parseTree)
 {
@@ -273,8 +274,8 @@ const ASTNode * BuildAST::simpleExpression(const Node * simpleExpressionNode)
 		case NodeType::minus:
 			astType = ASTNodeType::minus;
 			break;
-		case NodeType::or:
-			astType = ASTNodeType:: or;
+		case NodeType::_or:
+			astType = ASTNodeType::_or;
 			break;
 		default:
 			throw std::invalid_argument("You failed!");
@@ -337,8 +338,8 @@ const ASTNode * BuildAST::term(const Node * termNode)
 		case NodeType:: mod:
 			astType = ASTNodeType:: mod ;
 			break;
-		case NodeType::and:
-			astType = ASTNodeType::and;
+		case NodeType::_and:
+			astType = ASTNodeType::_and;
 			break;
 		default:
 			throw std::invalid_argument("You failed!");
@@ -370,7 +371,7 @@ const ASTNode * BuildAST::factor(const Node * factorNode)
 	case NodeType::expression:
 		return expression(children.at(0));
 	case NodeType::factor: {
-		return not(children.at(0));
+		return _not(children.at(0));
 	}
 	default:
 		throw std::invalid_argument("You failed!");
@@ -396,9 +397,9 @@ const ASTNode * BuildAST::number(const Node * numberNode)
 	return node;
 }
 
-const ASTNode * BuildAST::not(const Node * factorNode)
+const ASTNode * BuildAST::_not(const Node * factorNode)
 {
-	ASTNode* node = new ASTNode(ASTNodeType::not);
+	ASTNode* node = new ASTNode(ASTNodeType::_not);
 	node->addChild(factor(factorNode));
 	return node;
 }

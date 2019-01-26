@@ -9,6 +9,8 @@ enum class ASTNodeType : char {
 	plus, minus, div, times, _or, _and, leq, lt, geq, gt, eq, neq, mod, _not
 };
 
+std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
+
 class ASTNode {
 private:
 	ASTNodeType nodeType_;
@@ -27,7 +29,7 @@ public:
 	void addChilds(std::shared_ptr<std::vector<const ASTNode*>> nodes);
 
 	virtual void printTree(std::ostream &stream) const;
-	friend std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
+	//friend std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
 	friend std::ostream& operator<<(std::ostream &stream, const ASTNode &node);
 };
 

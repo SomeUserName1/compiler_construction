@@ -4,6 +4,7 @@
 #include <vector>
 #include <ostream>
 #include <string>
+#include <memory>
 
 //enum class Type : char {
 //	integer, boolean, array, constant

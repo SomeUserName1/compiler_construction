@@ -22,6 +22,7 @@ public:
 	explicit SymbolTable(std::string name);
 	explicit SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name);
 	explicit SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name, std::unordered_map<std::string, Symbol> symbolTable, std::vector<std::shared_ptr<SymbolTable>> children);
+	~SymbolTable() = default;
 
 	std::shared_ptr<SymbolTable> nestedTable(std::shared_ptr<SymbolTable> parent, std::string name);
 
@@ -36,7 +37,7 @@ public:
 
 	std::shared_ptr<SymbolTable> deepCopy(std::string name);
 
-	virtual void printTree(std::ostream &stream) const;
+	void printTree(std::ostream &stream) const;
 	friend std::ostream& operator<<(std::ostream &stream, SymbolTable &node);
 
 	std::shared_ptr<SymbolTable> getParent();

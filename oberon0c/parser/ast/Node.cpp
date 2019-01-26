@@ -69,8 +69,8 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 		case NodeType::minus: result = "-"; break;
 		case NodeType::div: result = "DIV"; break;
 		case NodeType::times: result = "*"; break;
-		case NodeType::or : result = "|"; break;
-		case NodeType::and: result = "&"; break;
+		case NodeType::_or : result = "|"; break;
+		case NodeType::_and: result = "&"; break;
 		case NodeType::leq: result = "<="; break;
 		case NodeType::lt: result = "<"; break;
 		case NodeType::geq: result = ">="; break;
@@ -134,8 +134,8 @@ bool Node::isBinaryOp() const
 	case NodeType::minus:
 	case NodeType::div:
 	case NodeType::times:
-	case NodeType::or:
-	case NodeType::and:
+	case NodeType::_or:
+	case NodeType::_and:
 	case NodeType::leq:
 	case NodeType::lt:
 	case NodeType::geq:

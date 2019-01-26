@@ -9,8 +9,11 @@
 #include <IdentToken.h>
 #include <NumberToken.h>
 #include <utility>
+#include <list>
+#include <algorithm>
 #include "ast/BuildAST.h"
 #include "Parser.h"
+
 
 Parser::Parser(Scanner *scanner, Logger *logger) :
 	scanner_(scanner), logger_(logger) {
@@ -191,6 +194,8 @@ const Node* Parser::type_declarations() {
 		case (NodeType::record_type): {
 			addRecord(node, identifier, typeDef, false);
 		}
+			break;
+		default:
 			break;
 	}
 
@@ -865,7 +870,7 @@ const Node* Parser::binary_op() {
 		return new Node(NodeType::minus, word->getPosition(), "-", currentTable_);
 	}
 	else if (type == TokenType::op_or) {
-		return new Node(NodeType::or, word->getPosition(), "OR", currentTable_);
+		return new Node(NodeType::_or, word->getPosition(), "OR", currentTable_);
 	}
 	else if (type == TokenType::op_times) {
 		return new Node(NodeType::times, word->getPosition(), "*", currentTable_);
@@ -877,7 +882,7 @@ const Node* Parser::binary_op() {
 		return new Node(NodeType::mod, word->getPosition(), "MOD", currentTable_);
 	}
 	else if (type == TokenType::op_and) {
-		return new Node(NodeType::and, word->getPosition(), "&", currentTable_);
+		return new Node(NodeType::_and, word->getPosition(), "&", currentTable_);
 	}
 
 	std::string s = std::string("Expected binary operator in method binary op");
@@ -1370,7 +1375,7 @@ Symbol * Parser::typeOfSimpleExpression(const Node * simpleExpression)
 	nodeTypesA.push_back(NodeType::minus);
 
 	auto nodeTypesB = std::vector<NodeType>();
-	nodeTypesB.push_back(NodeType::or);
+	nodeTypesB.push_back(NodeType::_or);
 
 	return binaryTypeChecker(simpleExpression, NodeType::term, nodeTypesA, nodeTypesB);
 }
@@ -1383,7 +1388,7 @@ Symbol * Parser::typeOfTerm(const Node * term)
 	nodeTypesA.push_back(NodeType::mod);
 
 	auto nodeTypesB = std::vector<NodeType>();
-	nodeTypesB.push_back(NodeType::and);
+	nodeTypesB.push_back(NodeType::_and);
 
 	return binaryTypeChecker(term, NodeType::factor, nodeTypesA, nodeTypesB);
 }
@@ -1691,7 +1696,7 @@ int Parser::evaluateSimpleExpression(const Node * node)
 			returnVal += seValue;
 		case NodeType::minus:
 			returnVal -= seValue;
-		case NodeType::or:
+		case NodeType::_or:
 			returnVal |= seValue;
 		}
 	}
@@ -1737,7 +1742,7 @@ int Parser::evaluateTerm(const Node * node)
 		case NodeType::mod:
 			returnVal %= seValue;
 			break;
-		case NodeType::and:
+		case NodeType::_and:
 			returnVal &= seValue;
 			break;
 		}
