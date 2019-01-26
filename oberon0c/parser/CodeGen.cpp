@@ -115,7 +115,8 @@ const std::stringstream CodeGen::div() const {
     _asm << "div    r9"      << std::endl;
     _asm << "push   r8"      << std::endl;
     _asm << "sub    rsp, 12" << std::endl;
-
+    // TODO: div funktioniert so nicht, siehe https://www.cs.uaf.edu/2017/fall/cs301/reference/x86_64.html unter
+    //  Instructions
     return _asm;
 }
 
@@ -128,6 +129,7 @@ const std::stringstream CodeGen::mul() const {
     _asm << "mul    r9"      << std::endl;
     _asm << "push   r8"      << std::endl;
     _asm << "sub    rsp, 12" << std::endl;
+    // TODO: mul funktioniert so ebenfalls nicht, siehe gleiche Quelle.
 
     return _asm;
 }
@@ -154,7 +156,7 @@ const std::stringstream CodeGen::push_address(const std::shared_ptr<ASTNode>& no
     _asm << "add    r8," << this->_sym->_offset(node->getSymbol())      << std::endl;
     _asm << "push   r8"                                                 << std::endl;
     _asm << "sub    rsp, 12"                                            << std::endl;
-
+    // TODO: Sicher das du hier add verwenden willst, obwohl du bei push_var mit minus arbeitest?
     return _asm;
 }
 
