@@ -10,7 +10,7 @@
 class SymbolTable {
 private:
 	std::unordered_map<std::string, Symbol> symbolTable_;
-	std::unordered_map<Symbol*, size_t> offsetTable_;
+	std::unordered_map<std::string, size_t> offsetTable_;
 	size_t level_;
 	std::shared_ptr<SymbolTable> parent_;
 	std::vector<std::shared_ptr<SymbolTable>> children_;
