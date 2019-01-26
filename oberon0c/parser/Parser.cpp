@@ -233,6 +233,8 @@ const Node* Parser::var_declarations() {
 				case SymbolType::type:
 					addType(identifier, typeDef, true);
 					break;
+
+                default: break;
 				}
 			}
 		}
@@ -249,6 +251,8 @@ const Node* Parser::var_declarations() {
 			}
 		}
 			break;
+
+        default: break;
 	}
 
 	return node;
@@ -816,6 +820,7 @@ std::shared_ptr<std::vector<const Node*>> Parser::selector(const Node * preceedi
 			// Next after candidate is expression, so this must be an array
 			failIfNotAArray(preceedingCandidate, recordsTable);
 			break;
+            default: break;
 		}
 
 	}
@@ -968,6 +973,8 @@ void Parser::failIfNotASomething(const Node * identifier, SymbolType symbolType,
 	case SymbolType::type:
 		ss << "a Type";
 		break;
+
+        default: break;
 	}
 	ss << ".";
 
@@ -1260,6 +1267,7 @@ Symbol* Parser::addRecord(const Node* node, const Node * identifier, const Node 
 				}
 				recordTypes.push_back(type);
 			}
+        default: break;
 		}
 	}
 
@@ -1316,34 +1324,42 @@ std::string Parser::postParserTypeCheck(const Node * module, std::string lastIde
 
 	for (auto child : module->getChildren()) {
 		switch (child->getNodeType()) {
-		case NodeType::const_declarations:
-			checkConstDeclType(child);
-			break;
-		case NodeType::assignment:
-			checkAssignmentType(child);
-			break;
-		case NodeType::selector:
-			// If an array is selected check wether the expression evaluates to a non-negative integer that is in range.
-			break;
-		case NodeType::procedure_call:
-			// Check wether the given parameters are of an appropriate type for the referenced procedure.
-			checkProcedureCallTypes(child);
-			break;
-		case NodeType::if_statement:
-			// Check wether the expression evaluates to a boolean
-			checkIfStatementType(child);
-			break;
-		case NodeType::while_statement:
-			// Check wether the expression evaluates to a boolean
-			checkWhileStatementType(child);
-			break;
-		case NodeType::array_type:
-			// Check wether expression evaluates to a non-negative constant.
-			int arrayDimension = checkArrayType(child);
-			Symbol* arraySymbol = currentTable_->getSymbol(&lastIdent);
-			arraySymbol->setValue(arrayDimension);
-			break;
-		}
+            case NodeType::const_declarations: {
+                checkConstDeclType(child);
+                break;
+            }
+            case NodeType::assignment: {
+                checkAssignmentType(child);
+                break;
+            }
+            case NodeType::selector: {
+                // If an array is selected check wether the expression evaluates to a non-negative integer that is in range.
+                break;
+            }
+            case NodeType::procedure_call: {
+                // Check wether the given parameters are of an appropriate type for the referenced procedure.
+                checkProcedureCallTypes(child);
+                break;
+                }
+            case NodeType::if_statement: {
+                // Check wether the expression evaluates to a boolean
+                checkIfStatementType(child);
+                break;
+        }
+		case NodeType::while_statement: {
+            // Check wether the expression evaluates to a boolean
+            checkWhileStatementType(child);
+            break;
+        }
+		case NodeType::array_type: {
+            // Check wether expression evaluates to a non-negative constant.
+            int arrayDimension = checkArrayType(child);
+            Symbol *arraySymbol = currentTable_->getSymbol(&lastIdent);
+            arraySymbol->setValue(arrayDimension);
+            break;
+        }
+        default: break;
+        }
 		lastIdent = postParserTypeCheck(child, lastIdent);
 	}
 
@@ -1412,6 +1428,8 @@ Symbol * Parser::binaryTypeChecker(const Node * expSexpFact, NodeType sub, std::
 				break;
 			case NodeType::term:
 				typesOfSubs.push_back(typeOfTerm(child));
+
+            default: break;
 			}
 			
 		}
@@ -1650,6 +1668,8 @@ int Parser::evaluateExpression(const Node * node)
 			returnVal = returnVal > seValue;
 		case NodeType::geq:
 			returnVal = returnVal >= seValue;
+
+        default: break;
 		}
 	}
 
@@ -1698,6 +1718,8 @@ int Parser::evaluateSimpleExpression(const Node * node)
 			returnVal -= seValue;
 		case NodeType::_or:
 			returnVal |= seValue;
+
+        default: break;
 		}
 	}
 
@@ -1745,6 +1767,8 @@ int Parser::evaluateTerm(const Node * node)
 		case NodeType::_and:
 			returnVal &= seValue;
 			break;
+
+        default: break;
 		}
 	}
 

@@ -78,6 +78,8 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 		case NodeType::eq: result = "="; break;
 		case NodeType::neq: result = "#"; break;
 		case NodeType::mod: result = "MOD"; break;
+
+        default: break;
 	}
 	stream << result;
 	return stream;
