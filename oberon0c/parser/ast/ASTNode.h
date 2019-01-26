@@ -28,7 +28,7 @@ public:
 	void addChild(const ASTNode* node);
 	void addChilds(std::shared_ptr<std::vector<const ASTNode*>> nodes);
 
-	virtual void printTree(std::ostream &stream) const;
+	void printTree(std::ostream &stream) const;
 	//friend std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
 	friend std::ostream& operator<<(std::ostream &stream, const ASTNode &node);
 
