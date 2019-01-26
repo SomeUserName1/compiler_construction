@@ -31,6 +31,8 @@ public:
 	virtual void printTree(std::ostream &stream) const;
 	//friend std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
 	friend std::ostream& operator<<(std::ostream &stream, const ASTNode &node);
+
+	Symbol* getSymbol();
 };
 
 #endif //OBERON0C_FOOOOOO_H
