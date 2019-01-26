@@ -1,6 +1,8 @@
 #include <string>
 #include "Symbol.h"
 
+class SymbolTable;
+
 Symbol::Symbol()
 {
 	throw  std::runtime_error("This constructor is only for the compiler not to whine.");
@@ -85,6 +87,7 @@ void Symbol::print(std::ostream & stream) const
 	}
 
 	stream << " Value: " << value_;
+	//stream << "| Offset: " << symbolTable_->size();
 }
 
 bool Symbol::operator==(Symbol other)
