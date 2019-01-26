@@ -362,11 +362,13 @@ const Node* Parser::factor() {
 			case TokenType::kw_do:
 			case TokenType::op_minus:
 			case TokenType::op_plus:
+			case TokenType::op_times:
+			case TokenType::op_div:
 			case TokenType::rbrack:
 			case TokenType::semicolon:
 			case TokenType::kw_end:
 			case TokenType::rparen:
-			case TokenType::comma:{
+			case TokenType::comma: {
 				auto temp4 = identifier->getValue();
 				Symbol* symbol = currentTable_->getSymbol(&temp4);
 				SymbolType symType = symbol->getSymbolType();
