@@ -66,8 +66,8 @@ std::ostream & operator<<(std::ostream & stream, const ASTNode & node)
 	return stream;
 }
 
-Symbol *ASTNode::getSymbol() {
-    return symbol_;
+Symbol *ASTNode::getSymbol() const {
+	return symbol_;
 }
 
 std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
