@@ -3,13 +3,14 @@
 
 #include "Node.h"
 
-Node::Node(NodeType nodeType, FilePos pos) : nodeType_(nodeType), pos_(std::move(pos)) {}
+Node::Node(NodeType nodeType, FilePos pos, std::shared_ptr<SymbolTable> symbolTable) : nodeType_(nodeType), pos_(std::move(pos)), symbolTable_(symbolTable) {}
 
-Node::Node(NodeType nodeType, FilePos pos, std::string value)
+Node::Node(NodeType nodeType, FilePos pos, std::string value, std::shared_ptr<SymbolTable> symbolTable)
 {
 	nodeType_ = nodeType;
 	pos_ = std::move(pos);
 	value_ = std::move(value);
+	symbolTable_ = symbolTable;
 }
 
 const NodeType Node::getNodeType() const
@@ -20,6 +21,15 @@ const NodeType Node::getNodeType() const
 const FilePos Node::getFilePos() const
 {
 	return pos_;
+}
+
+std::vector<const Node*> Node::getChildren() const {
+	return children_;
+}
+
+std::shared_ptr<SymbolTable> Node::getSymbolTable() const
+{
+	return symbolTable_;
 }
 
 std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
@@ -38,6 +48,7 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 		case NodeType::simple_expression: result = "simple_expression"; break;
 		case NodeType::term: result = "term"; break;
 		case NodeType::factor: result = "factor"; break;
+		case NodeType::type: result = "type"; break;
 		case NodeType::record_type: result = "record_type"; break;
 		case NodeType::array_type: result = "array_type"; break;
 		case NodeType::field_list: result = "field_list"; break;
@@ -54,6 +65,19 @@ std::ostream& operator<<(std::ostream &stream, const NodeType &type) {
 		case NodeType::selector: result = "selector"; break;
 		case NodeType::assignment: result = "assignment"; break;
 		case NodeType::procedure_call: result = "procedure_call"; break;
+		case NodeType::plus: result = "+"; break;
+		case NodeType::minus: result = "-"; break;
+		case NodeType::div: result = "DIV"; break;
+		case NodeType::times: result = "*"; break;
+		case NodeType::or : result = "|"; break;
+		case NodeType::and: result = "&"; break;
+		case NodeType::leq: result = "<="; break;
+		case NodeType::lt: result = "<"; break;
+		case NodeType::geq: result = ">="; break;
+		case NodeType::gt: result = ">"; break;
+		case NodeType::eq: result = "="; break;
+		case NodeType::neq: result = "#"; break;
+		case NodeType::mod: result = "MOD"; break;
 	}
 	stream << result;
 	return stream;
@@ -81,19 +105,53 @@ void Node::printTreeRec(std::ostream & stream, int depth) const
 	this->print(stream);
 	stream << std::endl;
 
-	for (Node child : children_) {
-		child.printTreeRec(stream, depth + 1);
+	for (const Node* child : children_) {
+		child->printTreeRec(stream, depth + 1);
 	}
 }
 
-void Node::addChild(Node node)
+void Node::addChild(const Node* node)
 {
 	children_.push_back(node);
+}
+
+void Node::addChilds(std::shared_ptr<std::vector<const Node*>> nodes)
+{
+	for (const Node* node : *nodes) {
+		addChild(node);
+	}
 }
 
 std::string Node::getValue() const
 {
 	return value_;
+}
+
+bool Node::isBinaryOp() const
+{
+	switch (nodeType_) {
+	case NodeType::plus:
+	case NodeType::minus:
+	case NodeType::div:
+	case NodeType::times:
+	case NodeType::or:
+	case NodeType::and:
+	case NodeType::leq:
+	case NodeType::lt:
+	case NodeType::geq:
+	case NodeType::gt:
+	case NodeType::eq:
+	case NodeType::neq:
+	case NodeType::mod:
+		return true;
+	default:
+		return false;
+	}
+}
+
+void Node::setSymbolTable(std::shared_ptr<SymbolTable> symbolTable)
+{
+	symbolTable_ = symbolTable;
 }
 
 std::ostream & operator<<(std::ostream & stream, const Node & node)

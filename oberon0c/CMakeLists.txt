@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.12)
 project(oberon0c)
 
 
-SET(CMAKE_CXX_FLAGS " -c -Wall  -std=c++17")
+SET(CMAKE_CXX_FLAGS " -c -W4 /EHsc")
 #SET(CMAKE_CXX_COMPILER clang++)
 #SET(CMAKE_CXX_FLAGS "-Wall -Wpedantic") #-fsanitize=address -fsanitize=memory
 
@@ -23,6 +23,10 @@ set(scanner
 set(parser
 		parser/Parser.cpp
 		parser/ast/Node.cpp
+		parser/st/SymbolTable.cpp
+		parser/st/Symbol.cpp
+		parser/ast/BuildAST.cpp
+		parser/ast/ASTNode.cpp
 		)
 
 add_executable(oberon0c
