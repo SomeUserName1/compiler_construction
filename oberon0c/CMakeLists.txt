@@ -4,7 +4,7 @@ project(oberon0c)
 
 #SET(CMAKE_CXX_FLAGS " -c -W4 /EHsc")
 SET(CMAKE_CXX_COMPILER clang++)
-SET(CMAKE_CXX_FLAGS "-Wall -Wpedantic") #-fsanitize=address -fsanitize=memory
+SET(CMAKE_CXX_FLAGS "-Wall -Wpedantic -fsanitize=address") # -fsanitize=memory
 
 set(CMAKE_CXX_STANDARD 17)
 

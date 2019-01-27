@@ -1,6 +1,22 @@
-//
-// Created by fabian on 26.01.19.
-//
+/**
+ * Lieber Daniel,
+ *
+ * solltest du mit deiner Freizeit nichts besseres anfangen zu wissen als meinen _UNFERTIGEN_ Code zu lesen und diesen
+ * zu verbessern noch bevor ich ihn aber auch nur das erste Mal ausgeführt habe, kannst du ihn ja auch einfach direkt
+ * fertig oder selbst ("from scratch") schreiben.
+ * Ebenfalls ist es äusserst unangebracht mich am Sontag zu fragen ob ich denn auch arbeite. Ich denke ich bin alt genug
+ * mir die Arbeitszeit selbst einzuteilen und bisher hat es jedes mal so gut geklappt, dass ich sowohl den Schein,
+ * wie auch die Klausur absolviert habe.
+ *
+ * Ich bin versucht deinen Code ebenfalls zu kommentieren, wo unfertig fehlerhaft oder nicht nach C++ Idiomen
+ * geschrieben.
+ * Das lass ich allerdings, da ich denke dass du das 1. selbst weißt und 2. mir egal ist was du fabrizierst. Wenn du 9
+ * Tage vor der Abgabe so dringend fertig werden willst damit du lernen kannst, wieso nicht einfach lernen statt hier
+ * deine Schokoladenseite zu zeigen
+ *
+ * Viele Grüße,
+ * Der auf den du dich nicht verlassen kannst ;)
+ */
 
 #include "CodeGen.h"
 
@@ -27,36 +43,36 @@ void CodeGen::finish() {
 void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
     switch(node->getNodeType()) {
         case ASTNodeType::statement_sequence: {
-            for (auto child : node->getChildren()) {
+            for (const auto &child : node->getChildren()) {
                 gen(child);
             }
         }
         case ASTNodeType::plus: {
-            for (auto child : node->getChildren()) {
+            for (const auto &child : node->getChildren()) {
                 gen(child);
             }
             *_result << add().str();
         }
         case ASTNodeType ::minus: {
-            for (auto child : node->getChildren()) {
+            for (const auto &child : node->getChildren()) {
                 gen(child);
             }
             *_result << sub().str();
         }
         case ASTNodeType::div: {
-            for (auto child : node->getChildren()) {
+            for (const auto &child : node->getChildren()) {
                 gen(child);
             }
             *_result << div().str();
         }
         case ASTNodeType::times: {
-            for (auto child : node->getChildren()) {
+            for (const auto &child : node->getChildren()) {
                 gen(child);
             }
             *_result << mul().str();
         }
         case ASTNodeType::assignment: {
-            for (auto child : node->getChildren()) {
+            for (const auto &child : node->getChildren()) {
                 gen(child);
             }
             *_result << assign(node).str();
@@ -71,7 +87,6 @@ void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
             *_result << push_address(node).str();
         }
         case ASTNodeType::_int_not: {
-            // TODO GenCode that inverts an int (shift and toggle)
             *_result << invert(node).str();
             gen(node);
         }
