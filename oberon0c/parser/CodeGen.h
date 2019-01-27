@@ -18,22 +18,22 @@ class CodeGen {
 private:
     std::shared_ptr<SymbolTable> _sym;
     std::shared_ptr<ASTNode> _ast;
-    std::shared_ptr<std::stringstream> _result;
+    std::string _result;
 
-    const std::stringstream add() const;
-    const std::stringstream sub() const;
-    const std::stringstream div() const;
-    const std::stringstream mul() const;
-    const std::stringstream invert(const std::shared_ptr<ASTNode> &node) const;
-    const std::stringstream push_const(const std::shared_ptr<ASTNode>& node) const;
-    const std::stringstream push_var(const std::shared_ptr<ASTNode>& node) const;
-    const std::stringstream push_address(const std::shared_ptr<ASTNode>& node) const;
-    const std::stringstream assign(const std::shared_ptr<ASTNode>& node) const;
-    const std::stringstream init() const;
+    const std::string add() const;
+    const std::string sub() const;
+    const std::string div() const;
+    const std::string mul() const;
+    const std::string invert(const std::shared_ptr<ASTNode> &node) const;
+    const std::string push_const(const std::shared_ptr<ASTNode>& node) const;
+    const std::string push_var(const std::shared_ptr<ASTNode>& node) const;
+    const std::string push_address(const std::shared_ptr<ASTNode>& node) const;
+    const std::string assign(const std::shared_ptr<ASTNode>& node) const;
+    void init();
     void finish();
 
 public:
-    CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
+    CodeGen(std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
     void gen(const std::shared_ptr<ASTNode> &node);
 
 };

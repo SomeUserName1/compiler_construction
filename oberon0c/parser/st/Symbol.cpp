@@ -117,7 +117,7 @@ bool Symbol::operator!=(Symbol other)
 
 int Symbol::getValue()
 {
-	return value_;
+	return this->value_;
 }
 
 void Symbol::setAst(const std::shared_ptr<ASTNode> node)
