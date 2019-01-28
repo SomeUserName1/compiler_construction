@@ -164,7 +164,7 @@ size_t SymbolTable::size() {
 		size += it.second.size();
 	}
 
-	return size;
+	return nextOffset_;
 }
 
 size_t SymbolTable::_offset(Symbol *symbol) {
