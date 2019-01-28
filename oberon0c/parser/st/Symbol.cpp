@@ -166,7 +166,7 @@ size_t Symbol::size() {
 	// If base type return immediately 4 byte of size
 	if (name_ == "INTEGER"
 	||  name_ == "BOOLEAN") {
-		return 4;
+		return 8;
 	}
 
 	// Calc the size of all sub types

@@ -3,82 +3,82 @@ global   main
 extern   printf
 
 section  .data
-   amsg:     db       "The address is %d!", 10, 0
+   amsg:     db       "The address is %x!", 10, 0
    vmsg:     db       "The value is %d!", 10, 0
-   bmsg:     db       "The [value] is %d!", 10, 0
-   prsp:    db        "The rsp is at %d!", 16, 0
-   fail_su: db         "Stack unaligned!",10,0
+   bmsg:     db       "The [value] is %u!", 10, 0
+   prsp:     db       "The rsp is at %x!", 32, 0
+   fail_su:  db       "Stack unaligned!",10,0
 section .text
 
 main:
-   push    rbp
-   mov     rbp, rsp
+    push    rbp
+    mov     rbp, rsp
 
-  ; mov      rdi, prsp
- ;  mov      rsi, rsp
- ;  call     printf
+    sub rsp,16
 
- ;  mov      rdi, prsp
-  ; mov      rsi, rsp
-  ; call     printf
+ mov QWORD  [rsp+0], 0
 
- ;  mov      r8, rsp
-;   cmp      r8w, 0x0
-;   jne      .fail_stack_unaligned
+    mov      rdx,0
+    mov      rax, rsp
+    mov      r8,16
+    div      r8
+    cmp      rdx, 0x0
+    jne      .fail_stack_unaligned
 
-sub rsp,16
-   ;mov      rdi, prsp
-   ;mov      rsi, rsp
-   ;call     printf
-   ;reserve space for vars by moving the stack
-   ;pointer as many bytes as the maximum offset
-   ;in the symbol table
+    mov      rdi, amsg
+    mov      r8, rbp
+    sub      r8,7
+    mov      rsi, rbp
+    call     printf
 
-  ; mov      rdi, prsp
-   ;mov      rsi, rsp
-   ;call     printf
-      mov      r8, rsp
-      cmp      r8w, 0x0
-      jne      .fail_stack_unaligned
-; Now there should be 16 byte free to use on the stack aka 2x 64 bit uint
-; first of all print whats there already
-mov      rdi, amsg
-mov      rsi, rbp
-call     printf
+    mov      rdi, bmsg
+    mov      rsi, QWORD [rbp-9]
+    call     printf
 
-mov      rdi, bmsg
-mov      rsi, [rbp]
-call     printf
 
-mov      rdi, amsg
-mov      r8, rbp
-add      r8, 8
-mov      rsi, r8
-call     printf
 
-mov      rdi, bmsg
-mov      r8, rbp
-add      r8, 8
-mov      rsi, [r8]
-call     printf
-
-;=====PUSH ADDRESS====== of the second 64 bit int and align the stack to 16 bytes
+;=====PUSH ADDRESS======
    mov    r8,rbp
-   sub    r8,8
+; offset is 24
+   sub    r8, 9
    push   r8
    sub    rsp, 8
 
-      mov      r8, rsp
-      cmp      r8w, 0x0
-      jne      .fail_stack_unaligned
+;=====PUSH CONST======
+   push   3
+   sub    rsp, 8
 
-mov      rdi, vmsg
-mov      rsi, 42
-call     printf
-xor      rax,rax
-mov      rsp,rbp
-pop      rbp
-ret
+;=====ASSIGN======
+   add    rsp, 8
+   pop    r9
+   add    rsp, 8
+   pop    r8
+   mov    [r8], r9
+
+    mov      rdx,0
+    mov      rax, rsp
+    mov      r8,16
+    div      r8
+    cmp      rdx, 0x0
+    jne      .fail_stack_unaligned
+
+    mov      rdi, amsg
+    mov      r8, rbp
+    sub      r8,7
+    mov      rsi, rbp
+    call     printf
+
+    mov      rdi, bmsg
+    mov      rsi, QWORD [rbp-9]
+    call     printf
+
+    mov      rdi, vmsg
+    mov      rsi, 42
+    call     printf
+    xor      rax,rax
+    mov      rsp,rbp
+    pop      rbp
+    ret
 
 .fail_stack_unaligned:
     mov      rdi, fail_su

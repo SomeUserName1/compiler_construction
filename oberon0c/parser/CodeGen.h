@@ -31,6 +31,8 @@ private:
     const std::string assign(const std::shared_ptr<ASTNode>& node) const;
     void init();
     void finish();
+    const std::string check_stack_alignment(std::string str) const;
+    const std::string print_debug(std::string str, const std::shared_ptr<ASTNode>& node) const;
 
 public:
     CodeGen(std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
