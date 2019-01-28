@@ -6,7 +6,6 @@
 #include <vector>
 #include "Symbol.h"
 
-
 class SymbolTable {
 private:
 	std::unordered_map<std::string, Symbol> symbolTable_;
