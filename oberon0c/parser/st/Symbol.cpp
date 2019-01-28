@@ -1,7 +1,7 @@
 #include <string>
 #include "Symbol.h"
 
-class SymbolTable;
+//class SymbolTable;
 
 Symbol::Symbol()
 {
@@ -86,8 +86,16 @@ void Symbol::print(std::ostream & stream) const
 		stream << " as TypeDef";
 	}
 
-	stream << " Value: " << value_;
-	//stream << "| Offset: " << symbolTable_->size();
+	if (symbolType_ == SymbolType::constant
+	||  symbolType_ == SymbolType::array) {
+		stream << " | Value: " << value_;
+	}
+
+	if ((symbolType_ == SymbolType::array
+	||  symbolType_ == SymbolType::record
+	||  symbolType_ == SymbolType::type) && isVariable_) {
+		stream << " | Offset: " << offset_;
+	}
 }
 
 bool Symbol::operator==(Symbol other)
@@ -181,4 +189,8 @@ size_t Symbol::size() {
     }
 
     return size;
+}
+
+void Symbol::setOffset(size_t offset) {
+	offset_ = offset;
 }

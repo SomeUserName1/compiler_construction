@@ -99,9 +99,12 @@ int SymbolTable::insert(Symbol symbol) {
 
 	// Add symbol to symbol table and the next offset to the offset table. Then add the size of the symbol to the
 	// nextOffset pointer
-	symbolTable_.insert(std::unordered_map<std::string, Symbol>::value_type(*name, symbol));
-	offsetTable_.insert(std::unordered_map<std::string, size_t>::value_type(*name, nextOffset_));
-	nextOffset_ += symbol.size();
+	if (symbol.isVariable()) {
+        symbol.setOffset(nextOffset_);
+        offsetTable_.insert(std::unordered_map<std::string, size_t>::value_type(*name, nextOffset_));
+        nextOffset_ += symbol.size();
+    }
+    symbolTable_.insert(std::unordered_map<std::string, Symbol>::value_type(*name, symbol));
 
 	return 0;
 }

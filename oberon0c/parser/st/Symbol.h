@@ -27,7 +27,8 @@ private:
 	int value_;
 	std::shared_ptr<ASTNode> ast_;
 	bool isVarParam_;
-	std::shared_ptr<SymbolTable> symbolTable_; //The table this symbol is standing in.
+	std::shared_ptr<SymbolTable> symbolTable_;  //The table this symbol is standing in.
+	size_t offset_;                             //The offset in the module/procedure.
 
 public:
 	explicit Symbol();
@@ -61,5 +62,6 @@ public:
 	std::shared_ptr<SymbolTable> getSymbolTable();
 
 	size_t size();
+	void setOffset(size_t offset);
 };
 #endif
