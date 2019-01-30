@@ -123,7 +123,7 @@ void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
             break;
         }
         case ASTNodeType::_int_not: {
-            gen(node->getChildren()[0]);
+            gen(node->getChildren().front());
             this->_result = this->_result + invert(node);
             break;
         }

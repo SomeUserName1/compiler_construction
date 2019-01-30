@@ -42,7 +42,7 @@ const std::shared_ptr<ASTNode> BuildAST::statementSequence(const Node * statemen
 	for (auto statementNode : children) {
 		auto statemnt = statement(statementNode);
 		if (statemnt != nullptr) {
-			statementSequenceAST->addChild(statemnt);
+			statementSequenceAST->addChildBack(statemnt);
 		}
 	}
 
@@ -108,9 +108,9 @@ const std::shared_ptr<ASTNode> BuildAST::assignment(const Node * assignmentNode)
 	const Node* expressionNode = children.back();
 	const std::shared_ptr<ASTNode> expressionAST = expression(expressionNode);
 
-	
-	node->addChild(identAST);
-	node->addChild(expressionAST);
+
+	node->addChildBack(identAST);
+	node->addChildBack(expressionAST);
 
 	return node;
 }
@@ -136,10 +136,10 @@ const std::shared_ptr<ASTNode> BuildAST::ifStatement(const Node * ifStatementNod
 		const Node* child = children.at(i);
 
 		if (child->getNodeType() == NodeType::expression) {
-			node->addChild(expression(child));
+			node->addChildBack(expression(child));
 		}
 		else {
-			node->addChild(statementSequence(child));
+			node->addChildBack(statementSequence(child));
 		}
 	}
 
@@ -161,8 +161,8 @@ const std::shared_ptr<ASTNode> BuildAST::whileStatement(const Node * whileStatem
 
 	// Add children to whileStatement AST node and return.
 	auto whileStatementAST = std::make_shared<ASTNode>(ASTNodeType::while_statement);
-	whileStatementAST->addChild(expressionAST);
-	whileStatementAST->addChild(statementSequenceAST);
+	whileStatementAST->addChildBack(expressionAST);
+	whileStatementAST->addChildBack(statementSequenceAST);
 
 	return whileStatementAST;
 }
@@ -223,14 +223,14 @@ const std::shared_ptr<ASTNode> BuildAST::expression(const Node * expressionNode)
 		}
 
 		auto node = std::make_shared<ASTNode>(astType);
-		node->addChild(simpleExpression(se));
+		node->addChildBack(simpleExpression(se));
 		nodes.push_back(node);
 	}
 
 	for (size_t i = 0; i < nodes.size() - 1; i++) {
-		nodes.at(i)->addChild(nodes.at(i + 1));
+		nodes.at(i)->addChildBack(nodes.at(i + 1));
 	}
-	nodes.back()->addChild(simpleExpression(simpleExpressions.back()));
+	nodes.back()->addChildBack(simpleExpression(simpleExpressions.back()));
 
 	return nodes.front();
 }
@@ -245,7 +245,7 @@ const std::shared_ptr<ASTNode> BuildAST::simpleExpression(const Node * simpleExp
 		if (children.at(0)->getNodeType() == NodeType::minus) {
 			const std::shared_ptr<ASTNode> subTerm = term(children.at(1));
 			auto notInt = std::make_shared<ASTNode>(ASTNodeType::_int_not);
-			notInt->addChild(subTerm);
+			notInt->addChildBack(subTerm);
 			return notInt;
 		} else {
 			const std::shared_ptr<ASTNode> subTerm = term(children.at(0));
@@ -302,14 +302,14 @@ const std::shared_ptr<ASTNode> BuildAST::simpleExpression(const Node * simpleExp
 		if (leadingMinus == nullptr) {
 			// No leading minus in se
 			auto node = std::make_shared<ASTNode>(astType);
-			node->addChild(term(se));
+			node->addChildBack(term(se));
 			nodes.push_back(node);
 		} else {
 			// First term of se was leaded by a minus. Insert _int_not ast node above the term.
 			auto node = std::make_shared<ASTNode>(astType);
 			auto intNot = std::make_shared<ASTNode>(ASTNodeType::_int_not);
-			intNot->addChild(term(se));
-			node->addChild(intNot);
+			intNot->addChildBack(term(se));
+			node->addChildBack(intNot);
 			nodes.push_back(node);
 
 			leadingMinus = nullptr;
@@ -317,9 +317,9 @@ const std::shared_ptr<ASTNode> BuildAST::simpleExpression(const Node * simpleExp
 	}
 
 	for (size_t i = 0; i < nodes.size() - 1; i++) {
-		nodes.at(i)->addChild(nodes.at(i + 1));
+		nodes.at(i)->addChildBack(nodes.at(i + 1));
 	}
-	nodes.back()->addChild(term(terms.back()));
+	nodes.back()->addChildBack(term(terms.back()));
 
 	return nodes.front();
 }
@@ -351,7 +351,9 @@ const std::shared_ptr<ASTNode> BuildAST::term(const Node * termNode)
 	}
 
 	std::vector<std::shared_ptr<ASTNode>> nodes;
-	while (factors.size() > 1) {
+	std::shared_ptr<ASTNode> lead = factor(factors.front());
+    factors.pop_front();
+	while (factors.size() > 0) {
 		const Node* op = operators.front();
 		const Node* se = factors.front();
 		operators.pop_front();
@@ -376,16 +378,17 @@ const std::shared_ptr<ASTNode> BuildAST::term(const Node * termNode)
 		}
 
 		auto node = std::make_shared<ASTNode>(astType);
-		node->addChild(factor(se));
+		node->addChildBack(factor(se));
 		nodes.push_back(node);
 	}
 
-	for (size_t i = 0; i < nodes.size() - 1; i++) {
-		nodes.at(i)->addChild(nodes.at(i + 1));
+	nodes.front()->addChildFront(lead);
+	for (size_t i = nodes.size() - 1; i > 0; i--) {
+		nodes.at(i)->addChildFront(nodes.at(i-1));
 	}
-	nodes.back()->addChild(factor(factors.back()));
+	//nodes.back()->addChildBack(factor(factors.back()));
 
-	return nodes.front();
+	return nodes.back();
 }
 
 const std::shared_ptr<ASTNode> BuildAST::factor(const Node * factorNode)
@@ -437,7 +440,7 @@ const std::shared_ptr<ASTNode> BuildAST::number(const Node * numberNode)
 const std::shared_ptr<ASTNode> BuildAST::_not(const Node * factorNode)
 {
 	auto node = std::make_shared<ASTNode>(ASTNodeType::_not);
-	node->addChild(factor(factorNode));
+	node->addChildBack(factor(factorNode));
 	return node;
 }
 
