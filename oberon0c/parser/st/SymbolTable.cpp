@@ -27,6 +27,7 @@ SymbolTable::SymbolTable(std::string name) {
 	level_ = 0;
 	parent_ = nullptr;
 	name_ = name;
+	nextOffset_ = 0;
 
 	this->insert(Symbol("INTEGER", std::vector<Symbol *>(), SymbolType::type, false));
 	this->insert(Symbol("BOOLEAN", std::vector<Symbol *>(), SymbolType::type, false));
@@ -39,6 +40,7 @@ SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name) 
 	level_ = parent->getLevel() + 1;
 	parent_ = parent;
 	name_ = name;
+	nextOffset_ = 0;
 }
 
 SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name, std::unordered_map<std::string, Symbol> symbolTable, std::vector<std::shared_ptr<SymbolTable>> children)
@@ -48,6 +50,7 @@ SymbolTable::SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name, 
 	name_ = name;
 	symbolTable_ = symbolTable;
 	children_ = children;
+	nextOffset_ = 0;
 }
 
 // Creates a new SymbolTable as a child of the current one.
@@ -94,8 +97,15 @@ int SymbolTable::insert(Symbol symbol) {
 		return 1;
 	}
 
-	//symbolTable_[*name] = symbol;
-	symbolTable_.insert(std::unordered_map< std::string, Symbol>::value_type(*name, symbol));
+	// Add symbol to symbol table and the next offset to the offset table. Then add the size of the symbol to the
+	// nextOffset pointer
+	if (symbol.isVariable()) {
+        symbol.setOffset(nextOffset_);
+        offsetTable_.insert(std::unordered_map<std::string, size_t>::value_type(*name, nextOffset_));
+        nextOffset_ += symbol.size();
+    }
+    symbolTable_.insert(std::unordered_map<std::string, Symbol>::value_type(*name, symbol));
+
 	return 0;
 }
 
@@ -145,4 +155,18 @@ std::ostream & operator<<(std::ostream & stream, SymbolTable & node)
 	node.printTree(stream);
 
 	return stream;
+}
+
+size_t SymbolTable::size() {
+	size_t size = 0;
+
+	for (auto it : symbolTable_) {
+		size += it.second.size();
+	}
+
+	return nextOffset_;
+}
+
+size_t SymbolTable::_offset(Symbol *symbol) {
+	return offsetTable_.find(*symbol->getName())->second;
 }

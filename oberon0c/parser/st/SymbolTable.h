@@ -6,14 +6,15 @@
 #include <vector>
 #include "Symbol.h"
 
-
 class SymbolTable {
 private:
 	std::unordered_map<std::string, Symbol> symbolTable_;
+	std::unordered_map<std::string, size_t> offsetTable_;
 	size_t level_;
 	std::shared_ptr<SymbolTable> parent_;
 	std::vector<std::shared_ptr<SymbolTable>> children_;
 	std::string name_;
+	size_t nextOffset_;
 
 	void printTreeRec(std::ostream &stream, int depth) const;
 
@@ -22,6 +23,7 @@ public:
 	explicit SymbolTable(std::string name);
 	explicit SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name);
 	explicit SymbolTable(std::shared_ptr<SymbolTable> parent, std::string name, std::unordered_map<std::string, Symbol> symbolTable, std::vector<std::shared_ptr<SymbolTable>> children);
+	~SymbolTable() = default;
 
 	std::shared_ptr<SymbolTable> nestedTable(std::shared_ptr<SymbolTable> parent, std::string name);
 
@@ -36,11 +38,14 @@ public:
 
 	std::shared_ptr<SymbolTable> deepCopy(std::string name);
 
-	virtual void printTree(std::ostream &stream) const;
+	void printTree(std::ostream &stream) const;
 	friend std::ostream& operator<<(std::ostream &stream, SymbolTable &node);
 
 	std::shared_ptr<SymbolTable> getParent();
 
 	std::unordered_map<std::string, Symbol> getMap();
+
+	size_t size();
+	size_t _offset(Symbol* symbol);
 };
 #endif

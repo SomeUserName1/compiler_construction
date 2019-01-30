@@ -1,6 +1,8 @@
 #include <string>
 #include "Symbol.h"
 
+//class SymbolTable;
+
 Symbol::Symbol()
 {
 	throw  std::runtime_error("This constructor is only for the compiler not to whine.");
@@ -84,7 +86,16 @@ void Symbol::print(std::ostream & stream) const
 		stream << " as TypeDef";
 	}
 
-	stream << " Value: " << value_;
+	if (symbolType_ == SymbolType::constant
+	||  symbolType_ == SymbolType::array) {
+		stream << " | Value: " << value_;
+	}
+
+	if ((symbolType_ == SymbolType::array
+	||  symbolType_ == SymbolType::record
+	||  symbolType_ == SymbolType::type) && isVariable_) {
+		stream << " | Offset: " << offset_;
+	}
 }
 
 bool Symbol::operator==(Symbol other)
@@ -114,15 +125,15 @@ bool Symbol::operator!=(Symbol other)
 
 int Symbol::getValue()
 {
-	return value_;
+	return this->value_;
 }
 
-void Symbol::setAst(const ASTNode * node)
+void Symbol::setAst(const std::shared_ptr<ASTNode> node)
 {
 	ast_ = node;
 }
 
-const ASTNode * Symbol::getAst()
+const std::shared_ptr<ASTNode> Symbol::getAst()
 {
 	return ast_;
 }
@@ -152,4 +163,34 @@ std::ostream & operator<<(std::ostream & stream, const Symbol & symbol)
 	symbol.print(stream);
 
 	return stream;
+}
+
+size_t Symbol::size() {
+	// Constants don't need space
+	if (name_ == "CONSTANT") {
+		return 0;
+	}
+
+	// If base type return immediately 4 byte of size
+	if (name_ == "INTEGER"
+	||  name_ == "BOOLEAN") {
+		return 8;
+	}
+
+	// Calc the size of all sub types
+    size_t size = 0;
+    for (auto type : types_) {
+		size += type->size();
+    }
+
+    // If this is a array multiply with array dimension
+    if (symbolType_ == SymbolType::array) {
+    	size *= value_;
+    }
+
+    return size;
+}
+
+void Symbol::setOffset(size_t offset) {
+	offset_ = offset;
 }

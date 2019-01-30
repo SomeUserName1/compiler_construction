@@ -4,6 +4,7 @@
 #include <vector>
 #include <ostream>
 #include <string>
+#include <memory>
 
 //enum class Type : char {
 //	integer, boolean, array, constant
@@ -24,9 +25,10 @@ private:
 	SymbolType symbolType_;
 	bool isVariable_;
 	int value_;
-	const ASTNode* ast_;
+	std::shared_ptr<ASTNode> ast_;
 	bool isVarParam_;
-	std::shared_ptr<SymbolTable> symbolTable_; //The table this symbol is standing in.
+	std::shared_ptr<SymbolTable> symbolTable_;  //The table this symbol is standing in.
+	size_t offset_;                             //The offset in the module/procedure.
 
 public:
 	explicit Symbol();
@@ -51,12 +53,15 @@ public:
 	void setValue(int value);
 	int getValue();
 
-	void setAst(const ASTNode* node);
-	const ASTNode* getAst();
+	void setAst(const std::shared_ptr<ASTNode> node);
+	const std::shared_ptr<ASTNode> getAst();
 
 	void setIsVarParam(bool val);
 	bool getIsVarParam();
 
 	std::shared_ptr<SymbolTable> getSymbolTable();
+
+	size_t size();
+	void setOffset(size_t offset);
 };
 #endif

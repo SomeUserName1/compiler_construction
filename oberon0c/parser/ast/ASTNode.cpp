@@ -8,7 +8,10 @@ void ASTNode::printTreeRec(std::ostream & stream, int depth) const
 
 	stream << nodeType_;
 
-	if (nodeType_ == ASTNodeType::symbol) {
+	if (nodeType_ == ASTNodeType::symbol
+	||  nodeType_ == ASTNodeType::_constant
+	||  nodeType_ == ASTNodeType::_deref
+	||  nodeType_ == ASTNodeType::_addr) {
 		stream << " " << *symbol_;
 	}
 
@@ -35,19 +38,19 @@ const ASTNodeType ASTNode::getNodeType() const
 	return nodeType_;
 }
 
-std::vector<const ASTNode*> ASTNode::getChildren() const
+std::vector<std::shared_ptr<ASTNode>> ASTNode::getChildren() const
 {
 	return children_;
 }
 
-void ASTNode::addChild(const ASTNode * node)
+void ASTNode::addChild(std::shared_ptr<ASTNode> node)
 {
 	children_.push_back(node);
 }
 
-void ASTNode::addChilds(std::shared_ptr<std::vector<const ASTNode*>> nodes)
+void ASTNode::addChilds(std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> nodes)
 {
-	for (const ASTNode* node : *nodes) {
+	for (std::shared_ptr<ASTNode> node : *nodes) {
 		addChild(node);
 	}
 }
@@ -63,6 +66,10 @@ std::ostream & operator<<(std::ostream & stream, const ASTNode & node)
 	return stream;
 }
 
+Symbol *ASTNode::getSymbol() const {
+	return symbol_;
+}
+
 std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	std::string result;
 	switch (type) {
@@ -75,10 +82,11 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	case ASTNodeType::symbol: result = "symbol"; break;
 	case ASTNodeType::plus: result = "+"; break;
 	case ASTNodeType::minus: result = "-"; break;
+	case ASTNodeType::_int_not: result = "INT_NOT"; break;
 	case ASTNodeType::div: result = "DIV"; break;
 	case ASTNodeType::times: result = "*"; break;
-	case ASTNodeType:: or : result = "|"; break;
-	case ASTNodeType::and: result = "&"; break;
+	case ASTNodeType::_or : result = "|"; break;
+	case ASTNodeType::_and: result = "&"; break;
 	case ASTNodeType::leq: result = "<="; break;
 	case ASTNodeType::lt: result = "<"; break;
 	case ASTNodeType::geq: result = ">="; break;
@@ -86,7 +94,10 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type) {
 	case ASTNodeType::eq: result = "="; break;
 	case ASTNodeType::neq: result = "#"; break;
 	case ASTNodeType::mod: result = "MOD"; break;
-	case ASTNodeType::not: result = "~"; break;
+	case ASTNodeType::_not: result = "~"; break;
+	case ASTNodeType::_constant: result = "CONSTANT"; break;
+	case ASTNodeType::_deref: result = "DEREF"; break;
+	case ASTNodeType::_addr: result = "ADDR"; break;
 	}
 	stream << result;
 	return stream;
