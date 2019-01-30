@@ -198,7 +198,9 @@ const std::string CodeGen::div() const {
          << "    pop    r8"      << std::endl
          << "    add    rsp, 8"   << std::endl
          << "    pop    rax"       << std::endl
-         << "    div    r8"       << std::endl
+         << "    xor    rdx, rdx"       << std::endl
+         << "    cqo"               << std::endl
+         << "    idiv    r8"       << std::endl
          << "    push   rax"      << std::endl
          << "    sub    rsp, 8"   << std::endl;
 
@@ -234,7 +236,7 @@ const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) const 
          << "    push   QWORD [rbp-" << getOffset(node) << "]" << std::endl
          << "    sub    rsp, 8"                                << std::endl;
 
-    return print_debug(check_stack_alignment(_asm.str()), node, false);
+    return check_stack_alignment(_asm.str()); //print_debug(check_stack_alignment(_asm.str()), node, false);
 }
 
 const std::string CodeGen::push_address(const std::shared_ptr<ASTNode>& node) const {
@@ -245,7 +247,7 @@ const std::string CodeGen::push_address(const std::shared_ptr<ASTNode>& node) co
          << "    push   r8"                         << std::endl
          << "    sub    rsp, 8"                     << std::endl;
 
-    return print_debug(check_stack_alignment(_asm.str()), node, true);
+    return check_stack_alignment(_asm.str()) ; //print_debug(check_stack_alignment(_asm.str()), node, true);
 }
 
 const std::string CodeGen::assign(const std::shared_ptr<ASTNode>& node) const {
