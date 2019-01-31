@@ -192,6 +192,8 @@ const std::shared_ptr<ASTNode> BuildAST::expression(const Node * expressionNode)
 	}
 
 	std::vector<std::shared_ptr<ASTNode>> nodes;
+    std::shared_ptr<ASTNode> lead = simpleExpression(simpleExpressions.front());
+    simpleExpressions.pop_front();
 	while (simpleExpressions.size() > 1) {
 		const Node* op = operators.front();
 		const Node* se = simpleExpressions.front();
@@ -227,12 +229,12 @@ const std::shared_ptr<ASTNode> BuildAST::expression(const Node * expressionNode)
 		nodes.push_back(node);
 	}
 
-	for (size_t i = 0; i < nodes.size() - 1; i++) {
-		nodes.at(i)->addChildBack(nodes.at(i + 1));
-	}
-	nodes.back()->addChildBack(simpleExpression(simpleExpressions.back()));
+    nodes.front()->addChildFront(lead);
+    for (size_t i = nodes.size() - 1; i > 0; i--) {
+        nodes.at(i)->addChildFront(nodes.at(i - 1));
+    }
 
-	return nodes.front();
+	return nodes.back();
 }
 
 const std::shared_ptr<ASTNode> BuildAST::simpleExpression(const Node * simpleExpressionNode)
@@ -278,7 +280,9 @@ const std::shared_ptr<ASTNode> BuildAST::simpleExpression(const Node * simpleExp
 	}
 
 	std::vector<std::shared_ptr<ASTNode>> nodes;
-	while (terms.size() > 1) {
+    std::shared_ptr<ASTNode> lead = term(terms.front());
+    terms.pop_front();
+	while (terms.size() > 0) {
 		const Node* op = operators.front();
 		const Node* se = terms.front();
 		operators.pop_front();
@@ -316,12 +320,12 @@ const std::shared_ptr<ASTNode> BuildAST::simpleExpression(const Node * simpleExp
 		}
 	}
 
-	for (size_t i = 0; i < nodes.size() - 1; i++) {
-		nodes.at(i)->addChildBack(nodes.at(i + 1));
-	}
-	nodes.back()->addChildBack(term(terms.back()));
+    nodes.front()->addChildFront(lead);
+    for (size_t i = nodes.size() - 1; i > 0; i--) {
+        nodes.at(i)->addChildFront(nodes.at(i - 1));
+    }
 
-	return nodes.front();
+	return nodes.back();
 }
 
 const std::shared_ptr<ASTNode> BuildAST::term(const Node * termNode)
