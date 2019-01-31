@@ -23,7 +23,7 @@ MODULE CodeGen;
 
         (* klappt *)
         z := -10 DIV (-2); (* assert 5 *)
-        z := x DIV t;
+        z := x DIV t;      (* assert 5 *)
 
 
         (* Z = 0; should be 5 *)
@@ -40,7 +40,7 @@ MODULE CodeGen;
         (* x := 1 DIV 0; *)
 
         (* left first precedence on sums *)
-        x := 1+2-3;
+        x := 1+2-3;     (* assert 0 *)
 
         (* Write(x); *)
         (* Write(y); *)
