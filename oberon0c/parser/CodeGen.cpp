@@ -43,7 +43,7 @@ void CodeGen::init() {
 
 void CodeGen::finish() {
     std::ofstream myfile;
-    myfile.open("out.s");
+    myfile.open("out.asm");
     // Insert generated asm
     myfile << this->_result                         << std::endl
            << "    xor    rax,rax"                  << std::endl
