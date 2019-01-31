@@ -62,7 +62,7 @@ void CodeGen::finish() {
 
            << "\n\n\n"
     // Append binary compilation and linking commands as comments
-           << ";nasm -felf64 -o out.o out.s"        << std::endl
+           << ";nasm -felf64 -o out.o out.asm"        << std::endl
            << ";clang -o out out.o"                 << std::endl;
     myfile.close();
 }
