@@ -38,6 +38,10 @@ MODULE CodeGen;
 
         (* zero division:  9227 floating point exception (core dumped)  ./out *)
         (* x := 1 DIV 0; *)
+
+        (* left first precedence on sums *)
+        x := 1+2-3;
+
         (* Write(x); *)
         (* Write(y); *)
         (* Write(z); *)
