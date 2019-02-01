@@ -22,6 +22,10 @@ private:
     size_t _afterCount;
     size_t _modCount;
 
+    void init();
+    void gen(const std::shared_ptr<ASTNode> &node);
+    void finish();
+
     const std::string add() const;
     const std::string sub() const;
     const std::string div() const;
@@ -32,15 +36,14 @@ private:
     const std::string push_var(const std::shared_ptr<ASTNode>& node);
     const std::string push_address(const std::shared_ptr<ASTNode>& node) const;
     const std::string assign(const std::shared_ptr<ASTNode>& node) const;
-    void init();
-    void finish();
+
     const std::string check_stack_alignment(std::string str) const;
     const std::string print_debug(std::string str, const std::shared_ptr<ASTNode>& node, bool is_addr) const;
     const size_t getOffset(const std::shared_ptr<ASTNode>& node) const;
 
 public:
     CodeGen(std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
-    void gen(const std::shared_ptr<ASTNode> &node);
+    const std::string get_result() const;
 
 };
 

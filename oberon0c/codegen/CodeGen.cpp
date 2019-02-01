@@ -9,6 +9,10 @@ CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode
     finish();
 }
 
+const std::string CodeGen::get_result() const {
+    return this->_result;
+}
+
 void CodeGen::init() {
     size_t var_size = this->_sym->size();
     size_t var_s_stack_aligned = var_size + ((16 - (var_size % 16)) % 16);
@@ -182,7 +186,7 @@ const std::string CodeGen::add() const {
          << "    push   r8"     << std::endl
          << "    sub    rsp, 8" << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::sub() const {
@@ -196,7 +200,7 @@ const std::string CodeGen::sub() const {
          << "    push   r8"      << std::endl
          << "    sub    rsp, 8"  << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::div() const {
@@ -212,7 +216,7 @@ const std::string CodeGen::div() const {
          << "    push   rax"      << std::endl
          << "    sub    rsp, 8"   << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::mul() const {
@@ -226,7 +230,7 @@ const std::string CodeGen::mul() const {
          << "    push   rax"    << std::endl
          << "    sub    rsp, 8" << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::mod() {
@@ -256,7 +260,7 @@ const std::string CodeGen::mod() {
          << "    sub    rsp, 8"                     << std::endl;
     _modCount++;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::push_const(const std::shared_ptr<ASTNode>& node) const {
@@ -265,7 +269,7 @@ const std::string CodeGen::push_const(const std::shared_ptr<ASTNode>& node) cons
          << "    push   " << node->getSymbol()->getValue()  << std::endl
          << "    sub    rsp, 8"                             << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) {
@@ -284,7 +288,7 @@ const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) {
 
     _afterCount++;
 
-    return check_stack_alignment(_asm.str()); //print_debug(check_stack_alignment(_asm.str()), node, false);
+    return _asm.str(); //check_stack_alignment(_asm.str());//print_debug(check_stack_alignment(_asm.str()), node, false);
 }
 
 const std::string CodeGen::push_address(const std::shared_ptr<ASTNode>& node) const {
@@ -295,7 +299,7 @@ const std::string CodeGen::push_address(const std::shared_ptr<ASTNode>& node) co
          << "    push   r8"                         << std::endl
          << "    sub    rsp, 8"                     << std::endl;
 
-    return check_stack_alignment(_asm.str()) ; //print_debug(check_stack_alignment(_asm.str()), node, true);
+    return _asm.str(); //check_stack_alignment(_asm.str()); //print_debug(check_stack_alignment(_asm.str()), node, true);
 }
 
 const std::string CodeGen::assign(const std::shared_ptr<ASTNode>& node) const {
@@ -310,7 +314,7 @@ const std::string CodeGen::assign(const std::shared_ptr<ASTNode>& node) const {
          << "    mov    esi, DWORD [r8]"    << std::endl
          << "    call   printf"                << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string  CodeGen::invert(const std::shared_ptr<ASTNode> &node) const {
@@ -323,10 +327,10 @@ const std::string  CodeGen::invert(const std::shared_ptr<ASTNode> &node) const {
     _asm << "   push   r9"       << std::endl;
     _asm << "   sub    rsp, 8"   << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const size_t CodeGen::getOffset(const std::shared_ptr<ASTNode>& node) const {
-    // +4 is as we are reading from low to high
+    // +4 as we are reading from low to high
     return  this->_sym->_offset(node->getSymbol())+4;
 }
