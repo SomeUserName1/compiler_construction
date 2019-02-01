@@ -12,7 +12,7 @@ MODULE CodeGen;
         (* BUG: AST returns 5 * (3/4) instead of (5*3)/4 *)
         x := 5 * 3 DIV 4; (* assert 3; returns 0 *)
 
-        x := -10; (* assert 10 *)
+        x := -10; (* assert -10 *)
         y := 3; (* assert 3 *)
 
         (*Klappt nicht: parser fails: [ERROR] Expected a factor but was something else factor() expected but got "-" *)
