@@ -10,7 +10,7 @@ CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode
 
 void CodeGen::init() {
     size_t var_size = this->_sym->size();
-    size_t var_s_stack_aligned = var_size + (16 - (var_size % 16)); // TODO: Adds 16 bytes when stack actually aligned.
+    size_t var_s_stack_aligned = var_size + ((16 - (var_size % 16)) % 16);
 
     std::stringstream _asm;
     _asm << ";=====INIT======"                                                     << std::endl
@@ -36,7 +36,7 @@ void CodeGen::init() {
          << "   sub    rsp," << var_s_stack_aligned                                << std::endl;
 
         // TODO: Stack allignment is right, but moving 0 to alignment gap not necessary.
-        for (int i = 0; i < var_s_stack_aligned; i=i+4) {
+        for (int i = 0; i < var_size; i=i+4) {
             _asm << "    mov    DWORD  [rsp+"<< i << "], 0"                        << std::endl;
         }
     this->_result = this->_result + _asm.str();
