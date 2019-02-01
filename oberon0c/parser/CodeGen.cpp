@@ -278,9 +278,11 @@ const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) {
          << "    jge    .afterNeg" << _afterCount                    << std::endl
          << "    mov    r9,  0xFFFFFFFF00000000"                     << std::endl
          << "    xor    r8,  r9"                                     << std::endl
-         << ".afterNeg" << _afterCount++ << ":"                      << std::endl
+         << ".afterNeg" << _afterCount << ":"                      << std::endl
          << "    push   r8"                                          << std::endl
          << "    sub    rsp, 8"                                      << std::endl;
+
+    _afterCount++;
 
     return check_stack_alignment(_asm.str()); //print_debug(check_stack_alignment(_asm.str()), node, false);
 }
