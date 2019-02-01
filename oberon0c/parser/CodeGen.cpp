@@ -3,6 +3,7 @@
 CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast) : _sym(sym),
     _ast(std::move(ast)) {
     _afterCount = 0;
+    _modCount = 0;
     init();
     gen(this->_ast);
     finish();
@@ -102,6 +103,13 @@ void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
                 gen(child);
             }
             this->_result = this->_result + mul();
+            break;
+        }
+        case ASTNodeType::mod: {
+            for (const auto &child : node->getChildren()) {
+                gen(child);
+            }
+            this->_result = this->_result + mod();
             break;
         }
         case ASTNodeType::assignment: {
@@ -218,6 +226,27 @@ const std::string CodeGen::mul() const {
          << "    mul    r8"     << std::endl
          << "    push   rax"    << std::endl
          << "    sub    rsp, 8" << std::endl;
+
+    return check_stack_alignment(_asm.str());
+}
+
+const std::string CodeGen::mod() {
+    // Note this is the same as division, but this time the remainder is pushed. (rdx, not rax)
+    std::stringstream _asm;
+    _asm << ";=====MOD======"                   << std::endl
+         << "    add    rsp, 8"                 << std::endl
+         << "    pop    r8"                     << std::endl
+         << "    add    rsp, 8"                 << std::endl
+         << "    pop    rax"                    << std::endl
+         << "    xor    rdx, rdx"               << std::endl
+         << "    cqo"                           << std::endl
+         << "    idiv   r8"                     << std::endl
+         << "    cmp    rdx, 0"                 << std::endl
+         << "    jge    .mod"  << _modCount     << std::endl
+         << "    add    rdx, r8"                << std::endl
+         << "    .mod" << _modCount++ << ":"    << std::endl
+         << "    push   rdx"                    << std::endl
+         << "    sub    rsp, 8"                 << std::endl;
 
     return check_stack_alignment(_asm.str());
 }

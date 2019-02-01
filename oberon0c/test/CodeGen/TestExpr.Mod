@@ -43,6 +43,10 @@ MODULE CodeGen;
         x := 1+2-3;     (* assert 0 *)
 
 
+        x := 17 MOD 5;  (* assert 1 *)
+        x := (-17) MOD 5; (* assert 3 *)
+
+
         (* Write(x); *)
         (* Write(y); *)
         (* Write(z); *)

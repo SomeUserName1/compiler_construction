@@ -20,11 +20,13 @@ private:
     std::shared_ptr<ASTNode> _ast;
     std::string _result;
     size_t _afterCount;
+    size_t _modCount;
 
     const std::string add() const;
     const std::string sub() const;
     const std::string div() const;
     const std::string mul() const;
+    const std::string mod();
     const std::string invert(const std::shared_ptr<ASTNode> &node) const;
     const std::string push_const(const std::shared_ptr<ASTNode>& node) const;
     const std::string push_var(const std::shared_ptr<ASTNode>& node);
