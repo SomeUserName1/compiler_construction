@@ -2,6 +2,8 @@
 
 CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast) : _sym(sym),
     _ast(std::move(ast)) {
+    _afterCount = 0;
+    _modCount = 0;
     init();
     gen(this->_ast);
     finish();
@@ -9,7 +11,7 @@ CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode
 
 void CodeGen::init() {
     size_t var_size = this->_sym->size();
-    size_t var_s_stack_aligned = var_size + (16 - (var_size % 16));
+    size_t var_s_stack_aligned = var_size + ((16 - (var_size % 16)) % 16);
 
     std::stringstream _asm;
     _asm << ";=====INIT======"                                                     << std::endl
@@ -34,16 +36,15 @@ void CodeGen::init() {
          << "   ;in the symbol table"                                              << std::endl
          << "   sub    rsp," << var_s_stack_aligned                                << std::endl;
 
-
-        for (int i = 0; i < var_s_stack_aligned; i=i+8) {
-            _asm << "    mov    QWORD  [rsp+"<< i << "], 0"                        << std::endl;
+        for (int i = 0; i < var_size; i=i+4) {
+            _asm << "    mov    DWORD  [rsp+"<< i << "], 0"                        << std::endl;
         }
     this->_result = this->_result + _asm.str();
 }
 
 void CodeGen::finish() {
     std::ofstream myfile;
-    myfile.open("out.s");
+    myfile.open("out.asm");
     // Insert generated asm
     myfile << this->_result                         << std::endl
            << "    xor    rax,rax"                  << std::endl
@@ -60,10 +61,7 @@ void CodeGen::finish() {
            << "    pop    rbp"                      << std::endl
            << "    ret"                             << std::endl
 
-           << "\n\n\n"
-    // Append binary compilation and linking commands as comments
-           << ";nasm -felf64 -o out.o out.s"        << std::endl
-           << ";clang -o out out.o"                 << std::endl;
+           << "\n\n\n";
     myfile.close();
 }
 
@@ -103,6 +101,13 @@ void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
             this->_result = this->_result + mul();
             break;
         }
+        case ASTNodeType::mod: {
+            for (const auto &child : node->getChildren()) {
+                gen(child);
+            }
+            this->_result = this->_result + mod();
+            break;
+        }
         case ASTNodeType::assignment: {
             for (const auto &child : node->getChildren()) {
                 gen(child);
@@ -123,7 +128,7 @@ void CodeGen::gen(const std::shared_ptr<ASTNode> &node) {
             break;
         }
         case ASTNodeType::_int_not: {
-            gen(node->getChildren()[0]);
+            gen(node->getChildren().front());
             this->_result = this->_result + invert(node);
             break;
         }
@@ -170,11 +175,11 @@ const std::string CodeGen::add() const {
          << "    pop    r9"     << std::endl
          << "    add    rsp, 8" << std::endl
          << "    pop    r8"     << std::endl
-         << "    add    r8, r9" << std::endl
+         << "    add    r8d, r9d" << std::endl
          << "    push   r8"     << std::endl
          << "    sub    rsp, 8" << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::sub() const {
@@ -184,11 +189,11 @@ const std::string CodeGen::sub() const {
          << "    pop    r9"      << std::endl
          << "    add    rsp, 8"  << std::endl
          << "    pop    r8"      << std::endl
-         << "    sub    r8, r9"  << std::endl
+         << "    sub    r8d, r9d"  << std::endl
          << "    push   r8"      << std::endl
          << "    sub    rsp, 8"  << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::div() const {
@@ -204,7 +209,7 @@ const std::string CodeGen::div() const {
          << "    push   rax"      << std::endl
          << "    sub    rsp, 8"   << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::mul() const {
@@ -218,7 +223,37 @@ const std::string CodeGen::mul() const {
          << "    push   rax"    << std::endl
          << "    sub    rsp, 8" << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
+}
+
+const std::string CodeGen::mod() {
+    // Note this is the same as division, but this time the remainder is pushed. (rdx, not rax)
+    std::stringstream _asm;
+    _asm << ";=====MOD======"                       << std::endl
+         << "    add    rsp, 8"                     << std::endl
+         << "    pop    r8"                         << std::endl
+         << "    add    rsp, 8"                     << std::endl
+         << "    pop    rax"                        << std::endl
+         << "    xor    rdx, rdx"                   << std::endl
+         << "    cqo"                               << std::endl
+         << "    idiv   r8"                         << std::endl
+         << "    cmp    rdx, 0"                     << std::endl
+         << "    jge    .mod"  << _modCount         << std::endl
+         << "    cmp    r8,  0"                     << std::endl
+         << "    jl     .mod" << _modCount          << std::endl
+         << "    add    rdx, r8"                    << std::endl
+         << "    .mod" << _modCount << ":"          << std::endl
+         << "    cmp    r8,  0"                     << std::endl
+         << "    jge    .mod" << _modCount << "_2"  << std::endl
+         << "    cmp    rdx, 0"                     << std::endl
+         << "    jl     .mod" << _modCount << "_2"  << std::endl
+         << "    add    rdx, r8"                    << std::endl
+         << "    .mod" << _modCount << "_2:"        << std::endl
+         << "    push   rdx"                        << std::endl
+         << "    sub    rsp, 8"                     << std::endl;
+    _modCount++;
+
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string CodeGen::push_const(const std::shared_ptr<ASTNode>& node) const {
@@ -227,16 +262,26 @@ const std::string CodeGen::push_const(const std::shared_ptr<ASTNode>& node) cons
          << "    push   " << node->getSymbol()->getValue()  << std::endl
          << "    sub    rsp, 8"                             << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
-const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) const {
+const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) {
     std::stringstream _asm;
-    _asm << ";=====PUSH VAR======"                             << std::endl
-         << "    push   QWORD [rbp-" << getOffset(node) << "]" << std::endl
-         << "    sub    rsp, 8"                                << std::endl;
+    _asm << ";=====PUSH VAR======"                                   << std::endl
+         << "    mov    r8d, DWORD [rbp-" << getOffset(node) << "]"  << std::endl
+         << "    shl    r8,  32"                                     << std::endl
+         << "    cmp    r8,  0"                                      << std::endl
+         << "    shr    r8,  32"                                     << std::endl
+         << "    jge    .afterNeg" << _afterCount                    << std::endl
+         << "    mov    r9,  0xFFFFFFFF00000000"                     << std::endl
+         << "    xor    r8,  r9"                                     << std::endl
+         << ".afterNeg" << _afterCount << ":"                      << std::endl
+         << "    push   r8"                                          << std::endl
+         << "    sub    rsp, 8"                                      << std::endl;
 
-    return check_stack_alignment(_asm.str()); //print_debug(check_stack_alignment(_asm.str()), node, false);
+    _afterCount++;
+
+    return _asm.str(); //check_stack_alignment(_asm.str());//print_debug(check_stack_alignment(_asm.str()), node, false);
 }
 
 const std::string CodeGen::push_address(const std::shared_ptr<ASTNode>& node) const {
@@ -247,7 +292,7 @@ const std::string CodeGen::push_address(const std::shared_ptr<ASTNode>& node) co
          << "    push   r8"                         << std::endl
          << "    sub    rsp, 8"                     << std::endl;
 
-    return check_stack_alignment(_asm.str()) ; //print_debug(check_stack_alignment(_asm.str()), node, true);
+    return _asm.str(); //check_stack_alignment(_asm.str()); //print_debug(check_stack_alignment(_asm.str()), node, true);
 }
 
 const std::string CodeGen::assign(const std::shared_ptr<ASTNode>& node) const {
@@ -257,12 +302,12 @@ const std::string CodeGen::assign(const std::shared_ptr<ASTNode>& node) const {
          << "    pop    r9"                    << std::endl
          << "    add    rsp, 8"                << std::endl
          << "    pop    r8"                    << std::endl
-         << "    mov    [r8], r9"              << std::endl
+         << "    mov    [r8], r9d"              << std::endl
          << "    mov    rdi, avmsg"             << std::endl
-         << "    mov    rsi, QWORD [r8]"    << std::endl
+         << "    mov    esi, DWORD [r8]"    << std::endl
          << "    call   printf"                << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const std::string  CodeGen::invert(const std::shared_ptr<ASTNode> &node) const {
@@ -275,11 +320,10 @@ const std::string  CodeGen::invert(const std::shared_ptr<ASTNode> &node) const {
     _asm << "   push   r9"       << std::endl;
     _asm << "   sub    rsp, 8"   << std::endl;
 
-    return check_stack_alignment(_asm.str());
+    return _asm.str(); //check_stack_alignment(_asm.str());
 }
 
 const size_t CodeGen::getOffset(const std::shared_ptr<ASTNode>& node) const {
-    // +1 is as we dont want to overwrite the actual base pointer
-    // +8 is as we are reading from low to high
-    return  this->_sym->_offset(node->getSymbol())+9;
+    // +4 as we are reading from low to high
+    return  this->_sym->_offset(node->getSymbol())+4;
 }

@@ -3,6 +3,7 @@
 #define OBERON0C_FOOOOOO_H
 
 #include "../st/Symbol.h"
+#include <list>
 
 enum class ASTNodeType : char {
 	statement_sequence, statement, if_statement, while_statement, assignment, procedure_call, symbol,
@@ -14,7 +15,7 @@ std::ostream& operator<<(std::ostream &stream, const ASTNodeType &type);
 class ASTNode {
 private:
 	ASTNodeType nodeType_;
-	std::vector<std::shared_ptr<ASTNode>> children_;
+	std::list<std::shared_ptr<ASTNode>> children_;
 	Symbol* symbol_;
 
 	void printTreeRec(std::ostream & stream, int depth) const;
@@ -24,8 +25,9 @@ public:
 	explicit ASTNode(ASTNodeType nodeType, Symbol* symbol);
 
 	const ASTNodeType getNodeType() const;
-    std::vector<std::shared_ptr<ASTNode>> getChildren() const;
-	void addChild(std::shared_ptr<ASTNode> node);
+    std::list<std::shared_ptr<ASTNode>> getChildren() const;
+    void addChildFront(std::shared_ptr<ASTNode> node);
+    void addChildBack(std::shared_ptr<ASTNode> node);
 	void addChilds(std::shared_ptr<std::vector<std::shared_ptr<ASTNode>>> nodes);
 
 	void printTree(std::ostream &stream) const;
