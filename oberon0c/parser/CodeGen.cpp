@@ -233,22 +233,29 @@ const std::string CodeGen::mul() const {
 const std::string CodeGen::mod() {
     // Note this is the same as division, but this time the remainder is pushed. (rdx, not rax)
     std::stringstream _asm;
-    _asm << ";=====MOD======"                   << std::endl
-         << "    add    rsp, 8"                 << std::endl
-         << "    pop    r8"                     << std::endl
-         << "    add    rsp, 8"                 << std::endl
-         << "    pop    rax"                    << std::endl
-         << "    xor    rdx, rdx"               << std::endl
-         << "    cqo"                           << std::endl
-         << "    idiv   r8"                     << std::endl
-         << "    cmp    rdx, 0"                 << std::endl
-         << "    jge    .mod"  << _modCount     << std::endl
-         << "    cmp    r8,  0"                 << std::endl
-         << "    jl     .mod" << _modCount     << std::endl
-         << "    add    rdx, r8"                << std::endl
-         << "    .mod" << _modCount++ << ":"    << std::endl
-         << "    push   rdx"                    << std::endl
-         << "    sub    rsp, 8"                 << std::endl;
+    _asm << ";=====MOD======"                       << std::endl
+         << "    add    rsp, 8"                     << std::endl
+         << "    pop    r8"                         << std::endl
+         << "    add    rsp, 8"                     << std::endl
+         << "    pop    rax"                        << std::endl
+         << "    xor    rdx, rdx"                   << std::endl
+         << "    cqo"                               << std::endl
+         << "    idiv   r8"                         << std::endl
+         << "    cmp    rdx, 0"                     << std::endl
+         << "    jge    .mod"  << _modCount         << std::endl
+         << "    cmp    r8,  0"                     << std::endl
+         << "    jl     .mod" << _modCount          << std::endl
+         << "    add    rdx, r8"                    << std::endl
+         << "    .mod" << _modCount << ":"          << std::endl
+         << "    cmp    r8,  0"                     << std::endl
+         << "    jge    .mod" << _modCount << "_2"  << std::endl
+         << "    cmp    rdx, 0"                     << std::endl
+         << "    jl     .mod" << _modCount << "_2"  << std::endl
+         << "    add    rdx, r8"                    << std::endl
+         << "    .mod" << _modCount << "_2:"        << std::endl
+         << "    push   rdx"                        << std::endl
+         << "    sub    rsp, 8"                     << std::endl;
+    _modCount++;
 
     return check_stack_alignment(_asm.str());
 }
