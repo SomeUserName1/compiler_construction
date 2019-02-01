@@ -243,6 +243,8 @@ const std::string CodeGen::mod() {
          << "    idiv   r8"                     << std::endl
          << "    cmp    rdx, 0"                 << std::endl
          << "    jge    .mod"  << _modCount     << std::endl
+         << "    cmp    r8,  0"                 << std::endl
+         << "    jl     .mod" << _modCount     << std::endl
          << "    add    rdx, r8"                << std::endl
          << "    .mod" << _modCount++ << ":"    << std::endl
          << "    push   rdx"                    << std::endl
