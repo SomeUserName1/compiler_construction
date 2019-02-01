@@ -7,7 +7,7 @@ MODULE CodeGen;
         BEGIN
         y := Pi; (* assert 3 *)
         z := -Pi * y;  (* assert -9 *)
-        t := -2;
+        t := -2;        (* assert -2 *)
 
         (* BUG: AST returns 5 * (3/4) instead of (5*3)/4 *)
         x := 5 * 3 DIV 4; (* assert 3; returns 0 *)
