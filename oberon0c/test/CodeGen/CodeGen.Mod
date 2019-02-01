@@ -5,11 +5,11 @@ MODULE CodeGen;
         VAR x, y, z: INTEGER;
 
         BEGIN
-        x := 10;
-        y := 3;
-        z := x DIV (y + 1);
-        x := (Pi * z - y) * (Pi * z - y);
-        y := x * (1 DIV z)
+        x := 10;                                (* assert 10 *)
+        y := 3;                                 (* assert 3 *)
+        z := x DIV (y + 1);                     (* assert 2 *)
+        x := (Pi * z - y) * (Pi * z - y);       (* assert 9 *)
+        y := x * (1 DIV z)                      (* assert 0 *)
         (* Write(x); *)
         (* Write(y); *)
         (* Write(z); *)
