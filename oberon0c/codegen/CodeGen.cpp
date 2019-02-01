@@ -9,10 +9,6 @@ CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode
     finish();
 }
 
-const std::string CodeGen::get_result() const {
-    return this->_result;
-}
-
 void CodeGen::init() {
     size_t var_size = this->_sym->size();
     size_t var_s_stack_aligned = var_size + ((16 - (var_size % 16)) % 16);
@@ -65,10 +61,7 @@ void CodeGen::finish() {
            << "    pop    rbp"                      << std::endl
            << "    ret"                             << std::endl
 
-           << "\n\n\n"
-    // Append binary compilation and linking commands as comments
-           << ";nasm -felf64 -o out.o out.asm"        << std::endl
-           << ";clang -o out out.o"                 << std::endl;
+           << "\n\n\n";
     myfile.close();
 }
 

@@ -43,7 +43,6 @@ private:
 
 public:
     CodeGen(std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast);
-    const std::string get_result() const;
 
 };
 
