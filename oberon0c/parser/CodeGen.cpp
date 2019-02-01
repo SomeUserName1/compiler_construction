@@ -36,7 +36,6 @@ void CodeGen::init() {
          << "   ;in the symbol table"                                              << std::endl
          << "   sub    rsp," << var_s_stack_aligned                                << std::endl;
 
-        // TODO: Stack allignment is right, but moving 0 to alignment gap not necessary.
         for (int i = 0; i < var_size; i=i+4) {
             _asm << "    mov    DWORD  [rsp+"<< i << "], 0"                        << std::endl;
         }
