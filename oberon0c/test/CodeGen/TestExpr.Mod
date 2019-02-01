@@ -42,6 +42,7 @@ MODULE CodeGen;
         (* left first precedence on sums *)
         x := 1+2-3;     (* assert 0 *)
 
+
         (* Write(x); *)
         (* Write(y); *)
         (* Write(z); *)

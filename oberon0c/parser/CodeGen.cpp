@@ -2,6 +2,7 @@
 
 CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode> ast) : _sym(sym),
     _ast(std::move(ast)) {
+    _afterCount = 0;
     init();
     gen(this->_ast);
     finish();
@@ -9,7 +10,7 @@ CodeGen::CodeGen(const std::shared_ptr<SymbolTable> sym, std::shared_ptr<ASTNode
 
 void CodeGen::init() {
     size_t var_size = this->_sym->size();
-    size_t var_s_stack_aligned = var_size + (16 - (var_size % 16));
+    size_t var_s_stack_aligned = var_size + (16 - (var_size % 16)); // TODO: Adds 16 bytes when stack actually aligned.
 
     std::stringstream _asm;
     _asm << ";=====INIT======"                                                     << std::endl
@@ -34,9 +35,9 @@ void CodeGen::init() {
          << "   ;in the symbol table"                                              << std::endl
          << "   sub    rsp," << var_s_stack_aligned                                << std::endl;
 
-
-        for (int i = 0; i < var_s_stack_aligned; i=i+8) {
-            _asm << "    mov    QWORD  [rsp+"<< i << "], 0"                        << std::endl;
+        // TODO: Stack allignment is right, but moving 0 to alignment gap not necessary.
+        for (int i = 0; i < var_s_stack_aligned; i=i+4) {
+            _asm << "    mov    DWORD  [rsp+"<< i << "], 0"                        << std::endl;
         }
     this->_result = this->_result + _asm.str();
 }
@@ -170,7 +171,7 @@ const std::string CodeGen::add() const {
          << "    pop    r9"     << std::endl
          << "    add    rsp, 8" << std::endl
          << "    pop    r8"     << std::endl
-         << "    add    r8, r9" << std::endl
+         << "    add    r8d, r9d" << std::endl
          << "    push   r8"     << std::endl
          << "    sub    rsp, 8" << std::endl;
 
@@ -184,7 +185,7 @@ const std::string CodeGen::sub() const {
          << "    pop    r9"      << std::endl
          << "    add    rsp, 8"  << std::endl
          << "    pop    r8"      << std::endl
-         << "    sub    r8, r9"  << std::endl
+         << "    sub    r8d, r9d"  << std::endl
          << "    push   r8"      << std::endl
          << "    sub    rsp, 8"  << std::endl;
 
@@ -230,11 +231,19 @@ const std::string CodeGen::push_const(const std::shared_ptr<ASTNode>& node) cons
     return check_stack_alignment(_asm.str());
 }
 
-const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) const {
+const std::string CodeGen::push_var(const std::shared_ptr<ASTNode>& node) {
     std::stringstream _asm;
-    _asm << ";=====PUSH VAR======"                             << std::endl
-         << "    push   QWORD [rbp-" << getOffset(node) << "]" << std::endl
-         << "    sub    rsp, 8"                                << std::endl;
+    _asm << ";=====PUSH VAR======"                                   << std::endl
+         << "    mov    r8d, DWORD [rbp-" << getOffset(node) << "]"  << std::endl
+         << "    shl    r8,  32"                                     << std::endl
+         << "    cmp    r8,  0"                                      << std::endl
+         << "    shr    r8,  32"                                     << std::endl
+         << "    jge    .afterNeg" << _afterCount                    << std::endl
+         << "    mov    r9,  0xFFFFFFFF00000000"                     << std::endl
+         << "    xor    r8,  r9"                                     << std::endl
+         << ".afterNeg" << _afterCount++ << ":"                      << std::endl
+         << "    push   r8"                                          << std::endl
+         << "    sub    rsp, 8"                                      << std::endl;
 
     return check_stack_alignment(_asm.str()); //print_debug(check_stack_alignment(_asm.str()), node, false);
 }
@@ -257,9 +266,9 @@ const std::string CodeGen::assign(const std::shared_ptr<ASTNode>& node) const {
          << "    pop    r9"                    << std::endl
          << "    add    rsp, 8"                << std::endl
          << "    pop    r8"                    << std::endl
-         << "    mov    [r8], r9"              << std::endl
+         << "    mov    [r8], r9d"              << std::endl
          << "    mov    rdi, avmsg"             << std::endl
-         << "    mov    rsi, QWORD [r8]"    << std::endl
+         << "    mov    esi, DWORD [r8]"    << std::endl
          << "    call   printf"                << std::endl;
 
     return check_stack_alignment(_asm.str());
@@ -279,7 +288,6 @@ const std::string  CodeGen::invert(const std::shared_ptr<ASTNode> &node) const {
 }
 
 const size_t CodeGen::getOffset(const std::shared_ptr<ASTNode>& node) const {
-    // +1 is as we dont want to overwrite the actual base pointer
-    // +8 is as we are reading from low to high
-    return  this->_sym->_offset(node->getSymbol())+9;
+    // +4 is as we are reading from low to high
+    return  this->_sym->_offset(node->getSymbol())+4;
 }

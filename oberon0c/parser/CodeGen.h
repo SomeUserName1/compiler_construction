@@ -19,6 +19,7 @@ private:
     std::shared_ptr<SymbolTable> _sym;
     std::shared_ptr<ASTNode> _ast;
     std::string _result;
+    size_t _afterCount;
 
     const std::string add() const;
     const std::string sub() const;
@@ -26,7 +27,7 @@ private:
     const std::string mul() const;
     const std::string invert(const std::shared_ptr<ASTNode> &node) const;
     const std::string push_const(const std::shared_ptr<ASTNode>& node) const;
-    const std::string push_var(const std::shared_ptr<ASTNode>& node) const;
+    const std::string push_var(const std::shared_ptr<ASTNode>& node);
     const std::string push_address(const std::shared_ptr<ASTNode>& node) const;
     const std::string assign(const std::shared_ptr<ASTNode>& node) const;
     void init();
