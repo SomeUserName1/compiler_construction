@@ -1,0 +1,156 @@
+\chapter{Front-End}
+\section{Scanner}
+\img{0/finite_automaton}
+\img{0/regex}
+\img{0/regex_closures}
+
+\subsection{From Regular Expressions to Scanners}
+\img{0/regex2scanner_overview}
+\img{0/dfa_regex}
+
+\subsubsection{RE to NFA: Thompson's Construction}
+\img{0/thompson_0}
+\img{0/thompson_1}
+\img{0/thompson_ex_0}
+\img{0/thompson_ex_1}
+\img{0/thompson_ex_2}
+
+\subsubsection{NFA to DFA: Subset Construction}
+\img{0/subset_0}
+\img{0/subset_1}
+\img{0/subset_ex_0}
+\img{0/subset_ex_1}
+\img{0/subset_ex_2}
+
+\paragraph{DFA to minimal DFA: Hopcroft Algorithm}
+\img{0/hopcroft_0}
+\img{0/hopcroft_ex_0}
+\img{0/hopcroft_ex_1}
+\img{0/hopcroft_ex_2}
+\img{0/hopcroft_ex_3}
+\img{0/hopcroft_ex_4}
+
+\subsection{Implementing Scanners}
+\img{0/impl_dfa}
+\img{0/impl_generator}
+
+\paragraph{Table-Driven Scanner}
+\img{0/table_0}
+\img{0/table_1}
+\img{0/table_2}
+\img{0/table_3}
+\img{0/table_4}
+
+\paragraph{Direct-Coded Scanner}
+\img{0/direct_0}
+\img{0/direct_1}
+\img{0/direct_2}
+
+\paragraph{Hand-Coded Scanner}
+\img{0/hand_0}
+\img{0/hand_1}
+
+\section{Parser}
+\paragraph{Parsing} is finding a derivation of a Grammar G that produces the input token stream s. 
+\subsection{Expressing Syntax: Contect-Free Grammars}
+\paragraph{Context-Free Grammars}
+\img{0/context_free_grammar}
+\paragraph{Ambigous Grammars:} A grammar G is ambiguous if there exists a sentence which has more than one rightmost or leftmost derivation. If a Grammar is ambiguous it needs to be altered such that it is not, as programs shall be unambiguous. \\
+\paragraph{Encoding meaning:} Besides ambiguity, other rules are needed to encode e.g. precedence rules fot arith. expressions, in array subscripts, for type casts and assignment. \\
+
+\subsection{Primitive Top-Down Parsing}
+\img{0/top_down_0}
+\img{0/top_down_1}
+\img{0/top_down_2}
+\paragraph{Eliminating Left-Recursion}
+\img{0/top_down_3}
+\img{0/top_down_4}
+\img{0/top_down_5}
+
+\paragraph{Backtrack-Free Parser:} A Parser is backtrack free if the underlying context-free grammar is constructed such that the leftmost top-down derivation can always be predicted with a lookahead of one. \\
+\img{0/backtrack_0}
+\img{0/backtrack_1}
+\img{0/backtrack_2}
+\img{0/backtrack_3}
+\img{0/backtrack_4}
+\img{0/backtrack_5}
+
+\paragraph{Top-Down aka LL(1)-Parser:}
+\begin{enumerate}
+    \item scan input \textbf{L}eft to right
+    \item construct \textbf{L}eftmost derivations
+    \item use a lookahead of \textbf{1} symbol
+\end{enumerate}
+Recursive descend Parser:\\
+\begin{enumerate}
+    \item for each non-terminal: Construct procedure to recognize rhs
+    \item in each procedure call other procedures to derivate until terminal(s)
+    \item recognize terminals by direct string matching
+\end{enumerate}
+Most common variant: table-driven skeleton parser: \\
+\img{0/ll1_0}
+\img{0/ll1_1}
+Another Variant: direct-coded Parser: \\
+\begin{enumerate}
+    \item build $FIRST$, $FOLLOW$ and $FIRST^+$ sets 
+    \item iterate trough grammar as in the table driven variant
+    \item for each non-terminal, generate procedure that recognizes rhs
+\end{enumerate}
+
+\subsection{Bottom-up aka LR(1)-Parser}
+\begin{enumerate}
+    \item scan input \textbf{L}eft to right
+    \item construct reversed \textbf{R}ightmost derivations
+    \item use a lookahead of \textbf{1} symbol
+\end{enumerate}
+\img{0/bottom_up_0}
+\img{0/bottom_up_1}
+\img{0/bottom_up_2}
+Again most common variant: table-driven skeleton parser: \\
+\img{0/bottom_up_3}
+
+
+
+\section{Elaboration: Language-specific Semantic Analysis}
+\subsection{Type Systems}
+\paragraph{Type:} A type specifies a set of properties held in commin by all objects of that type. Types can be specified by membership (e.g. defining the set of interges by specifying the range) or by rules (e.g. the class keyword defines a type).
+\paragraph{Purpose:}
+ The set of types in a programming language along with the rules that use types to specify program behaviuor are called type system. It can be seen as a second kind of vocabulary besides the syntactic grammar to describe form and behaviour of a valid program. \\
+ This information is used for ensuring runtime safety, correct usage and connection between functions, modules and (algebraic) data types, improving expressiveness (e.g. operator overloading) and certain optimizations like vectorization. An example for runtime safety is implicit conversion of compatible types (float and int).
+ A language is calles \textbf{strongly typed} if every expression can be assigned an unambiguous type, else it's either \textbf{untyped or weakly typed}. If every expression can be typed at compile time and is checked at compile time it's called \textbf{statically typed}. If an expression can only be typed and checked at runtime it's called \textbf{dynamically typed}. From a perfomance perspective, dynamic typing is really bad.
+\paragraph{Components}
+\begin{enumerate}
+    \item Basic/Primitive Types \\
+    Mostly contains numbers (int, float), characters (ASCII/UTF-8), booleans (T\&F), often also Pointers
+    \item Composite/User-defined Types \\
+    Like Arrays, Maps, Lists, Tuples, Objects, Trees, Stacks, Queues, Enums, Structs, Unions
+    \item Type Equivalence, Compatibility operators \\
+    Two general approaches: name equivalence, structural equivalence
+    \item Type Inference Rules \\
+    Specify the mapping and compatibilities between operand types and the result type for each operator, function, ... If some information is unknown at compile time it needs to be deferred to runtime, e.g. if it's unsure wether a certain expression is compatible depending on the state of the system. \\
+    Especially function calls which often require a type signature depend on the type system and force to programmer to obey reasonable rules without complete prior knowledge
+\end{enumerate}
+
+\subsection{Attribute-Grammar Framework}
+\begin{itemize}
+    \item Formalism to perform contect-sensitive analysis
+    \item Consists of a context-free grammar augmented by a set of rules 
+    \begin{itemize}
+        \item A rule defines an attribute of a Symbol (node in the parse tree)
+        \item Each rule specifies the value of one attribute in terms of literals and other attributes
+        \item rules are functional, i.e. dont imply a specific order
+        \item All rules together form a set of dependencies which form an attribute-dependence graph
+    \end{itemize}
+    E.g. Terminal Number with Attribute value
+\end{itemize}
+\img{0/attribute_grammar_0}
+\img{0/attribute_grammar_1}
+
+Evaluators for the AGF can be of the following approaches:
+\begin{itemize}
+    \item Dynamic: Use the structure of a particular attributed parse tree to determine evaluation order e.g. if tree is left deep do bottom-up DFS, if tree is bushy do top-down BFS or generating folds depending on the attribute-dependence graph
+    \item Rule-based: Rely on static analysis to execute evaluation, e.g. extracting variables which always take on the same value
+    \item Oblivious: consider neither the grammar nor the parse tree to determine order of execution
+\end{itemize}
+\img{0/attribute_grammar_2}
+\img{0/attribute_grammar_3}

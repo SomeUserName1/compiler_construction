@@ -1,0 +1,231 @@
+\chapter{Core: Intermediate Representation and Code Shape}
+There are many ways to map source code to a sequence of operations in a certain target ISA, resulting in variations in speed, memory utilization, register usage, energy consumption, binary size, $\dots$
+
+\paragraph{An Intermediate Representation} conserves knowledge and informations about the code to compile. One annotated or multiple IRs may be used during compilation. IRs differ in structure and level of abstraction.
+\section{Graph-based IRs}
+\subsection{Parse Tree}
+\img{1/graph_ir_0}
+
+\subsection{Abstract Syntax Tree}
+\img{1/graph_ir_1}
+
+\subsection{Directed Acyclic Graph}
+\img{1/graph_ir_2}
+
+\subsection{Control Flow Graph}
+\img{1/control_flow_0}
+\img{1/control_flow_1}
+\img{1/control_flow_2}
+
+\subsection{Dependence Graph}
+\begin{itemize}
+    \item nodes represent operations including definitions, directed edges indicate definition and usages of values (from definition to use)
+    \item represents constraints on the sequence and possibility 
+    \item used for e.g. instruction scheduling, parallelization, optimizing memory (e.g. array but also I/O) access patterns
+\end{itemize}
+\img{1/dependence_0}
+
+\subsection{Call Graph}
+\begin{itemize}
+    \item each node is a procedure
+    \item each edge is a procedure call
+\end{itemize}
+\img{1/call_graph_0}
+
+\section{Linear IRs}
+As compiler spends a lot of time calculating with IR, data structure storing linear IR shall be compact, efficient, e.g. array, array of pointers, linked list 
+\img{1/representing_ir}
+
+\subsection{Stack Machine Codes}
+\img{1/stack_machine_0}
+\img{1/stack_machine_1}
+
+\subsection{Three-Address Code}
+\img{1/three_address_0}
+
+\section{SSA}
+\img{1/ssa_0}
+\img{1/ssa_1}
+\img{1/ssa_2}
+
+\section{Procedures}
+\begin{itemize}
+    \item callee is invoked procedure, caller is the procedure which invoked the called procedure
+    \item each procedure introduces a new namespace
+    \item a name declared as argument of a function is called formal parameter, a variable passed as argument to the function is called actual parameter
+    \item The linkage convention is a standard used by compiler and OS that defines rules like register mapping for parameters, preserving the callers runtime and setting up the calles
+\end{itemize}
+\subsection{Calls}
+\begin{itemize}
+    \item A procedure call (\textbf{Activation}) transfers control from the call of the caller to the start of the callee
+    \item on exit the callee returns to the instruction following the call instruction of the caller
+    \item on call the caller pushes the return address on the stack, on return the callee pops this address
+\end{itemize}
+
+\subsection{Name Spaces}
+A \textbf{Name Space} maps a set of names to a set of values and procedures, may inherit things from other name spaces and can create names that are inacessible for the outside name space. A \textbf{Scope} refers to a Name Space. \textbf{Lexical scopes} are nested name spaces that nested as they are encountered dureing program execution. In a given scope \textbf{each name refers to its lexically closest scope}. The outermost scope contains the \textbf{global variables}. The \textbf{static coordinate $<l,o>$} is a pair with l lexical scope identifier, o offset from the beginning of l.
+\subsubsection{Stack Frame aka Activation Record}
+\img{1/stack_frame_0}
+\img{1/stack_frame_1}
+\img{1/stack_frame_2}
+\img{1/stack_frame_3}
+\img{1/stack_frame_4}
+\img{1/stack_frame_5}
+\img{1/stack_frame_6}
+\img{1/stack_frame_7}
+
+\subsection{Addressability}
+Each procedure encapsulates common operations relative to a small set of names, i.e. parameter values, return values, global variables and local variables, which must be bound by the compiler. As the procedure is called from many different contexts which might not be known when writing, binding is curcial. \\ 
+Scalar values like addresses and numbers are stored in registers or the parameter section of the callees AR. \\
+Large values like arrays, structs, objects, $\dots$ add significant overhead when copied and should be passed by reference (e.g. const enables automatic reformulation of function signature). \\
+
+
+\paragraph{Call by Value} (evaluates possibly an expression and) binds the concrete value to the formal parameter of the callee by copying it into a specific register or parameter slot in the callees AR. The value is only bound to the formal parameter name at procedure start, i.e. the value beeing bound only to the formal parameter is an initial condition. A change of the value is only visible inside the function. \\
+
+\paragraph{Call by Reference} binds an address to the formal parameter of the callee. The content of the memory starting at this address have to be interpretable as the type specified by the formal parameters. A change to the contents of the memory starting at the passed address changes the state for all instances using the memory range. Thus  Thus a level of indirection is introduced (\textbf{alias} for the instance of the referenced type). \\
+
+\paragraph{Return value} is stored outside the callees AR as it needs (eventually) to be used by the caller. \\
+If the return value is small and has fixed size, it's stored in a designated register (rax in x64) or in the callers AR: Allocate space and write the address to the space into return slot. Let the callee access the pointer via the callers stack pointer. \\
+If the return values size is unknown, the callee allocates space, stores the address into the callers AR return slot which transfers ownership to the caller.
+
+\paragraph{Addressing in a Stack Frame} The memory region that holds the data for a scope is called \textbf{data area}. The address at the beginning of the data area is called \textbf{base address}. The base address can be static or dynamic (wrt. compile and run time). \\
+For global and static data, the compiler arranges a data area with static base address and assigns it a label using name mangling (construction a unique string from a source-level name). \\
+For procedures the compiler constructs an AR with a dynamic base address. Lexical scoping declares rules for which ARs shall be accessible from where. \\
+
+\paragraph{Accessing Local variables} by adding an offset to the base address (rbp) of the current AR or stored on the heap and accessed by indirection if their size is not known at compile time. Local variables of other procedures are accessed by a runtime data structure which the compiler must build. It shall map a static coordinate into a runtime address. \\
+
+\paragraph{Access or Static Links} extend each AR with a Pointer to the AR of its immediate lexical ancestor. Emit code that walks the linked list of ARs using the static coordinate.
+\img{1/addressability_0}
+
+\paragraph{Global Display} instantiates a global array storing the rbps of the most recent procedure activations at each lexical level. Access local variables of other procedures by indirection.
+\img{1/addressability_1}
+
+\paragraph{Calling conventions aka ABI}
+\img{1/addressability_2}
+
+\section{Storage Locations}
+The compiler must assign storage locations to all variables. We can distinguish between \textbf{named} and \textbf{unnamed or anonymous} values. Named values follow the convention of the source language, while unnamed values must be handeled consistently with those, but effectively location and lifetime are managed by the compiler. Further the decision what values to keep in registers:
+\img{1/storage_0}
+\img{1/storage_1}
+\img{1/storage_2}
+\img{1/storage_3}
+In local, static and global scopes, offsets have to be assigned to each name, conforming to the ISA and the calling conventions (ABI).
+\img{1/storage_4}
+Only unambigous value are allowed to be kept in registers across usages
+\img{1/storage_5}
+Examples are
+\begin{itemize}
+	\item class variables of objects
+	\item array elements
+	\item $dots$
+\end{itemize}
+
+
+\section{Arithmetic Expressions}
+Lots of arithmetic operators, mappable by a tree walk for simple expressions: 
+\img{1/arith_ops_0}
+If parameters are operands:
+\begin{enumerate}
+	\item Call-by-Value: if passed via stack, treat it as local variable (load), if passed in a register copy to appropriate operand register
+	\item  Call-by-Reference: if passed via stack, load from the specified address.
+\end{enumerate}
+If function is operand: 
+\begin{enumerate}
+	\item safe the registers to the stack
+	\item invoke the function call
+	\item registers
+	\item move the returned value into the operand register
+\end{enumerate}
+ 
+For Mixed-Type expressions, the compiler must emit appropriate conversion code, applying the rules defined by the language specification and ABI for built-in types or the user provided conversions for programmer-defined types. \\
+ 
+\section{Boolean Expressions}
+\subsection{Numerical Encoding}
+\textbf{False $\equiv 0$, True $\equiv \neg$ False or 1}. Comparison proceeds either by 
+\begin{itemize}
+	\item using a machine-provided operator that returns a boolean
+	\item using condition codes and branch to write either 0 or 1
+\end{itemize}
+\img{1/bool_0}
+\img{1/bool_1}
+
+\subsection{Positional Encoding}
+In positional encoding the result is not stored but rather define the control flow. This and short-circuiting allow to generate much more efficient code
+\img{1/bool_2}
+
+\paragraph{Hardware Support for RelOps}
+\begin{itemize}
+	\item straight condition codes
+	\item condition codes with conditional move
+	\item boolean compare
+	\item predicated operations
+\end{itemize}
+\img{1/bool_3}
+\img{1/bool_4}
+\img{1/bool_5}
+
+
+\section{Arrays}
+\subsection{Vectors aka One-dimensional arrays}
+Vectors are stored in contiguous memory slots, so that the index together with the type information can be used to generate an offset which is added to the base address of the vector to obtain the elements address. If the Vector is specified over addresses or elements from $[\text{lower}, \text{upper}]$, the offset is calculated by $(i-\text{low}) \cdot \text{size\_t}$
+
+\subsection{Storage Layout}
+\img{1/array_0}
+\img{1/array_1}
+\img{1/array_2}
+
+\subsection{Referencing}
+\img{1/array_3}
+\img{1/array_4}
+With w sizeof array element, can be simplyfied to \[ \text{@Base} + (i \cdot \text{len}_2 + j ) \cdot w\]
+\img{1/array_5}
+\img{1/array_6}
+Dope vector and extended versions of it are used for boundary checking
+
+
+\section{Strings}
+\begin{itemize}
+	\item CISC machines support string operations, RISC machines rely on compiler to emit instructions for that
+	\item C uses null termination whereas other langs use an explicit length field
+\end{itemize}
+\img{1/strings_0}
+\img{1/strings_1}
+\img{1/strings_2}
+Library routines are optimized to e.g. copy blocks, $\dots$
+\img{1/strings_3}
+\img{1/strings_4}
+\img{1/strings_5}
+
+\section{Structure References}
+\subsection{Structure Layout}
+Compiler needs to emit code that safes offset and length/type of each structure member. Further offsets need to comply to the alignment rules of the target architecture.
+\img{1/structs_0}
+\subsection{Runtime Dependent Types}
+\img{1/structs_1}
+one.inode or one.fnode is a fully qualified name that resolves any ambiguity
+
+\paragraph{Anonymous Values} are only accessible through a reference, thus have no permanent name. An open problem is to keep track of all memory objects that are referencable as they may form an unbound set.
+
+\section{Control Flow}
+\subsection{Conditional Execution}
+\img{1/control_0}
+\img{1/control_1}
+\img{1/control_2}
+
+\subsection{Loops}
+\img{1/control_3}
+\img{1/control_4}
+\img{1/control_5}
+\img{1/control_6}
+\img{1/control_7}
+\img{1/control_8}
+
+\subsection{Case Statements}
+\img{1/control_9}
+\img{1/control_10}
+\img{1/control_11}
+\img{1/control_12}
+\subsection{Procedure Calls}
+\img{1/control_13}
+\img{1/control_14}
+\img{1/control_15}

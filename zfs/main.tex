@@ -1,0 +1,37 @@
+\documentclass[a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[top=30pt,bottom=30pt,left=48pt,right=46pt]{geometry}
+\usepackage[fontsize=7pt]{scrextend}
+
+\newcommand{\img}[1]{\begin{center}
+    \includegraphics[width=0.4\textwidth,height=0.3\textheight,keepaspectratio]{img/#1}
+\end{center} }
+
+\title{Compiler Construction \\
+Summary}
+\author{Fabian Klopfer}
+\date{February 2019}
+
+\begin{document}
+
+\begin{onecolumn}
+\begin{center}
+    \includegraphics[width=.8\textwidth,height=0.4\textheight,keepaspectratio]{img/architecture_overview.png} \\
+    \includegraphics[width=.8\textwidth,height=0.4\textheight,keepaspectratio]{img/topic_overview.png}\\
+\end{center}
+\end{onecolumn}
+
+\tableofcontents
+\newpage
+
+\begin{twocolumn}
+\include{0-front_end}
+\include{1-conceptual_representation}
+\include{2-back_end}
+\end{twocolumn}
+
+\end{document}
