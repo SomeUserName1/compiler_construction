@@ -1,17 +1,103 @@
 \chapter{Back End}
-
+Code Generation consists of Instruction Selection, Instruction scheduling and Register allocation. All of them are NP-complete for exact graph-based versions.
 \section{Instruction Selection}
+\begin{itemize}
+	\item The process of mapping IR code to target machine instructions
+	\item pattern matching problem: Tree-pattern matching or Peephole optimization
+	\item costs depend highly on ISA provided instructions (RISC, CISC, Stack machines)
+	\item compiler writer should associate costs to instruction and built up a truly reflecting cost model for efficient code
+\end{itemize}
+
 \subsection{Tree Pattern-Matching}
+\begin{enumerate}
+	\item Express target instruction set as a set of trees
+	\item Build AST from source
+	\item Find the minimal cost tiling, that implements every operation and all tiles connect to their neighbors (i.e. the AST node is covered by the current and a neighbour tile)
+\end{enumerate}
+\img{2/isel_0}
+\img{2/isel_1}
+\img{2/isel_2}
+\img{2/isel_3}
+\img{2/isel_4}
+\img{2/isel_5}
+\img{2/isel_6}
+
 \subsection{Peephole Optimization}
+\img{2/peephole_0}
+\img{2/peephole_1}
+\img{2/peephole_2}
+\img{2/peephole_3}
+\img{2/peephole_4}
+\img{2/peephole_5}
 
 \section{Instruction Scheduling}
+\img{2/isched_0}
+\img{2/isched_1}
+\textbf{An Operation} is a single opcode with operands. \textbf{An Instruction} is an aggregation of one or more operations that all issue in the same cycle. \\
+Instruction scheduling is the process of reordering the code to decrease the running time. It must preserve the meaning of the code , it shall minimize the execution time by avoiding stalls or nops and it should avoid increasing value lifetimes past the point where additional register spills are necessary.
+\img{2/isched_2}
+\img{2/isched_3}
+\img{2/isched_4}
+
 \subsection{Local List Scheduling}
+\img{2/local_list_0}
+\img{2/local_list_1}
+\img{2/local_list_2}
+\img{2/local_list_3}
+\img{2/local_list_4}
+\img{2/local_list_5}
+\img{2/local_list_6}
+\img{2/local_list_7}
+\img{2/local_list_8}
+
+
 \subsection{Regional List Scheduling}
+\img{2/regional_list_0}
+\img{2/regional_list_1}
+\img{2/regional_list_2}
+\img{2/regional_list_3}
+\img{2/regional_list_4}
 
 \section{Register Allocation}
+\img{2/register_0}
+\img{2/register_1}
+\img{2/register_2}
+\img{2/global_0}
+\img{2/global_1}
+\img{2/global_2}
+
+
 \subsection{Local Register Allocation}
 \paragraph{Top-Down}
+\img{2/register_3}
+\img{2/register_4}
+\img{2/register_5}
 \paragraph{Bottom-Up}
+\img{2/register_6}
+\img{2/register_7}
+\img{2/register_8}
+\img{2/register_9}
+\img{2/register_10}
+\img{2/register_11}
+
 \subsection{Global Register Allocation}
+\img{2/global_3}
+\img{2/global_4}
+\img{2/global_5}
+\img{2/global_6}
+\img{2/global_7}
+\img{2/global_8}
+
 \paragraph{Top-Down}
+\img{2/global_9}
+\img{2/global_10}
+\img{2/global_11}
+\img{2/global_12}
+
 \paragraph{Bottom-Up}
+\img{2/global_13}
+\img{2/global_14}
+\img{2/global_15}
+\img{2/global_16}
+\img{2/global_17}
+\img{2/global_18}

@@ -124,6 +124,7 @@ Examples are
 \section{Arithmetic Expressions}
 Lots of arithmetic operators, mappable by a tree walk for simple expressions: 
 \img{1/arith_ops_0}
+\img{1/arith_ops_2}
 If parameters are operands:
 \begin{enumerate}
 	\item Call-by-Value: if passed via stack, treat it as local variable (load), if passed in a register copy to appropriate operand register
@@ -152,6 +153,7 @@ For Mixed-Type expressions, the compiler must emit appropriate conversion code, 
 \subsection{Positional Encoding}
 In positional encoding the result is not stored but rather define the control flow. This and short-circuiting allow to generate much more efficient code
 \img{1/bool_2}
+\img{1/bool_6}
 
 \paragraph{Hardware Support for RelOps}
 \begin{itemize}
@@ -168,6 +170,7 @@ In positional encoding the result is not stored but rather define the control fl
 \section{Arrays}
 \subsection{Vectors aka One-dimensional arrays}
 Vectors are stored in contiguous memory slots, so that the index together with the type information can be used to generate an offset which is added to the base address of the vector to obtain the elements address. If the Vector is specified over addresses or elements from $[\text{lower}, \text{upper}]$, the offset is calculated by $(i-\text{low}) \cdot \text{size\_t}$
+\img{1/array_7}
 
 \subsection{Storage Layout}
 \img{1/array_0}
@@ -178,7 +181,9 @@ Vectors are stored in contiguous memory slots, so that the index together with t
 \img{1/array_3}
 \img{1/array_4}
 With w sizeof array element, can be simplyfied to \[ \text{@Base} + (i \cdot \text{len}_2 + j ) \cdot w\]
+\img{1/array_8}
 \img{1/array_5}
+\img{1/array_9}
 \img{1/array_6}
 Dope vector and extended versions of it are used for boundary checking
 
@@ -209,6 +214,7 @@ one.inode or one.fnode is a fully qualified name that resolves any ambiguity
 \section{Control Flow}
 \subsection{Conditional Execution}
 \img{1/control_0}
+\img{1/bool_6}
 \img{1/control_1}
 \img{1/control_2}
 
