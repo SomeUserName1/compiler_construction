@@ -1,0 +1,88 @@
+\documentclass[a4paper]{report}
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{mathtools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage[top=30pt,bottom=30pt,left=48pt,right=46pt]{geometry}
+\usepackage[fontsize=7pt]{scrextend}
+
+\newcommand{\img}[1]{\begin{center}
+    \includegraphics[width=0.39\textwidth,height=0.29\textheight,keepaspectratio]{img/#1}
+\end{center} }
+
+\title{Compiler Construction \\
+Summary}
+\author{Fabian Klopfer}
+\date{February 2019}
+
+\begin{document}
+\begin{twocolumn}
+	\section{Scanner}
+	\img{0/thompson_1}
+	\img{0/subset_ex_1}
+	\img{0/hopcroft_ex_1}
+	\img{0/hopcroft_ex_2}
+	
+	\section{LL(1) Grammar}
+	\img{0/context_free_grammar}
+	\img{0/top_down_3}
+	\img{0/top_down_4}
+	\img{0/top_down_5}
+	\img{0/backtrack_0}
+	\img{0/backtrack_2}
+	\img{0/backtrack_4}
+	\img{0/backtrack_5}
+	
+	\section{Code Shape}
+	\img{1/arith_ops_0}
+	\img{1/arith_ops_2}
+	\img{1/array_8}
+	\img{1/bool_6}
+	\img{1/control_6}
+	\img{1/control_7}
+	\img{1/control_8}
+	
+	\section{Instruction selection}
+	\img{2/isel_2}
+	\img{2/isel_3}
+	\img{2/isel_4}
+	\section{Instruction scheduling}
+	\subsection{Local}
+	\img{2/local_list_1}
+	\img{2/local_list_7}
+	\img{2/local_list_8}
+	\subsection{Global}
+	\img{2/regional_list_0}
+	\img{2/regional_list_1}
+	\img{2/regional_list_3}
+	\img{2/regional_list_4}
+	
+	\section{Register Allocation}
+	\subsection{Local Top-Down}
+	\img{2/register_4}
+	\img{2/register_5}
+	\subsection{Local Bottom-Up}
+	\img{2/register_6}
+	\img{2/register_7}
+	\img{2/register_8}
+	\img{2/register_9}
+	\img{2/register_10}
+	\img{2/register_11}
+	
+	\subsection{Global}
+	\img{2/global_18}
+	\img{2/global_17}
+	\img{2/global_2}
+	\img{2/global_7}
+	\img{2/global_8}
+	\img{2/global_9}
+	\paragraph{Top-Down}
+	\img{2/global_10}
+	\img{2/global_11}
+	\paragraph{Bottom-Up}
+	\img{2/global_14}
+	\img{2/global_15}
+\end{twocolumn}
+
+\end{document}
